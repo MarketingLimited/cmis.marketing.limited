@@ -2612,8 +2612,14 @@ class PlatformConnectionsController extends Controller
     public function authorizeMeta(Request $request, string $org)
     {
         $config = config('social-platforms.meta');
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'meta']));
+        $stateData = ['org_id' => $org, 'platform' => 'meta'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         // Meta OAuth scopes for ads management and social publishing
@@ -2762,6 +2768,13 @@ class PlatformConnectionsController extends Controller
             $successMessage .= " Warning: Missing some permissions ({$missingPerms}).";
         }
 
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'meta', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
+
         // Redirect to asset selection
         return redirect()
             ->route('orgs.settings.platform-connections.meta.assets', [$orgId, $connection->connection_id])
@@ -2877,8 +2890,14 @@ class PlatformConnectionsController extends Controller
     public function authorizeLinkedIn(Request $request, string $org)
     {
         $config = config('social-platforms.linkedin');
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'linkedin']));
+        $stateData = ['org_id' => $org, 'platform' => 'linkedin'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         $params = http_build_query([
@@ -2966,6 +2985,13 @@ class PlatformConnectionsController extends Controller
 
         session()->forget('oauth_state');
 
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'linkedin', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
+
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', __('settings.linkedin_account_connected_successfully'));
     }
@@ -2976,8 +3002,14 @@ class PlatformConnectionsController extends Controller
     public function authorizeTwitter(Request $request, string $org)
     {
         $config = config('social-platforms.twitter');
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'twitter']));
+        $stateData = ['org_id' => $org, 'platform' => 'twitter'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         $codeVerifier = Str::random(128);
@@ -3072,6 +3104,13 @@ class PlatformConnectionsController extends Controller
         });
 
         session()->forget(['oauth_state', 'twitter_code_verifier']);
+
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'twitter', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', __('settings.x_twitter_account_connected_successfully'));
@@ -3179,8 +3218,14 @@ class PlatformConnectionsController extends Controller
     public function authorizeTikTok(Request $request, string $org)
     {
         $config = config('social-platforms.tiktok');
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'tiktok']));
+        $stateData = ['org_id' => $org, 'platform' => 'tiktok'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         $csrfState = Str::random(32);
@@ -3272,6 +3317,13 @@ class PlatformConnectionsController extends Controller
         });
 
         session()->forget(['oauth_state', 'tiktok_csrf_state']);
+
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'tiktok', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', __('settings.tiktok_account_connected_successfully'));
@@ -3512,8 +3564,14 @@ class PlatformConnectionsController extends Controller
                 ->with('error', __('settings.not_configured'));
         }
 
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'google']));
+        $stateData = ['org_id' => $org, 'platform' => 'google'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         $params = http_build_query([
@@ -3659,6 +3717,13 @@ class PlatformConnectionsController extends Controller
 
         session()->forget('oauth_state');
 
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'google', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
+
         // Redirect to asset selection page
         return redirect()
             ->route('orgs.settings.platform-connections.google.assets', [$orgId, $connection->connection_id])
@@ -3692,8 +3757,14 @@ class PlatformConnectionsController extends Controller
     public function authorizeSnapchat(Request $request, string $org)
     {
         $config = config('social-platforms.snapchat');
-        $state = base64_encode(json_encode(['org_id' => $org, 'platform' => 'snapchat']));
+        $stateData = ['org_id' => $org, 'platform' => 'snapchat'];
 
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
         $params = http_build_query([
@@ -3768,6 +3839,13 @@ class PlatformConnectionsController extends Controller
         });
 
         session()->forget('oauth_state');
+
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'snapchat', $connection->id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
             ->with('success', __('settings.snapchat_account_connected_successfully'));
@@ -3976,5 +4054,611 @@ class PlatformConnectionsController extends Controller
                 'is_active' => false,
                 'status' => 'inactive',
             ]);
+    }
+
+    // ==================================================================================
+    // CONNECTION WIZARD METHODS
+    // ==================================================================================
+
+    /**
+     * Display simplified wizard dashboard with platform grid.
+     */
+    public function wizardDashboard(Request $request, string $org)
+    {
+        $connections = PlatformConnection::where('org_id', $org)->get();
+        $integrations = Integration::where('org_id', $org)->get();
+
+        $platformStats = $this->buildWizardPlatformStats($connections, $integrations);
+        $summary = $this->buildWizardSummary($platformStats, $integrations);
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'platforms' => $platformStats,
+                'summary' => $summary,
+            ], 'Dashboard data retrieved successfully');
+        }
+
+        return view('settings.platform-connections.dashboard', [
+            'currentOrg' => $org,
+            'platforms' => $platformStats,
+            'summary' => $summary,
+        ]);
+    }
+
+    /**
+     * Build platform statistics for wizard dashboard.
+     */
+    private function buildWizardPlatformStats($connections, $integrations): array
+    {
+        $platforms = config('platform-wizard.platforms', []);
+        $stats = [];
+
+        foreach ($platforms as $key => $config) {
+            $platformConnections = $connections->where('platform', $key);
+            $platformIntegrations = $integrations->whereIn('platform', $this->getPlatformIntegrationTypes($key));
+
+            // Determine status
+            $status = 'disconnected';
+            if ($platformConnections->count() > 0) {
+                $hasError = $platformConnections->contains('status', 'error');
+                $hasWarning = $platformConnections->where('status', 'warning')->count() > 0
+                    || $platformConnections->filter(function ($c) {
+                        return $c->isTokenExpiringSoon();
+                    })->count() > 0;
+                $status = $hasError ? 'error' : ($hasWarning ? 'warning' : 'active');
+            }
+
+            $stats[$key] = [
+                'key' => $key,
+                'name' => $config['name'] ?? $key,
+                'display_name' => __($config['display_name'] ?? $key),
+                'description' => __($config['description'] ?? ''),
+                'icon' => $config['icon'] ?? 'fas fa-plug',
+                'color' => $config['color'] ?? '#6B7280',
+                'text_color' => $config['text_color'] ?? '#FFFFFF',
+                'connected' => $platformConnections->count() > 0,
+                'connections_count' => $platformConnections->count(),
+                'assets_count' => $platformIntegrations->count(),
+                'status' => $status,
+                'supports_oauth' => $config['supports_oauth'] ?? false,
+                'supports_manual' => $config['supports_manual'] ?? false,
+            ];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Get integration types for a platform.
+     */
+    private function getPlatformIntegrationTypes(string $platform): array
+    {
+        return match ($platform) {
+            'meta' => ['facebook', 'instagram', 'threads'],
+            'google' => ['youtube', 'google_ads', 'google_analytics', 'google_business'],
+            'linkedin' => ['linkedin'],
+            'tiktok' => ['tiktok'],
+            'twitter' => ['twitter'],
+            'snapchat' => ['snapchat'],
+            default => [$platform],
+        };
+    }
+
+    /**
+     * Build summary statistics for wizard dashboard.
+     */
+    private function buildWizardSummary(array $platformStats, $integrations): array
+    {
+        $connectedPlatforms = collect($platformStats)->filter(fn($p) => $p['connected'])->count();
+        $totalAssets = $integrations->count();
+
+        // Calculate health status
+        $hasError = collect($platformStats)->contains(fn($p) => $p['status'] === 'error');
+        $hasWarning = collect($platformStats)->contains(fn($p) => $p['status'] === 'warning');
+        $healthStatus = $hasError ? 'error' : ($hasWarning ? 'warning' : 'healthy');
+
+        return [
+            'platforms_connected' => $connectedPlatforms,
+            'total_platforms' => count($platformStats),
+            'total_assets' => $totalAssets,
+            'health_status' => $healthStatus,
+        ];
+    }
+
+    /**
+     * Start wizard flow for a specific platform.
+     */
+    public function startWizard(Request $request, string $org, string $platform)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            if ($request->wantsJson()) {
+                return $this->error(__('wizard.errors.platform_not_found'), 404);
+            }
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                ->with('error', __('wizard.errors.platform_not_found'));
+        }
+
+        // Store wizard state in session
+        $wizardState = [
+            'org_id' => $org,
+            'platform' => $platform,
+            'step' => 1,
+            'started_at' => now()->toIso8601String(),
+        ];
+        session()->put(config('platform-wizard.wizard.session_key', 'platform_wizard_state'), $wizardState);
+
+        // Build OAuth URL if supported
+        $oauthUrl = null;
+        if ($platformConfig['supports_oauth'] && isset($platformConfig['oauth_route'])) {
+            try {
+                $oauthUrl = route($platformConfig['oauth_route'], ['org' => $org]);
+            } catch (\Exception $e) {
+                Log::warning("Wizard: Could not generate OAuth URL for {$platform}", ['error' => $e->getMessage()]);
+            }
+        }
+
+        // Build manual URL if supported
+        $manualUrl = null;
+        if ($platformConfig['supports_manual'] && isset($platformConfig['manual_route'])) {
+            try {
+                $manualUrl = route($platformConfig['manual_route'], ['org' => $org]);
+            } catch (\Exception $e) {
+                Log::warning("Wizard: Could not generate manual URL for {$platform}", ['error' => $e->getMessage()]);
+            }
+        }
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'platform' => $platform,
+                'config' => $platformConfig,
+                'oauth_url' => $oauthUrl,
+                'manual_url' => $manualUrl,
+            ], 'Wizard initialized');
+        }
+
+        return view('settings.platform-connections.wizard.wizard', [
+            'currentOrg' => $org,
+            'platform' => $platform,
+            'platformConfig' => $platformConfig,
+            'oauthUrl' => $oauthUrl,
+            'manualUrl' => $manualUrl,
+            'step' => 1,
+        ]);
+    }
+
+    /**
+     * Handle wizard return after OAuth callback.
+     */
+    public function wizardOAuthReturn(Request $request, string $org, string $platform, string $connection)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                ->with('error', __('wizard.errors.platform_not_found'));
+        }
+
+        $connectionModel = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->first();
+
+        if (!$connectionModel) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.start', [$org, $platform])
+                ->with('error', __('wizard.errors.connection_failed'));
+        }
+
+        // Update wizard state
+        $wizardState = session()->get(config('platform-wizard.wizard.session_key', 'platform_wizard_state'), []);
+        $wizardState['step'] = 2;
+        $wizardState['connection_id'] = $connection;
+        session()->put(config('platform-wizard.wizard.session_key', 'platform_wizard_state'), $wizardState);
+
+        // Redirect to asset selection
+        return redirect()->route('orgs.settings.platform-connections.wizard.assets', [$org, $platform, $connection]);
+    }
+
+    /**
+     * Display wizard asset selection page.
+     */
+    public function wizardAssets(Request $request, string $org, string $platform, string $connection)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                ->with('error', __('wizard.errors.platform_not_found'));
+        }
+
+        $connectionModel = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->first();
+
+        if (!$connectionModel) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.start', [$org, $platform])
+                ->with('error', __('wizard.errors.connection_failed'));
+        }
+
+        // Fetch available assets
+        $assets = $this->fetchWizardPlatformAssets($connectionModel, $platform);
+        $smartDefaults = $this->calculateWizardSmartDefaults($platform, $assets);
+
+        // Get previously selected assets if any
+        $previouslySelected = $connectionModel->account_metadata['selected_assets'] ?? [];
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'connection_id' => $connection,
+                'assets' => $assets,
+                'smart_defaults' => $smartDefaults,
+                'previously_selected' => $previouslySelected,
+            ], 'Assets loaded');
+        }
+
+        return view('settings.platform-connections.wizard.wizard', [
+            'currentOrg' => $org,
+            'platform' => $platform,
+            'platformConfig' => $platformConfig,
+            'connection' => $connectionModel,
+            'assets' => $assets,
+            'smartDefaults' => $smartDefaults,
+            'previouslySelected' => $previouslySelected,
+            'step' => 2,
+        ]);
+    }
+
+    /**
+     * Fetch available assets for a platform connection.
+     */
+    private function fetchWizardPlatformAssets(PlatformConnection $connection, string $platform): array
+    {
+        $accessToken = $connection->access_token;
+
+        try {
+            return match ($platform) {
+                'meta' => [
+                    'page' => $this->getMetaPages($accessToken),
+                    'instagram_account' => $this->getMetaInstagramAccounts($accessToken, $this->getMetaPages($accessToken)),
+                    'threads_account' => $this->getThreadsAccounts($accessToken, []),
+                    'ad_account' => $this->getMetaAdAccounts($accessToken),
+                    'pixel' => $this->getMetaPixels($accessToken, $this->getMetaAdAccounts($accessToken)),
+                    'catalog' => $this->getMetaCatalogs($accessToken),
+                ],
+                'google' => $this->getGoogleAssets($connection),
+                'linkedin' => $this->getLinkedInAssets($connection),
+                'tiktok' => $this->getTikTokAssets($connection),
+                'twitter' => $this->getTwitterAssets($connection),
+                'snapchat' => $this->getSnapchatAssets($connection),
+                default => [],
+            };
+        } catch (\Exception $e) {
+            Log::error("Wizard: Failed to fetch assets for {$platform}", [
+                'error' => $e->getMessage(),
+                'connection_id' => $connection->connection_id,
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Get Google assets for wizard.
+     */
+    private function getGoogleAssets(PlatformConnection $connection): array
+    {
+        // Reuse existing methods or return empty if not implemented
+        return [
+            'youtube_channel' => [],
+            'ads_account' => [],
+            'analytics_property' => [],
+        ];
+    }
+
+    /**
+     * Get LinkedIn assets for wizard.
+     */
+    private function getLinkedInAssets(PlatformConnection $connection): array
+    {
+        return [
+            'profile' => [],
+            'page' => [],
+            'ad_account' => [],
+        ];
+    }
+
+    /**
+     * Get TikTok assets for wizard.
+     */
+    private function getTikTokAssets(PlatformConnection $connection): array
+    {
+        return [
+            'account' => [],
+            'ad_account' => [],
+        ];
+    }
+
+    /**
+     * Get Twitter assets for wizard.
+     */
+    private function getTwitterAssets(PlatformConnection $connection): array
+    {
+        return [
+            'account' => [],
+            'ad_account' => [],
+        ];
+    }
+
+    /**
+     * Get Snapchat assets for wizard.
+     */
+    private function getSnapchatAssets(PlatformConnection $connection): array
+    {
+        return [
+            'account' => [],
+            'ad_account' => [],
+        ];
+    }
+
+    /**
+     * Calculate smart defaults for asset selection.
+     */
+    private function calculateWizardSmartDefaults(string $platform, array $assets): array
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}", []);
+        $defaults = [];
+
+        foreach ($platformConfig['asset_types'] ?? [] as $assetType => $typeConfig) {
+            $strategy = $typeConfig['smart_default'] ?? 'none';
+            $availableAssets = $assets[$assetType] ?? [];
+
+            if (empty($availableAssets)) {
+                continue;
+            }
+
+            $selectedIds = match ($strategy) {
+                'most_followers' => $this->selectWizardMostFollowers($availableAssets),
+                'first' => [$availableAssets[0]['id'] ?? null],
+                'all' => array_filter(array_column($availableAssets, 'id')),
+                'active_only' => $this->selectWizardActiveOnly($availableAssets),
+                'linked_to_instagram' => [], // Requires context of selected Instagram accounts
+                'linked_to_ad_accounts' => [], // Requires context of selected ad accounts
+                default => [],
+            };
+
+            $selectedIds = array_filter($selectedIds);
+            if (!empty($selectedIds)) {
+                $defaults[$assetType] = array_values($selectedIds);
+            }
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Select asset with most followers.
+     */
+    private function selectWizardMostFollowers(array $assets): array
+    {
+        if (empty($assets)) {
+            return [];
+        }
+
+        $sorted = collect($assets)->sortByDesc(function ($asset) {
+            return $asset['followers_count']
+                ?? $asset['subscriber_count']
+                ?? $asset['fan_count']
+                ?? 0;
+        });
+
+        $first = $sorted->first();
+        return $first ? [$first['id'] ?? null] : [];
+    }
+
+    /**
+     * Select only active assets.
+     */
+    private function selectWizardActiveOnly(array $assets): array
+    {
+        return collect($assets)
+            ->filter(function ($asset) {
+                $status = strtolower($asset['status'] ?? '');
+                $canCreateAds = $asset['can_create_ads'] ?? $asset['is_active'] ?? true;
+
+                return $canCreateAds
+                    && !in_array($status, ['disabled', 'inactive', 'suspended', 'closed']);
+            })
+            ->pluck('id')
+            ->filter()
+            ->toArray();
+    }
+
+    /**
+     * Save wizard asset selections.
+     */
+    public function saveWizardAssets(Request $request, string $org, string $platform, string $connection)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            return $request->wantsJson()
+                ? $this->error(__('wizard.errors.platform_not_found'), 404)
+                : redirect()->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                    ->with('error', __('wizard.errors.platform_not_found'));
+        }
+
+        $connectionModel = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->first();
+
+        if (!$connectionModel) {
+            return $request->wantsJson()
+                ? $this->error(__('wizard.errors.connection_failed'), 404)
+                : redirect()->route('orgs.settings.platform-connections.wizard.start', [$org, $platform])
+                    ->with('error', __('wizard.errors.connection_failed'));
+        }
+
+        $selectedAssets = $request->input('selected_assets', []);
+
+        // Save selected assets to connection metadata
+        $metadata = $connectionModel->account_metadata ?? [];
+        $metadata['selected_assets'] = $selectedAssets;
+        $metadata['assets_updated_at'] = now()->toIso8601String();
+        $metadata['wizard_completed'] = true;
+
+        $connectionModel->update(['account_metadata' => $metadata]);
+
+        // Sync integration records based on platform
+        try {
+            $this->syncWizardIntegrationRecords($org, $connectionModel, $platform, $selectedAssets);
+        } catch (\Exception $e) {
+            Log::error("Wizard: Failed to sync integrations for {$platform}", [
+                'error' => $e->getMessage(),
+                'connection_id' => $connection,
+            ]);
+        }
+
+        // Update wizard state
+        $wizardState = session()->get(config('platform-wizard.wizard.session_key', 'platform_wizard_state'), []);
+        $wizardState['step'] = 3;
+        session()->put(config('platform-wizard.wizard.session_key', 'platform_wizard_state'), $wizardState);
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'connection_id' => $connection,
+                'selected_assets' => $selectedAssets,
+            ], 'Assets saved successfully');
+        }
+
+        return redirect()->route('orgs.settings.platform-connections.wizard.success', [$org, $platform, $connection]);
+    }
+
+    /**
+     * Sync integration records for wizard.
+     */
+    private function syncWizardIntegrationRecords(string $orgId, PlatformConnection $connection, string $platform, array $selectedAssets): void
+    {
+        // Delegate to existing sync methods based on platform
+        switch ($platform) {
+            case 'meta':
+                $this->syncMetaIntegrationRecords($orgId, $connection, $selectedAssets);
+                break;
+            case 'google':
+                $this->syncGoogleIntegrationRecords($orgId, $connection, $selectedAssets);
+                break;
+            // Other platforms can be added here
+            default:
+                Log::info("Wizard: No sync handler for platform {$platform}");
+        }
+    }
+
+    /**
+     * Display wizard success screen.
+     */
+    public function wizardSuccess(Request $request, string $org, string $platform, string $connection)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                ->with('error', __('wizard.errors.platform_not_found'));
+        }
+
+        $connectionModel = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->first();
+
+        if (!$connectionModel) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.dashboard', $org)
+                ->with('error', __('wizard.errors.connection_failed'));
+        }
+
+        // Get synced integrations count
+        $syncedCount = Integration::where('org_id', $org)
+            ->whereIn('platform', $this->getPlatformIntegrationTypes($platform))
+            ->where('metadata->connection_id', $connection)
+            ->where('is_active', true)
+            ->count();
+
+        // Clear wizard state
+        session()->forget(config('platform-wizard.wizard.session_key', 'platform_wizard_state'));
+
+        if ($request->wantsJson()) {
+            return $this->success([
+                'connection_id' => $connection,
+                'synced_count' => $syncedCount,
+            ], 'Connection completed successfully');
+        }
+
+        return view('settings.platform-connections.wizard.wizard', [
+            'currentOrg' => $org,
+            'platform' => $platform,
+            'platformConfig' => $platformConfig,
+            'connection' => $connectionModel,
+            'syncedCount' => $syncedCount,
+            'step' => 3,
+        ]);
+    }
+
+    /**
+     * Get wizard platform configuration (API).
+     */
+    public function getWizardPlatformConfig(Request $request, string $org, string $platform)
+    {
+        $platformConfig = config("platform-wizard.platforms.{$platform}");
+
+        if (!$platformConfig) {
+            return $this->error(__('wizard.errors.platform_not_found'), 404);
+        }
+
+        return $this->success([
+            'platform' => $platform,
+            'config' => $platformConfig,
+        ], 'Platform config retrieved');
+    }
+
+    /**
+     * Get wizard connection assets (API).
+     */
+    public function getWizardConnectionAssets(Request $request, string $org, string $platform, string $connection)
+    {
+        $connectionModel = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->first();
+
+        if (!$connectionModel) {
+            return $this->error(__('wizard.errors.connection_failed'), 404);
+        }
+
+        $assets = $this->fetchWizardPlatformAssets($connectionModel, $platform);
+        $smartDefaults = $this->calculateWizardSmartDefaults($platform, $assets);
+
+        return $this->success([
+            'assets' => $assets,
+            'smart_defaults' => $smartDefaults,
+        ], 'Assets retrieved');
+    }
+
+    /**
+     * Get wizard dashboard stats (API).
+     */
+    public function getWizardStats(Request $request, string $org)
+    {
+        $connections = PlatformConnection::where('org_id', $org)->get();
+        $integrations = Integration::where('org_id', $org)->get();
+
+        $platformStats = $this->buildWizardPlatformStats($connections, $integrations);
+        $summary = $this->buildWizardSummary($platformStats, $integrations);
+
+        return $this->success([
+            'platforms' => $platformStats,
+            'summary' => $summary,
+        ], 'Stats retrieved');
     }
 }
