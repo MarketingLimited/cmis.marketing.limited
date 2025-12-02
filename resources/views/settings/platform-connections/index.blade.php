@@ -91,7 +91,9 @@
                                     $isSystemUser = $metadata['is_system_user'] ?? false;
                                     $isNeverExpires = $metadata['is_never_expires'] ?? false;
                                     $warnings = $metadata['warnings'] ?? [];
-                                    $adAccountsCount = $metadata['ad_accounts_count'] ?? count($metadata['ad_accounts'] ?? []);
+                                    // Check multiple sources for ad accounts count
+                                    $selectedAdAccounts = $metadata['selected_assets']['ad_account'] ?? [];
+                                    $adAccountsCount = $metadata['ad_accounts_count'] ?? count($metadata['ad_accounts'] ?? $selectedAdAccounts);
                                     $activeAdAccountsCount = $metadata['active_ad_accounts_count'] ?? $adAccountsCount;
                                     $hasWarnings = !empty($warnings);
                                     $hasErrors = collect($warnings)->contains('type', 'error');
