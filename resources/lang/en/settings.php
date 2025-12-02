@@ -839,4 +839,7 @@ return [
     'timezone' => 'Timezone',
     'timezone_help' => 'Default timezone for this organization. Used for scheduling and displaying times.',
 
+    // Section Headers
+    'publishing' => 'Publishing',
+
 ];

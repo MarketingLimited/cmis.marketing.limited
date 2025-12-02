@@ -100,59 +100,85 @@
                             </a>
                         </li>
 
-                        {{-- Profile Groups Management Section --}}
+                        {{-- Publishing Section - Dynamic based on enabled apps --}}
+                        @php
+                            $marketplace = app(\App\Services\Marketplace\MarketplaceService::class);
+                            $enabledApps = $marketplace->getEnabledAppSlugs($currentOrg);
+                            $isAppEnabled = fn($slug) => in_array($slug, $enabledApps);
+                            $hasPublishingApps = $isAppEnabled('brand-voices') || $isAppEnabled('brand-safety') || $isAppEnabled('approval-workflows') || $isAppEnabled('boost-rules') || $isAppEnabled('ad-accounts');
+                        @endphp
+
+                        @if($hasPublishingApps)
                         <li class="border-t border-gray-100 mt-2 pt-2">
-                            <span class="block px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Publishing</span>
+                            <span class="block px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('settings.publishing') }}</span>
                         </li>
+                        @endif
+
+                        {{-- Profile Groups - Core feature, always visible --}}
                         <li>
                             <a href="{{ route('orgs.settings.profile-groups.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.profile-groups.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-layer-group w-5 h-5 mr-3"></i>
+                                <i class="fas fa-layer-group w-5 h-5 me-3"></i>
                                 {{ __('Profile Groups') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
+
+                        @if($isAppEnabled('brand-voices'))
                         <li>
                             <a href="{{ route('orgs.settings.brand-voices.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.brand-voices.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-microphone w-5 h-5 mr-3"></i>
+                                <i class="fas fa-microphone w-5 h-5 me-3"></i>
                                 {{ __('Brand Voices') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
+                        @endif
+
+                        @if($isAppEnabled('brand-safety'))
                         <li>
                             <a href="{{ route('orgs.settings.brand-safety.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.brand-safety.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-shield-alt w-5 h-5 mr-3"></i>
+                                <i class="fas fa-shield-alt w-5 h-5 me-3"></i>
                                 {{ __('Brand Safety') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
+                        @endif
+
+                        @if($isAppEnabled('approval-workflows'))
                         <li>
                             <a href="{{ route('orgs.settings.approval-workflows.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.approval-workflows.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-tasks w-5 h-5 mr-3"></i>
+                                <i class="fas fa-tasks w-5 h-5 me-3"></i>
                                 {{ __('Approval Workflows') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
+                        @endif
+
+                        @if($isAppEnabled('boost-rules'))
                         <li>
                             <a href="{{ route('orgs.settings.boost-rules.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.boost-rules.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-rocket w-5 h-5 mr-3"></i>
+                                <i class="fas fa-rocket w-5 h-5 me-3"></i>
                                 {{ __('Boost Rules') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
+                        @endif
+
+                        @if($isAppEnabled('ad-accounts'))
                         <li>
                             <a href="{{ route('orgs.settings.ad-accounts.index', $currentOrg) }}"
                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 border-l-4 border-transparent transition-colors {{ request()->routeIs('orgs.settings.ad-accounts.*') ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600' : '' }}">
-                                <i class="fas fa-ad w-5 h-5 mr-3"></i>
+                                <i class="fas fa-ad w-5 h-5 me-3"></i>
                                 {{ __('Ad Accounts') }}
-                                <i class="fas fa-external-link-alt ml-auto text-xs text-gray-400"></i>
+                                <i class="fas fa-external-link-alt ms-auto text-xs text-gray-400"></i>
                             </a>
                         </li>
-                        {{-- End Profile Groups Section --}}
+                        @endif
+                        {{-- End Publishing Section --}}
 
                         <li>
                             <button @click="activeTab = 'api'"

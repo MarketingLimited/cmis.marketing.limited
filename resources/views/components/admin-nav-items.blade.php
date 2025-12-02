@@ -511,31 +511,41 @@
             <i class="fas fa-id-card text-xs w-4"></i>
             <span>{{ __('navigation.profile_management') }}</span>
         </a>
+        @if($isEnabled('ad-accounts'))
         <a href="{{ route('orgs.settings.ad-accounts.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-ad text-xs w-4"></i>
             <span>{{ __('navigation.ad_accounts') }}</span>
         </a>
+        @endif
+        @if($isEnabled('brand-voices'))
         <a href="{{ route('orgs.settings.brand-voices.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-comment text-xs w-4"></i>
             <span>{{ __('navigation.brand_voices') }}</span>
         </a>
+        @endif
+        @if($isEnabled('brand-safety'))
         <a href="{{ route('orgs.settings.brand-safety.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-shield-alt text-xs w-4"></i>
             <span>{{ __('navigation.brand_safety') }}</span>
         </a>
+        @endif
+        @if($isEnabled('approval-workflows'))
         <a href="{{ route('orgs.settings.approval-workflows.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-check-double text-xs w-4"></i>
             <span>{{ __('navigation.approval_workflows') }}</span>
         </a>
+        @endif
+        @if($isEnabled('boost-rules'))
         <a href="{{ route('orgs.settings.boost-rules.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-rocket text-xs w-4"></i>
             <span>{{ __('navigation.boost_rules') }}</span>
         </a>
+        @endif
     </div>
 </div>
 
