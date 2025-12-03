@@ -660,7 +660,12 @@ class MetaAssetsService
 
     /**
      * Get Business Creative Folders (from all businesses).
-     * Note: This endpoint may require special permissions and access might be restricted.
+     *
+     * NOTE: The Graph API does not support listing creative folders via /{business}/creative_folders (GET).
+     * The SDK only supports creating folders (POST). This is an API limitation.
+     * Users can view their creative folders in the Meta Business Manager UI directly.
+     *
+     * @see https://developers.facebook.com/docs/marketing-api/reference/business/
      */
     public function getCreativeFolders(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -671,49 +676,24 @@ class MetaAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Creative Folders from Meta API');
+            Log::info('Creative Folders: API endpoint not available - returning empty array');
 
-            $creativeFolders = [];
-            $businesses = $this->getBusinesses($accessToken, $connectionId);
+            // The Graph API does not expose a GET endpoint for /{business}/creative_folders
+            // This is a known limitation - the endpoint only supports POST (create)
+            // Users can manage their creative folders through Meta Business Manager UI
 
-            foreach ($businesses as $business) {
-                $businessId = $business['id'] ?? null;
-                $businessName = $business['name'] ?? 'Unknown Business';
-                if (!$businessId) continue;
-
-                try {
-                    $folderData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/creative_folders",
-                        $accessToken,
-                        ['fields' => 'id,name']
-                    );
-
-                    foreach ($folderData as $folder) {
-                        $existingIds = array_column($creativeFolders, 'id');
-                        if (!in_array($folder['id'], $existingIds)) {
-                            $creativeFolders[] = [
-                                'id' => $folder['id'],
-                                'name' => $folder['name'] ?? 'Unnamed Folder',
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                            ];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::debug('Failed to fetch creative folders for business (may require special permissions)', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-
-            Log::info('Creative Folders fetched', ['count' => count($creativeFolders)]);
-            return $creativeFolders;
+            return [];
         });
     }
 
     /**
      * Get Verified Domains (from all businesses).
+     *
+     * NOTE: The Graph API does not expose /{business}/owned_domains edge for reading.
+     * Domain verification is managed through Meta Business Manager Settings > Brand Safety > Domains.
+     * This is an API limitation - domains can only be viewed/managed in the Business Manager UI.
+     *
+     * @see https://developers.facebook.com/docs/marketing-api/reference/business/
      */
     public function getDomains(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -724,45 +704,13 @@ class MetaAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Verified Domains from Meta API');
+            Log::info('Verified Domains: API endpoint not available - returning empty array');
 
-            $domains = [];
-            $businesses = $this->getBusinesses($accessToken, $connectionId);
+            // The Graph API does not expose /{business}/owned_domains edge
+            // This endpoint returns "nonexisting field (owned_domains) on node type (Business)"
+            // Users can manage their verified domains through Meta Business Manager UI
 
-            foreach ($businesses as $business) {
-                $businessId = $business['id'] ?? null;
-                $businessName = $business['name'] ?? 'Unknown Business';
-                if (!$businessId) continue;
-
-                try {
-                    $domainData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_domains",
-                        $accessToken,
-                        ['fields' => 'id,domain_name,verification_status']
-                    );
-
-                    foreach ($domainData as $domain) {
-                        $existingIds = array_column($domains, 'id');
-                        if (!in_array($domain['id'], $existingIds)) {
-                            $domains[] = [
-                                'id' => $domain['id'],
-                                'domain_name' => $domain['domain_name'] ?? 'Unknown Domain',
-                                'verification_status' => $domain['verification_status'] ?? 'unknown',
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                            ];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch domains for business', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-
-            Log::info('Verified Domains fetched', ['count' => count($domains)]);
-            return $domains;
+            return [];
         });
     }
 
@@ -827,6 +775,9 @@ class MetaAssetsService
 
     /**
      * Get Owned Apps (from all businesses).
+     *
+     * NOTE: This endpoint has strict rate limits. We limit queries to the first 3 businesses
+     * and add delays between requests to avoid hitting Meta's application request limits.
      */
     public function getApps(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -841,13 +792,28 @@ class MetaAssetsService
 
             $apps = [];
             $businesses = $this->getBusinesses($accessToken, $connectionId);
+            $rateLimitHit = false;
+            $businessCount = 0;
+            $maxBusinesses = 3; // Limit to prevent rate limiting
 
             foreach ($businesses as $business) {
+                // Stop if we've hit rate limits or reached max businesses
+                if ($rateLimitHit || $businessCount >= $maxBusinesses) {
+                    break;
+                }
+
                 $businessId = $business['id'] ?? null;
                 $businessName = $business['name'] ?? 'Unknown Business';
                 if (!$businessId) continue;
 
+                $businessCount++;
+
                 try {
+                    // Add small delay between requests to help with rate limiting
+                    if ($businessCount > 1) {
+                        usleep(200000); // 200ms delay
+                    }
+
                     $appData = $this->fetchAllPages(
                         self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_apps",
                         $accessToken,
@@ -869,14 +835,30 @@ class MetaAssetsService
                         }
                     }
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch apps for business', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
+                    $errorMessage = $e->getMessage();
+
+                    // Check for rate limit error (code 4)
+                    if (str_contains($errorMessage, 'request limit reached') || str_contains($errorMessage, 'code":4')) {
+                        Log::warning('Apps API rate limit hit - stopping further requests', [
+                            'business_id' => $businessId,
+                            'apps_found_so_far' => count($apps),
+                        ]);
+                        $rateLimitHit = true;
+                    } else {
+                        Log::debug('Failed to fetch apps for business', [
+                            'business_id' => $businessId,
+                            'error' => $errorMessage,
+                        ]);
+                    }
                 }
             }
 
-            Log::info('Owned Apps fetched', ['count' => count($apps)]);
+            Log::info('Owned Apps fetched', [
+                'count' => count($apps),
+                'businesses_queried' => $businessCount,
+                'rate_limit_hit' => $rateLimitHit,
+            ]);
+
             return $apps;
         });
     }

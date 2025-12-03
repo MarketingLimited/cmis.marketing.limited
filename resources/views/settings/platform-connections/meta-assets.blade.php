@@ -904,11 +904,12 @@
                         </template>
                     </div>
 
-                    {{-- Empty State --}}
-                    <div x-show="!loading.creativeFolders && !errors.creativeFolders && creativeFolders.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
-                        <i class="fas fa-folder text-gray-300 text-3xl mb-2"></i>
-                        <p class="text-sm text-gray-500">{{ __('No Creative Folders found') }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Create folders in Meta Business Manager Asset Library') }}</p>
+                    {{-- Empty State - API Limitation --}}
+                    <div x-show="!loading.creativeFolders && !errors.creativeFolders && creativeFolders.length === 0" class="text-center py-6 bg-amber-50 rounded-lg border border-amber-200">
+                        <i class="fas fa-exclamation-triangle text-amber-400 text-3xl mb-2"></i>
+                        <p class="text-sm text-amber-700 font-medium">{{ __('Not available via API') }}</p>
+                        <p class="text-xs text-amber-600 mt-1">{{ __('Meta Graph API does not expose creative folders for reading.') }}</p>
+                        <p class="text-xs text-gray-500 mt-2">{{ __('Manage your folders directly in') }} <a href="https://business.facebook.com/settings/creative-hub" target="_blank" class="text-blue-600 hover:underline">{{ __('Meta Business Manager') }}</a></p>
                     </div>
 
                     {{-- Creative Folders List --}}
@@ -971,11 +972,12 @@
                         </template>
                     </div>
 
-                    {{-- Empty State --}}
-                    <div x-show="!loading.domains && !errors.domains && domains.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
-                        <i class="fas fa-globe text-gray-300 text-3xl mb-2"></i>
-                        <p class="text-sm text-gray-500">{{ __('No Verified Domains found') }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Add and verify domains in Meta Business Manager') }}</p>
+                    {{-- Empty State - API Limitation --}}
+                    <div x-show="!loading.domains && !errors.domains && domains.length === 0" class="text-center py-6 bg-amber-50 rounded-lg border border-amber-200">
+                        <i class="fas fa-exclamation-triangle text-amber-400 text-3xl mb-2"></i>
+                        <p class="text-sm text-amber-700 font-medium">{{ __('Not available via API') }}</p>
+                        <p class="text-xs text-amber-600 mt-1">{{ __('Meta Graph API does not expose verified domains for reading.') }}</p>
+                        <p class="text-xs text-gray-500 mt-2">{{ __('Manage your domains directly in') }} <a href="https://business.facebook.com/settings/brand-safety/domains" target="_blank" class="text-blue-600 hover:underline">{{ __('Meta Business Manager') }}</a></p>
                     </div>
 
                     {{-- Domains List --}}
