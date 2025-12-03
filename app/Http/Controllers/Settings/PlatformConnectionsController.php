@@ -3704,10 +3704,13 @@ class PlatformConnectionsController extends Controller
                     'avatar_url' => $userData['avatar_url'] ?? null,
                     'refresh_expires_in' => $tokenData['refresh_expires_in'] ?? null,
                 ],
-                'deleted_at' => null, // Restore if soft-deleted
             ];
 
             if ($connection) {
+                // Restore if soft-deleted, then update
+                if ($connection->trashed()) {
+                    $connection->restore();
+                }
                 $connection->update($connectionData);
             } else {
                 $connection = PlatformConnection::create(array_merge([
@@ -3746,10 +3749,13 @@ class PlatformConnectionsController extends Controller
                     'union_id' => $userData['union_id'] ?? null,
                     'synced_at' => now()->toIso8601String(),
                 ],
-                'deleted_at' => null, // Restore if soft-deleted
             ];
 
             if ($integration) {
+                // Restore if soft-deleted, then update
+                if ($integration->trashed()) {
+                    $integration->restore();
+                }
                 $integration->update($integrationData);
             } else {
                 $integration = Integration::create(array_merge([
