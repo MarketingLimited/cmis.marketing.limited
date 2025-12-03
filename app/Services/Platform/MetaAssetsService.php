@@ -209,6 +209,7 @@ class MetaAssetsService
     /**
      * Get Threads accounts.
      * Note: Threads API requires separate OAuth with threads_* scopes.
+     * This method performs a quick test first to fail fast if scopes aren't available.
      */
     public function getThreadsAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -219,9 +220,29 @@ class MetaAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Attempting to fetch Threads accounts', [
-                'note' => 'Threads API requires separate OAuth with threads_* scopes.',
-            ]);
+            // Quick test if Threads API is accessible with this token (5s timeout)
+            // Threads requires separate OAuth with threads_* scopes
+            try {
+                $testResponse = Http::timeout(5)->get(
+                    self::THREADS_BASE_URL . '/v1.0/me',
+                    ['access_token' => $accessToken]
+                );
+
+                if (!$testResponse->successful()) {
+                    Log::debug('Threads API not accessible - requires separate OAuth', [
+                        'status' => $testResponse->status(),
+                    ]);
+                    return [];
+                }
+            } catch (\Exception $e) {
+                Log::debug('Threads API unavailable - fast fail', [
+                    'error' => $e->getMessage(),
+                ]);
+                return [];
+            }
+
+            // Test passed - token has threads_* scopes, proceed with fetching accounts
+            Log::info('Threads API accessible, fetching accounts');
 
             $threadsAccounts = [];
             $instagramAccounts = $this->getInstagramAccounts($connectionId, $accessToken, false);
@@ -231,7 +252,7 @@ class MetaAssetsService
                 if (!$igId) continue;
 
                 try {
-                    $response = Http::timeout(15)->get(
+                    $response = Http::timeout(10)->get(
                         self::THREADS_BASE_URL . "/v1.0/{$igId}",
                         [
                             'access_token' => $accessToken,
@@ -254,9 +275,9 @@ class MetaAssetsService
                         }
                     }
                 } catch (\Exception $e) {
-                    // Expected: Threads requires separate OAuth
-                    Log::debug('Threads API requires separate OAuth', [
+                    Log::debug('Failed to fetch Threads account', [
                         'instagram_id' => $igId,
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
