@@ -175,6 +175,10 @@
                                                     <i class="fas fa-redo"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.meta.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
                                             <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
                                                class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.edit') }}">
                                                 <i class="fas fa-edit"></i>
@@ -222,6 +226,10 @@
                                                             <i class="fas fa-redo w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.refresh_accounts') }}
                                                         </button>
                                                     </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.meta.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50">
+                                                        <i class="fas fa-plug w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
                                                     <a href="{{ route('orgs.settings.platform-connections.meta.edit', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         <i class="fas fa-edit w-4 {{ app()->getLocale() === 'ar' ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.edit') }}
@@ -739,6 +747,10 @@
                                                     <i class="fas fa-redo"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                   method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok']) }}');">
                                                 @csrf
@@ -768,10 +780,14 @@
                                                     {{-- Refresh Token Button (TikTok tokens expire in 24 hours) --}}
                                                     <form action="{{ route('orgs.settings.platform-connections.tiktok.refresh', [$currentOrg, $connection->connection_id]) }}" method="POST">
                                                         @csrf
-                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-green-600 hover:bg-green-50">
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                             <i class="fas fa-redo w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.refresh_token') }}
                                                         </button>
                                                     </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-plug w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                           method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok']) }}');">
                                                         @csrf
@@ -840,6 +856,10 @@
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                   method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok Ads']) }}');">
                                                 @csrf
@@ -866,6 +886,10 @@
                                                             <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.platform_test_connection') }}
                                                         </button>
                                                     </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-plug w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                           method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok Ads']) }}');">
                                                         @csrf
@@ -1019,6 +1043,13 @@
                                                         <i class="fas fa-sync-alt"></i>
                                                     </button>
                                                 </form>
+                                                @php $authRoute = "orgs.settings.platform-connections.{$platform}.authorize"; @endphp
+                                                @if(Route::has($authRoute))
+                                                    <a href="{{ route($authRoute, $currentOrg) }}"
+                                                       class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                        <i class="fas fa-plug"></i>
+                                                    </a>
+                                                @endif
                                                 <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                       method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => $info[0]]) }}');">
                                                     @csrf
@@ -1058,6 +1089,12 @@
                                                                 <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.platform_test_connection') }}
                                                             </button>
                                                         </form>
+                                                        @if(Route::has($authRoute))
+                                                            <a href="{{ route($authRoute, $currentOrg) }}"
+                                                               class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-right' : '' }}">
+                                                                <i class="fas fa-plug w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                            </a>
+                                                        @endif
                                                         <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                               method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => $info[0]]) }}');">
                                                             @csrf

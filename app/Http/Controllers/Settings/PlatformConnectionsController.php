@@ -531,8 +531,12 @@ class PlatformConnectionsController extends Controller
         $testResult = match ($connection->platform) {
             'meta' => $this->testMetaConnection($connection),
             'google' => $this->testGoogleConnection($connection),
-            'tiktok' => $this->testTikTokConnection($connection),
-            default => ['success' => false, 'message' => 'Platform not supported for testing'],
+            'tiktok', 'tiktok_ads' => $this->testTikTokConnection($connection),
+            'linkedin' => $this->testLinkedInConnection($connection),
+            'twitter' => $this->testTwitterConnection($connection),
+            'snapchat' => $this->testSnapchatConnection($connection),
+            'pinterest' => $this->testPinterestConnection($connection),
+            default => ['success' => false, 'message' => __('settings.platform_not_supported_testing')],
         };
 
         if ($testResult['success']) {
@@ -1055,21 +1059,208 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
-     * Test Google connection (placeholder).
+     * Test Google connection.
      */
     private function testGoogleConnection(PlatformConnection $connection): array
     {
-        // TODO: Implement Google connection test
-        return ['success' => false, 'message' => 'Google connection testing not implemented yet'];
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            // Test by getting user info
+            $response = Http::withToken($accessToken)
+                ->get('https://www.googleapis.com/oauth2/v2/userinfo');
+
+            if ($response->successful()) {
+                $userInfo = $response->json();
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $userInfo['email'] ?? $userInfo['name'] ?? 'Google User']),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => __('settings.google_api_error', ['error' => $response->json('error.message', 'Unknown error')]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Google connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
     }
 
     /**
-     * Test TikTok connection (placeholder).
+     * Test TikTok connection.
      */
     private function testTikTokConnection(PlatformConnection $connection): array
     {
-        // TODO: Implement TikTok connection test
-        return ['success' => false, 'message' => 'TikTok connection testing not implemented yet'];
+        try {
+            $accessToken = $connection->access_token;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            // Test by getting user info
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $accessToken,
+            ])->get('https://open.tiktokapis.com/v2/user/info/', [
+                'fields' => 'open_id,union_id,display_name',
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json('data.user', []);
+                $displayName = $data['display_name'] ?? 'TikTok User';
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $displayName]),
+                ];
+            }
+
+            $errorMsg = $response->json('error.message', $response->json('message', 'Unknown error'));
+            return [
+                'success' => false,
+                'message' => __('settings.tiktok_api_error', ['error' => $errorMsg]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('TikTok connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
+    }
+
+    /**
+     * Test LinkedIn connection.
+     */
+    private function testLinkedInConnection(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $connection->access_token;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $accessToken,
+                'X-Restli-Protocol-Version' => '2.0.0',
+            ])->get('https://api.linkedin.com/v2/userinfo');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $name = $data['name'] ?? $data['email'] ?? 'LinkedIn User';
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $name]),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => __('settings.linkedin_api_error', ['error' => $response->json('message', 'Unknown error')]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('LinkedIn connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
+    }
+
+    /**
+     * Test Twitter connection.
+     */
+    private function testTwitterConnection(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $connection->access_token;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            $response = Http::withToken($accessToken)
+                ->get('https://api.twitter.com/2/users/me');
+
+            if ($response->successful()) {
+                $data = $response->json('data', []);
+                $name = $data['name'] ?? $data['username'] ?? 'Twitter User';
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $name]),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => __('settings.twitter_api_error', ['error' => $response->json('detail', 'Unknown error')]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Twitter connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
+    }
+
+    /**
+     * Test Snapchat connection.
+     */
+    private function testSnapchatConnection(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $connection->access_token;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            $response = Http::withToken($accessToken)
+                ->get('https://adsapi.snapchat.com/v1/me');
+
+            if ($response->successful()) {
+                $data = $response->json('me', []);
+                $name = $data['display_name'] ?? $data['email'] ?? 'Snapchat User';
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $name]),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => __('settings.snapchat_api_error', ['error' => $response->json('error_message', 'Unknown error')]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Snapchat connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
+    }
+
+    /**
+     * Test Pinterest connection.
+     */
+    private function testPinterestConnection(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = $connection->access_token;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => __('settings.token_expired_or_invalid')];
+            }
+
+            $response = Http::withToken($accessToken)
+                ->get('https://api.pinterest.com/v5/user_account');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $name = $data['username'] ?? 'Pinterest User';
+                return [
+                    'success' => true,
+                    'message' => __('settings.connection_valid_for_user', ['user' => $name]),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => __('settings.pinterest_api_error', ['error' => $response->json('message', 'Unknown error')]),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Pinterest connection test failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => __('settings.connection_test_failed', ['error' => $e->getMessage()])];
+        }
     }
 
     /**
