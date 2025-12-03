@@ -724,6 +724,13 @@
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
+                                            {{-- Refresh Token Button (TikTok tokens expire in 24 hours) --}}
+                                            <form action="{{ route('orgs.settings.platform-connections.tiktok.refresh', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.refresh_token') }}">
+                                                    <i class="fas fa-redo"></i>
+                                                </button>
+                                            </form>
                                             <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
                                                   method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok']) }}');">
                                                 @csrf
@@ -748,6 +755,13 @@
                                                         @csrf
                                                         <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                             <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.platform_test_connection') }}
+                                                        </button>
+                                                    </form>
+                                                    {{-- Refresh Token Button (TikTok tokens expire in 24 hours) --}}
+                                                    <form action="{{ route('orgs.settings.platform-connections.tiktok.refresh', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-green-600 hover:bg-green-50">
+                                                            <i class="fas fa-redo w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.refresh_token') }}
                                                         </button>
                                                     </form>
                                                     <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"

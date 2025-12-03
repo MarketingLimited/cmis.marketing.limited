@@ -3784,6 +3784,147 @@ class PlatformConnectionsController extends Controller
     }
 
     /**
+     * Refresh TikTok Account token using the refresh token.
+     *
+     * TikTok Login Kit v2 tokens expire in 24 hours but refresh tokens last 365 days.
+     * This method refreshes the access token before it expires.
+     */
+    public function refreshTikTokToken(Request $request, string $org, string $connection)
+    {
+        $platformConnection = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok')
+            ->firstOrFail();
+
+        if (!$platformConnection->refresh_token) {
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.no_refresh_token'));
+        }
+
+        $config = config('social-platforms.tiktok');
+
+        // TikTok Login Kit v2 token refresh
+        $response = Http::asForm()->post($config['token_url'], [
+            'client_key' => $config['client_key'],
+            'client_secret' => $config['client_secret'],
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $platformConnection->refresh_token,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('TikTok token refresh failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+                'connection_id' => $connection,
+            ]);
+
+            // If refresh fails, mark connection as expired
+            $platformConnection->markAsExpired();
+
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.token_refresh_failed'));
+        }
+
+        $responseData = $response->json();
+        $tokenData = $responseData['data'] ?? $responseData;
+
+        if (empty($tokenData['access_token'])) {
+            Log::error('TikTok token refresh: No access_token in response', [
+                'response' => $responseData,
+                'connection_id' => $connection,
+            ]);
+
+            $platformConnection->markAsExpired();
+
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.token_refresh_failed'));
+        }
+
+        // Update the connection with new tokens
+        $platformConnection->update([
+            'access_token' => $tokenData['access_token'],
+            'refresh_token' => $tokenData['refresh_token'] ?? $platformConnection->refresh_token,
+            'token_expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 86400),
+            'status' => 'active',
+            'last_error_at' => null,
+            'last_error_message' => null,
+        ]);
+
+        Log::info('TikTok token refreshed successfully', [
+            'connection_id' => $connection,
+            'expires_at' => $platformConnection->token_expires_at,
+        ]);
+
+        return redirect()->route('orgs.settings.platform-connections.index', $org)
+            ->with('success', __('settings.token_refreshed_successfully'));
+    }
+
+    /**
+     * Static method to refresh TikTok token programmatically.
+     * Can be called from scheduled commands or middleware.
+     *
+     * @param PlatformConnection $connection
+     * @return bool
+     */
+    public static function refreshTikTokTokenSilently(PlatformConnection $connection): bool
+    {
+        if ($connection->platform !== 'tiktok' || !$connection->refresh_token) {
+            return false;
+        }
+
+        $config = config('social-platforms.tiktok');
+
+        try {
+            $response = Http::asForm()->post($config['token_url'], [
+                'client_key' => $config['client_key'],
+                'client_secret' => $config['client_secret'],
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $connection->refresh_token,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('TikTok silent token refresh failed', [
+                    'status' => $response->status(),
+                    'response' => $response->json(),
+                    'connection_id' => $connection->connection_id,
+                ]);
+                $connection->markAsExpired();
+                return false;
+            }
+
+            $responseData = $response->json();
+            $tokenData = $responseData['data'] ?? $responseData;
+
+            if (empty($tokenData['access_token'])) {
+                $connection->markAsExpired();
+                return false;
+            }
+
+            $connection->update([
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? $connection->refresh_token,
+                'token_expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 86400),
+                'status' => 'active',
+                'last_error_at' => null,
+                'last_error_message' => null,
+            ]);
+
+            Log::info('TikTok token refreshed silently', [
+                'connection_id' => $connection->connection_id,
+                'expires_at' => $connection->fresh()->token_expires_at,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('TikTok silent token refresh exception', [
+                'connection_id' => $connection->connection_id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Initiate TikTok Ads OAuth authorization (Business API).
      *
      * TikTok Business API is separate from Login Kit and is used for:

@@ -40,12 +40,14 @@ class RefreshExpiredTokensJob implements ShouldQueue
             Log::info('Refreshing expired platform tokens');
 
             // Get all connections with expired or soon-to-expire tokens
+            // Check for tokens expiring within 2 hours to give buffer time
+            // This is especially important for TikTok tokens which expire in 24 hours
             $connections = PlatformConnection::where('status', 'active')
                 ->where(function ($query) {
                     // Tokens that are expired
                     $query->where('token_expires_at', '<', now())
-                          // OR tokens expiring within 30 minutes
-                          ->orWhere('token_expires_at', '<', now()->addMinutes(30));
+                          // OR tokens expiring within 2 hours (increased from 30 min for TikTok)
+                          ->orWhere('token_expires_at', '<', now()->addHours(2));
                 })
                 ->whereNotNull('refresh_token')
                 ->get();

@@ -191,6 +191,12 @@ class PlatformServiceFactory
         }
 
         try {
+            // Platform-specific token refresh handling
+            if ($platform === 'tiktok') {
+                return self::refreshTikTokToken($connection, $config);
+            }
+
+            // Generic OAuth2 token refresh
             $response = \Illuminate\Support\Facades\Http::asForm()->post($config['token_url'] ?? '', [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $connection->refresh_token,
@@ -242,5 +248,61 @@ class PlatformServiceFactory
 
             throw $e;
         }
+    }
+
+    /**
+     * Refresh TikTok access token using refresh token
+     *
+     * TikTok Login Kit v2 uses client_key/client_secret and wraps response in 'data' key
+     *
+     * @param PlatformConnection $connection TikTok connection
+     * @param array $config TikTok platform config
+     * @return PlatformConnection Updated connection
+     * @throws \Exception If refresh fails
+     */
+    protected static function refreshTikTokToken(PlatformConnection $connection, array $config): PlatformConnection
+    {
+        $response = \Illuminate\Support\Facades\Http::asForm()->post($config['token_url'] ?? '', [
+            'client_key' => $config['client_key'] ?? '',
+            'client_secret' => $config['client_secret'] ?? '',
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $connection->refresh_token,
+        ]);
+
+        if (!$response->successful()) {
+            throw new \Exception('TikTok token refresh failed: ' . $response->body());
+        }
+
+        $responseData = $response->json();
+
+        // TikTok wraps response in 'data' key
+        $tokenData = $responseData['data'] ?? $responseData;
+
+        // Check for API error
+        if (isset($responseData['error']) || empty($tokenData['access_token'])) {
+            throw new \Exception('TikTok token refresh error: ' . ($responseData['error_description'] ?? $responseData['error'] ?? 'No access_token'));
+        }
+
+        // Update connection with new token
+        $connection->update([
+            'access_token' => $tokenData['access_token'],
+            'refresh_token' => $tokenData['refresh_token'] ?? $connection->refresh_token,
+            'token_expires_at' => isset($tokenData['expires_in'])
+                ? now()->addSeconds($tokenData['expires_in'])
+                : now()->addHours(24), // TikTok tokens expire in 24 hours
+            'status' => 'active',
+            'last_error_at' => null,
+            'last_error_message' => null,
+            'account_metadata' => array_merge($connection->account_metadata ?? [], [
+                'last_token_refresh' => now()->toIso8601String(),
+            ]),
+        ]);
+
+        Log::info('TikTok token refreshed successfully', [
+            'connection_id' => $connection->connection_id,
+            'expires_at' => $connection->token_expires_at,
+        ]);
+
+        return $connection->fresh();
     }
 }

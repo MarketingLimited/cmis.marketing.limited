@@ -327,7 +327,7 @@ return [
         'enabled' => true,
         'oauth_version' => '2.0',
         'app_id' => env('TIKTOK_ADS_APP_ID'),
-        'app_secret' => env('TIKTOK_ADS_APP_SECRET'),
+        'app_secret' => env('TIKTOK_ADS_APP_SECRET', env('TIKTOK_ADS_SECRET')),
         'redirect_uri' => env('TIKTOK_ADS_REDIRECT_URI', env('APP_URL') . '/integrations/tiktok-ads/callback'),
         'api_version' => env('TIKTOK_ADS_API_VERSION', 'v1.3'),
         'rate_limit' => env('TIKTOK_ADS_RATE_LIMIT', 100),

@@ -952,4 +952,10 @@ return [
     'deselect_all' => 'Deselect All',
     'selected' => 'selected',
 
+    // Token Refresh
+    'refresh_token' => 'Refresh Token',
+    'no_refresh_token' => 'No refresh token available. Please reconnect the account.',
+    'token_refresh_failed' => 'Failed to refresh token. Please try reconnecting the account.',
+    'token_refreshed_successfully' => 'Token refreshed successfully. Valid for 24 hours.',
+
 ];

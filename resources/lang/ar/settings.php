@@ -1236,4 +1236,10 @@ return [
     'connected' => 'متصل',
     'select_all' => 'تحديد الكل',
 
+    // Token Refresh
+    'refresh_token' => 'تجديد الرمز',
+    'no_refresh_token' => 'لا يتوفر رمز التجديد. يرجى إعادة ربط الحساب.',
+    'token_refresh_failed' => 'فشل في تجديد الرمز. يرجى محاولة إعادة ربط الحساب.',
+    'token_refreshed_successfully' => 'تم تجديد الرمز بنجاح. صالح لمدة 24 ساعة.',
+
 ];

@@ -670,6 +670,7 @@ Route::middleware(['auth'])->group(function () {
                 // TikTok Account OAuth (Login Kit v2 - for video publishing)
                 Route::get('/tiktok/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTok'])->name('tiktok.authorize');
                 Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
+                Route::post('/tiktok/{connection}/refresh', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'refreshTikTokToken'])->name('tiktok.refresh');
 
                 // TikTok Ads OAuth (Business API - for advertising)
                 Route::get('/tiktok-ads/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTokAds'])->name('tiktok-ads.authorize');
