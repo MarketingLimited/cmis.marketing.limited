@@ -2408,14 +2408,18 @@ class PlatformConnectionsController extends Controller
                 $accountName = $account['name'] ?? '';
 
                 // Get locations for this account
+                // Note: readMask uses valid field names from Location resource
+                // 'categories' contains primary and additional categories
                 $locationsResponse = Http::withToken($accessToken)
                     ->get("https://mybusinessbusinessinformation.googleapis.com/v1/{$accountName}/locations", [
-                        'readMask' => 'name,title,storefrontAddress,primaryCategory',
+                        'readMask' => 'name,title,storefrontAddress,categories',
                     ]);
 
                 if ($locationsResponse->successful()) {
                     foreach ($locationsResponse->json('locations', []) as $location) {
                         $address = $location['storefrontAddress'] ?? [];
+                        // Primary category is the first in categories.primaryCategory
+                        $primaryCategory = $location['categories']['primaryCategory']['displayName'] ?? '';
                         $profiles[] = [
                             'id' => $location['name'] ?? '',
                             'name' => $location['title'] ?? 'Unknown Location',
@@ -2424,9 +2428,16 @@ class PlatformConnectionsController extends Controller
                                 $address['locality'] ?? '',
                                 $address['administrativeArea'] ?? '',
                             ])),
-                            'primaryCategory' => $location['primaryCategory']['displayName'] ?? '',
+                            'primaryCategory' => $primaryCategory,
                         ];
                     }
+                } else {
+                    // Log non-successful responses for debugging
+                    Log::warning('Business Profile locations API failed for account', [
+                        'account' => $accountName,
+                        'status' => $locationsResponse->status(),
+                        'body' => $locationsResponse->json(),
+                    ]);
                 }
             }
 
