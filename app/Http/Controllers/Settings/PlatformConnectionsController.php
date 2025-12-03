@@ -1800,10 +1800,13 @@ class PlatformConnectionsController extends Controller
         $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
 
         // Fetch assets from various Google APIs
-        // Note: These will return empty arrays until API integration is implemented
-        // For now, users can add assets manually
         $youtubeChannels = $this->getGoogleYouTubeChannels($connection);
-        $googleAdsAccounts = $this->getGoogleAdsAccounts($connection);
+
+        // Google Ads returns structured response with error info
+        $googleAdsResult = $this->getGoogleAdsAccounts($connection);
+        $googleAdsAccounts = $googleAdsResult['accounts'];
+        $googleAdsError = $googleAdsResult['error'];
+
         $analyticsProperties = $this->getGoogleAnalyticsProperties($connection);
 
         // Business Profiles returns structured response with error info
@@ -1828,6 +1831,7 @@ class PlatformConnectionsController extends Controller
             'selectedAssets' => $selectedAssets,
             'youtubeChannels' => $youtubeChannels,
             'googleAdsAccounts' => $googleAdsAccounts,
+            'googleAdsError' => $googleAdsError,
             'analyticsProperties' => $analyticsProperties,
             'businessProfiles' => $businessProfiles,
             'businessProfileError' => $businessProfileError,
@@ -2185,15 +2189,131 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Get Google Ads accounts.
-     * Note: Google Ads API requires a developer token and is more complex.
-     * Users can add accounts manually for now.
+     *
+     * @return array{accounts: array, error: array|null}
      */
     private function getGoogleAdsAccounts(PlatformConnection $connection): array
     {
-        // Google Ads API requires a developer token and approved access
-        // This is complex to implement without the google-ads-php library
-        // Users should add their Customer ID manually
-        return [];
+        try {
+            $accessToken = $this->getValidGoogleAccessToken($connection);
+            if (!$accessToken) {
+                return ['accounts' => [], 'error' => null];
+            }
+
+            $developerToken = config('services.google_ads.developer_token');
+            if (!$developerToken) {
+                return [
+                    'accounts' => [],
+                    'error' => [
+                        'type' => 'missing_developer_token',
+                        'message' => 'Google Ads Developer Token not configured',
+                    ],
+                ];
+            }
+
+            // List accessible customers using Google Ads API
+            $response = Http::withToken($accessToken)
+                ->withHeaders([
+                    'developer-token' => $developerToken,
+                ])
+                ->get('https://googleads.googleapis.com/v18/customers:listAccessibleCustomers');
+
+            if (!$response->successful()) {
+                $body = $response->json();
+                $error = $body['error'] ?? [];
+
+                Log::warning('Google Ads listAccessibleCustomers API failed', [
+                    'status' => $response->status(),
+                    'body' => $body,
+                ]);
+
+                // Check for developer token issues
+                if ($response->status() === 401 || $response->status() === 403) {
+                    $reason = $error['details'][0]['errors'][0]['errorCode']['authenticationError'] ?? null;
+                    if ($reason === 'DEVELOPER_TOKEN_NOT_APPROVED') {
+                        return [
+                            'accounts' => [],
+                            'error' => [
+                                'type' => 'developer_token_not_approved',
+                                'message' => 'Developer Token is not approved. Apply for Basic or Standard access.',
+                            ],
+                        ];
+                    }
+                    if (str_contains($error['message'] ?? '', 'developer token')) {
+                        return [
+                            'accounts' => [],
+                            'error' => [
+                                'type' => 'developer_token_invalid',
+                                'message' => $error['message'] ?? 'Developer Token issue',
+                            ],
+                        ];
+                    }
+                }
+
+                // Check for 501 UNIMPLEMENTED - API not enabled or token not approved
+                if ($response->status() === 501) {
+                    return [
+                        'accounts' => [],
+                        'error' => [
+                            'type' => 'api_not_enabled',
+                            'message' => $error['message'] ?? 'Google Ads API not enabled or Developer Token not approved',
+                        ],
+                    ];
+                }
+
+                return ['accounts' => [], 'error' => null];
+            }
+
+            $resourceNames = $response->json('resourceNames', []);
+            if (empty($resourceNames)) {
+                return ['accounts' => [], 'error' => null];
+            }
+
+            // Fetch details for each customer
+            $accounts = [];
+            foreach ($resourceNames as $resourceName) {
+                // Extract customer ID from resource name (format: customers/1234567890)
+                $customerId = str_replace('customers/', '', $resourceName);
+
+                // Get customer details using GAQL query
+                $detailResponse = Http::withToken($accessToken)
+                    ->withHeaders([
+                        'developer-token' => $developerToken,
+                    ])
+                    ->post("https://googleads.googleapis.com/v18/customers/{$customerId}/googleAds:searchStream", [
+                        'query' => "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.status FROM customer LIMIT 1",
+                    ]);
+
+                if ($detailResponse->successful()) {
+                    $results = $detailResponse->json();
+                    // searchStream returns array of batches
+                    $customer = $results[0]['results'][0]['customer'] ?? null;
+                    if ($customer) {
+                        $accounts[] = [
+                            'id' => $customer['id'] ?? $customerId,
+                            'name' => $customer['descriptiveName'] ?? "Account {$customerId}",
+                            'descriptive_name' => $customer['descriptiveName'] ?? '',
+                            'currency' => $customer['currencyCode'] ?? null,
+                            'status' => $customer['status'] ?? 'UNKNOWN',
+                        ];
+                    }
+                } else {
+                    // If we can't get details, still include the customer ID
+                    $accounts[] = [
+                        'id' => $customerId,
+                        'name' => "Account {$customerId}",
+                        'descriptive_name' => '',
+                        'currency' => null,
+                        'status' => 'UNKNOWN',
+                    ];
+                }
+            }
+
+            return ['accounts' => $accounts, 'error' => null];
+        } catch (\Exception $e) {
+            Log::error('Exception fetching Google Ads accounts', ['error' => $e->getMessage()]);
+            return ['accounts' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
+        }
     }
 
     /**

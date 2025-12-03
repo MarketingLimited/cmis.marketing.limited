@@ -191,9 +191,9 @@
                                                {{ in_array($account['id'], (array)($selectedAssets['google_ads'] ?? [])) ? 'checked' : '' }}
                                                x-model="selectedGoogleAds"
                                                class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="ml-3">
+                                        <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900">{{ $account['name'] ?? $account['descriptive_name'] }}</span>
-                                            <span class="text-xs text-gray-400 ml-2">({{ $account['id'] }})</span>
+                                            <span class="text-xs text-gray-400 ms-2">({{ $account['id'] }})</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -207,18 +207,108 @@
                                 </label>
                             @endforeach
                         </div>
+                    @elseif(isset($googleAdsError) && ($googleAdsError['type'] ?? '') === 'developer_token_not_approved')
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-800">{{ __('Google Ads Developer Token not approved') }}</p>
+                                    <p class="mt-1 text-xs text-red-700">
+                                        {{ __('Your Developer Token needs to be approved by Google before you can access the API.') }}
+                                    </p>
+                                    <div class="mt-3 space-y-2">
+                                        <a href="https://ads.google.com/intl/en_us/home/tools/manager-accounts/"
+                                           target="_blank"
+                                           class="inline-flex items-center gap-1 text-xs text-red-700 hover:text-red-800 underline">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            {{ __('Apply for Basic or Standard access at Google Ads API Center') }}
+                                        </a>
+                                    </div>
+                                    <p class="mt-2 text-xs text-red-600">
+                                        {{ __('You can still use "Add manually" below to enter your Customer ID.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif(isset($googleAdsError) && ($googleAdsError['type'] ?? '') === 'developer_token_invalid')
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-800">{{ __('Google Ads Developer Token issue') }}</p>
+                                    <p class="mt-1 text-xs text-red-700">
+                                        {{ $googleAdsError['message'] ?? __('There is an issue with the Developer Token.') }}
+                                    </p>
+                                    <p class="mt-2 text-xs text-red-600">
+                                        {{ __('Please check your GOOGLE_ADS_DEVELOPER_TOKEN configuration, or use "Add manually" below.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif(isset($googleAdsError) && ($googleAdsError['type'] ?? '') === 'missing_developer_token')
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-amber-800">{{ __('Google Ads Developer Token not configured') }}</p>
+                                    <p class="mt-1 text-xs text-amber-700">
+                                        {{ __('A Developer Token is required to fetch Google Ads accounts automatically.') }}
+                                    </p>
+                                    <div class="mt-3">
+                                        <a href="https://developers.google.com/google-ads/api/docs/get-started/dev-token"
+                                           target="_blank"
+                                           class="inline-flex items-center gap-1 text-xs text-amber-700 hover:text-amber-800 underline">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            {{ __('Learn how to get a Developer Token') }}
+                                        </a>
+                                    </div>
+                                    <p class="mt-2 text-xs text-amber-600">
+                                        {{ __('You can still use "Add manually" below to enter your Customer ID.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif(isset($googleAdsError) && ($googleAdsError['type'] ?? '') === 'api_not_enabled')
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-800">{{ __('Google Ads API requires additional setup') }}</p>
+                                    <p class="mt-1 text-xs text-red-700">
+                                        {{ __('The Google Ads API is not enabled or your Developer Token needs approval.') }}
+                                    </p>
+                                    <div class="mt-3 space-y-2">
+                                        <a href="https://console.cloud.google.com/apis/library/googleads.googleapis.com"
+                                           target="_blank"
+                                           class="inline-flex items-center gap-1 text-xs text-red-700 hover:text-red-800 underline">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            {{ __('1. Enable Google Ads API in Google Cloud Console') }}
+                                        </a>
+                                        <br>
+                                        <a href="https://ads.google.com/aw/apicenter"
+                                           target="_blank"
+                                           class="inline-flex items-center gap-1 text-xs text-red-700 hover:text-red-800 underline">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            {{ __('2. Apply for API access at Google Ads API Center') }}
+                                        </a>
+                                    </div>
+                                    <p class="mt-2 text-xs text-red-600">
+                                        {{ __('You can still use "Add manually" below to enter your Customer ID.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
                                 <div>
-                                    <p class="text-sm font-medium text-amber-800">{{ __('Google Ads API requires additional setup') }}</p>
-                                    <ul class="mt-2 text-xs text-amber-700 space-y-1 list-disc list-inside">
-                                        <li>{{ __('A Developer Token is required (apply at Google Ads API Center)') }}</li>
-                                        <li>{{ __('Use "Add manually" below to enter your Customer ID') }}</li>
-                                    </ul>
+                                    <p class="text-sm font-medium text-amber-800">{{ __('No Google Ads accounts found') }}</p>
+                                    <p class="mt-1 text-xs text-amber-700">
+                                        {{ __('No accessible Google Ads accounts were found for this Google account.') }}
+                                    </p>
                                     <p class="mt-2 text-xs text-amber-600">
-                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <i class="fas fa-info-circle me-1"></i>
                                         {{ __('Find your Customer ID in Google Ads: Click your profile → "Customer ID" (format: XXX-XXX-XXXX)') }}
                                     </p>
                                 </div>
