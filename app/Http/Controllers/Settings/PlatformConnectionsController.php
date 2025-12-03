@@ -3679,62 +3679,85 @@ class PlatformConnectionsController extends Controller
                 $scopes = is_array($tokenData['scope']) ? $tokenData['scope'] : explode(',', $tokenData['scope']);
             }
 
-            $connection = PlatformConnection::updateOrCreate(
-                [
+            // Use withTrashed() to find soft-deleted records and restore them
+            // This prevents unique constraint violations when reconnecting
+            $connection = PlatformConnection::withTrashed()
+                ->where('org_id', $orgId)
+                ->where('platform', 'tiktok')
+                ->where('account_id', $accountId)
+                ->first();
+
+            $connectionData = [
+                'account_name' => $accountName,
+                'status' => 'active',
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : now()->addHours(24), // Login Kit tokens expire in 24 hours
+                'scopes' => $scopes,
+                'account_metadata' => [
+                    'token_type' => $tokenData['token_type'] ?? 'Bearer',
+                    'connected_at' => now()->toIso8601String(),
+                    'open_id' => $tokenData['open_id'] ?? null,
+                    'union_id' => $userData['union_id'] ?? null,
+                    'avatar_url' => $userData['avatar_url'] ?? null,
+                    'refresh_expires_in' => $tokenData['refresh_expires_in'] ?? null,
+                ],
+                'deleted_at' => null, // Restore if soft-deleted
+            ];
+
+            if ($connection) {
+                $connection->update($connectionData);
+            } else {
+                $connection = PlatformConnection::create(array_merge([
                     'org_id' => $orgId,
                     'platform' => 'tiktok',
                     'account_id' => $accountId,
-                ],
-                [
-                    'account_name' => $accountName,
-                    'status' => 'active',
-                    'access_token' => $tokenData['access_token'],
-                    'refresh_token' => $tokenData['refresh_token'] ?? null,
-                    'token_expires_at' => isset($tokenData['expires_in'])
-                        ? now()->addSeconds($tokenData['expires_in'])
-                        : now()->addHours(24), // Login Kit tokens expire in 24 hours
-                    'scopes' => $scopes,
-                    'account_metadata' => [
-                        'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                        'connected_at' => now()->toIso8601String(),
-                        'open_id' => $tokenData['open_id'] ?? null,
-                        'union_id' => $userData['union_id'] ?? null,
-                        'avatar_url' => $userData['avatar_url'] ?? null,
-                        'refresh_expires_in' => $tokenData['refresh_expires_in'] ?? null,
-                    ],
-                ]
-            );
+                ], $connectionData));
+            }
 
             // Also create an Integration record so the profile appears on the Profiles page
             // This allows users to use TikTok for social publishing
-            $integration = Integration::updateOrCreate(
-                [
+            // Use withTrashed() to handle soft-deleted records
+            $integration = Integration::withTrashed()
+                ->where('org_id', $orgId)
+                ->where('platform', 'tiktok')
+                ->where('account_id', $accountId)
+                ->first();
+
+            $integrationData = [
+                'account_name' => $accountName,
+                'username' => $userData['display_name'] ?? $accountName,
+                'avatar_url' => $userData['avatar_url'] ?? null,
+                'status' => 'active',
+                'is_active' => true,
+                'is_enabled' => true,
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_expires_at' => isset($tokenData['expires_in'])
+                    ? now()->addSeconds($tokenData['expires_in'])
+                    : now()->addHours(24),
+                'scopes' => $scopes,
+                'platform_connection_id' => $connection->connection_id,
+                'metadata' => [
+                    'connection_id' => $connection->connection_id,
+                    'open_id' => $tokenData['open_id'] ?? null,
+                    'union_id' => $userData['union_id'] ?? null,
+                    'synced_at' => now()->toIso8601String(),
+                ],
+                'deleted_at' => null, // Restore if soft-deleted
+            ];
+
+            if ($integration) {
+                $integration->update($integrationData);
+            } else {
+                $integration = Integration::create(array_merge([
                     'org_id' => $orgId,
                     'platform' => 'tiktok',
                     'account_id' => $accountId,
-                ],
-                [
-                    'account_name' => $accountName,
-                    'username' => $userData['display_name'] ?? $accountName,
-                    'avatar_url' => $userData['avatar_url'] ?? null,
-                    'status' => 'active',
-                    'is_active' => true,
-                    'is_enabled' => true,
-                    'access_token' => $tokenData['access_token'],
-                    'refresh_token' => $tokenData['refresh_token'] ?? null,
-                    'token_expires_at' => isset($tokenData['expires_in'])
-                        ? now()->addSeconds($tokenData['expires_in'])
-                        : now()->addHours(24),
-                    'scopes' => $scopes,
-                    'platform_connection_id' => $connection->connection_id,
-                    'metadata' => [
-                        'connection_id' => $connection->connection_id,
-                        'open_id' => $tokenData['open_id'] ?? null,
-                        'union_id' => $userData['union_id'] ?? null,
-                        'synced_at' => now()->toIso8601String(),
-                    ],
-                ]
-            );
+                ], $integrationData));
+            }
 
             return ['connection' => $connection, 'integration' => $integration];
         });
