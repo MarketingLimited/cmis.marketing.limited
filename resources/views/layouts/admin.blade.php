@@ -358,7 +358,7 @@
             <!-- Logo Section -->
             <div class="flex items-center justify-between h-16 px-4 border-b border-slate-700/50">
                 <div class="flex items-center gap-3" x-show="!compactMode" x-transition>
-                    <img src="{{ asset('images/cmis-logo-without-background.png') }}" alt="CMIS Logo" class="w-10 h-10 object-contain">
+                    <img src="{{ asset('images/logo-icon.png') }}" alt="CMIS Logo" class="w-12 h-12 object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-wide">CMIS</h1>
                         <p class="text-[10px] text-slate-400 -mt-0.5">{{ __('navigation.platform_tagline') }}</p>

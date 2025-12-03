@@ -27,7 +27,7 @@
         <!-- Logo -->
         <div class="mb-8 text-center">
             <div class="inline-flex items-center gap-3 bg-white rounded-2xl p-4 shadow-lg">
-                <img src="{{ asset('images/cmis-logo-without-background.png') }}" alt="CMIS Logo" class="w-14 h-14 object-contain">
+                <img src="{{ asset('images/logo-icon.png') }}" alt="CMIS Logo" class="w-20 h-20 object-contain">
                 <div class="text-{{ app()->isLocale('ar') ? 'right' : 'left' }}">
                     <h1 class="text-2xl font-bold text-gray-900">CMIS Platform</h1>
                     <p class="text-gray-500 text-sm">{{ __('navigation.platform_description') }}</p>
