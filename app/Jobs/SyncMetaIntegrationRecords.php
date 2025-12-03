@@ -58,6 +58,7 @@ class SyncMetaIntegrationRecords implements ShouldQueue
         $assetTypeMapping = [
             'page' => ['platform' => 'facebook', 'method' => 'getPages'],
             'instagram_account' => ['platform' => 'instagram', 'method' => 'getInstagramAccounts'],
+            'threads_account' => ['platform' => 'threads', 'method' => 'getThreadsAccounts'],
         ];
 
         foreach ($assetTypeMapping as $assetType => $config) {
@@ -114,7 +115,7 @@ class SyncMetaIntegrationRecords implements ShouldQueue
         // Deactivate old integrations that are no longer selected
         if (!empty($expectedIntegrationIds)) {
             Integration::where('org_id', $this->orgId)
-                ->whereIn('platform', ['facebook', 'instagram'])
+                ->whereIn('platform', ['facebook', 'instagram', 'threads'])
                 ->where('metadata->connection_id', $connection->connection_id)
                 ->whereNotIn('integration_id', $expectedIntegrationIds)
                 ->update([
