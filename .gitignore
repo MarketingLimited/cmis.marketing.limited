@@ -203,6 +203,30 @@ credentials.json
 service-account.json
 
 # ----------------------------------------
+# Backup Files & Directories
+# ----------------------------------------
+/backups
+/backups/
+*.tar.gz
+*.dump
+*.sql.gz
+
+# ----------------------------------------
+# Accidental User Directories in public
+# ----------------------------------------
+/public/images/cmis-test/
+/public/usr/
+
+# ----------------------------------------
+# Claude Code Session Files
+# ----------------------------------------
+*.jsonl
+!.claude/**/*.md
+public/**/.claude/
+public/**/.npm/
+public/**/snap/
+
+# ----------------------------------------
 # Miscellaneous
 # ----------------------------------------
 .htaccess.bak
