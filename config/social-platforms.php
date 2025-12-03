@@ -285,8 +285,8 @@ return [
         'api_version' => env('TIKTOK_API_VERSION', 'v1.3'),
         'rate_limit' => env('TIKTOK_RATE_LIMIT', 100),
         'base_url' => 'https://open.tiktokapis.com/v2',
-        'authorize_url' => 'https://www.tiktok.com/v2/auth/authorize',
-        'token_url' => 'https://open.tiktokapis.com/v2/oauth/token',
+        'authorize_url' => 'https://www.tiktok.com/v2/auth/authorize/',
+        'token_url' => 'https://open.tiktokapis.com/v2/oauth/token/',
         'scopes' => [
             'user.info.basic',
             'video.upload',
