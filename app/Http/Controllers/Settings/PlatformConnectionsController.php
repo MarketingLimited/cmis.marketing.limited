@@ -1124,7 +1124,7 @@ class PlatformConnectionsController extends Controller
             ->firstOrFail();
 
         // Multi-select asset types
-        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog', 'whatsapp_account', 'custom_conversion', 'creative_folder', 'domain', 'offline_event_set', 'app'];
+        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog', 'whatsapp_account', 'custom_conversion', 'offline_event_set'];
 
         // Build validation rules for multi-select
         $rules = [];
@@ -1203,10 +1203,7 @@ class PlatformConnectionsController extends Controller
             'catalog' => 'Catalog',
             'whatsapp_account' => 'WhatsApp Account',
             'custom_conversion' => 'Custom Conversion',
-            'creative_folder' => 'Creative Folder',
-            'domain' => 'Domain',
             'offline_event_set' => 'Offline Event Set',
-            'app' => 'App',
         ];
 
         $assetList = [];
@@ -1808,7 +1805,12 @@ class PlatformConnectionsController extends Controller
         $youtubeChannels = $this->getGoogleYouTubeChannels($connection);
         $googleAdsAccounts = $this->getGoogleAdsAccounts($connection);
         $analyticsProperties = $this->getGoogleAnalyticsProperties($connection);
-        $businessProfiles = $this->getGoogleBusinessProfiles($connection);
+
+        // Business Profiles returns structured response with error info
+        $businessProfileResult = $this->getGoogleBusinessProfiles($connection);
+        $businessProfiles = $businessProfileResult['profiles'];
+        $businessProfileError = $businessProfileResult['error'];
+
         $tagManagerContainers = $this->getGoogleTagManagerContainers($connection);
         $merchantCenterAccounts = $this->getGoogleMerchantCenterAccounts($connection);
         $searchConsoleSites = $this->getGoogleSearchConsoleSites($connection);
@@ -1823,6 +1825,7 @@ class PlatformConnectionsController extends Controller
             'googleAdsAccounts' => $googleAdsAccounts,
             'analyticsProperties' => $analyticsProperties,
             'businessProfiles' => $businessProfiles,
+            'businessProfileError' => $businessProfileError,
             'tagManagerContainers' => $tagManagerContainers,
             'merchantCenterAccounts' => $merchantCenterAccounts,
             'searchConsoleSites' => $searchConsoleSites,
@@ -2226,20 +2229,52 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Get Google Business Profile locations.
+     *
+     * @return array{profiles: array, error: array|null}
      */
     private function getGoogleBusinessProfiles(PlatformConnection $connection): array
     {
         try {
             $accessToken = $this->getValidGoogleAccessToken($connection);
-            if (!$accessToken) return [];
+            if (!$accessToken) {
+                return ['profiles' => [], 'error' => null];
+            }
 
             // First get accounts
             $accountsResponse = Http::withToken($accessToken)
                 ->get('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
 
             if (!$accountsResponse->successful()) {
-                Log::warning('Business Profile accounts API failed', ['status' => $accountsResponse->status(), 'body' => $accountsResponse->json()]);
-                return [];
+                $body = $accountsResponse->json();
+                $error = $body['error'] ?? [];
+
+                Log::warning('Business Profile accounts API failed', ['status' => $accountsResponse->status(), 'body' => $body]);
+
+                // Check specifically for quota errors (429)
+                if ($accountsResponse->status() === 429) {
+                    // Extract project number from error details
+                    $projectNumber = null;
+                    foreach ($error['details'] ?? [] as $detail) {
+                        if (($detail['@type'] ?? '') === 'type.googleapis.com/google.rpc.ErrorInfo') {
+                            $projectNumber = $detail['metadata']['consumer'] ?? null;
+                            if ($projectNumber) {
+                                $projectNumber = str_replace('projects/', '', $projectNumber);
+                            }
+                            break;
+                        }
+                    }
+
+                    return [
+                        'profiles' => [],
+                        'error' => [
+                            'type' => 'quota_exceeded',
+                            'message' => $error['message'] ?? 'Quota exceeded',
+                            'project' => $projectNumber,
+                        ],
+                    ];
+                }
+
+                return ['profiles' => [], 'error' => null];
             }
 
             $profiles = [];
@@ -2269,10 +2304,10 @@ class PlatformConnectionsController extends Controller
                 }
             }
 
-            return $profiles;
+            return ['profiles' => $profiles, 'error' => null];
         } catch (\Exception $e) {
             Log::error('Exception fetching Business Profiles', ['error' => $e->getMessage()]);
-            return [];
+            return ['profiles' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
         }
     }
 

@@ -333,7 +333,7 @@
                                            {{ in_array($profile['id'], (array)($selectedAssets['business_profile'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedBusiness"
                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                    <div class="ml-3">
+                                    <div class="ms-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $profile['name'] ?? $profile['locationName'] }}</span>
                                         @if($profile['address'] ?? null)
                                             <span class="block text-xs text-gray-500">{{ $profile['address'] }}</span>
@@ -345,7 +345,40 @@
                                 </label>
                             @endforeach
                         </div>
+                    @elseif(isset($businessProfileError) && ($businessProfileError['type'] ?? '') === 'quota_exceeded')
+                        {{-- Specific error for quota exceeded (429 with quota_limit_value=0) --}}
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-800">{{ __('Google Business Profile API quota is set to zero') }}</p>
+                                    <p class="mt-1 text-xs text-red-700">
+                                        {{ __('The API is enabled but Google requires you to request a quota increase before you can use it.') }}
+                                    </p>
+                                    <div class="mt-3 space-y-2">
+                                        <a href="https://console.cloud.google.com/apis/api/mybusinessaccountmanagement.googleapis.com/quotas{{ $businessProfileError['project'] ? '?project=' . $businessProfileError['project'] : '' }}"
+                                           target="_blank"
+                                           class="inline-flex items-center text-sm text-red-700 hover:text-red-900 underline">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            {{ __('Request quota for Account Management API') }}
+                                        </a>
+                                        <br>
+                                        <a href="https://console.cloud.google.com/apis/api/mybusinessbusinessinformation.googleapis.com/quotas{{ $businessProfileError['project'] ? '?project=' . $businessProfileError['project'] : '' }}"
+                                           target="_blank"
+                                           class="inline-flex items-center text-sm text-red-700 hover:text-red-900 underline">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            {{ __('Request quota for Business Information API') }}
+                                        </a>
+                                    </div>
+                                    <p class="mt-3 text-xs text-red-600">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ __('Approval typically takes 24-48 hours. Use "Add manually" above as a workaround.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     @else
+                        {{-- Generic empty state --}}
                         <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
@@ -357,7 +390,7 @@
                                         <li>{{ __('Request quota increase if API returns rate limit errors') }}</li>
                                     </ul>
                                     <p class="mt-2 text-xs text-amber-600">
-                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <i class="fas fa-info-circle me-1"></i>
                                         {{ __('Or use "Add manually" to enter your Location ID from Google Business Profile settings.') }}
                                     </p>
                                 </div>
