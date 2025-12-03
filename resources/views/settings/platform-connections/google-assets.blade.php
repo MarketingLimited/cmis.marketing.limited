@@ -265,8 +265,8 @@
                         <div class="flex items-start gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
                             <div>
-                                <p class="text-sm font-medium text-red-800" x-text="adsApiError.title || '{{ __('Google Ads API Error') }}'"></p>
-                                <p class="mt-1 text-xs text-red-700" x-text="adsApiError.message"></p>
+                                <p class="text-sm font-medium text-red-800" x-text="adsApiError?.title || '{{ __('Google Ads API Error') }}'"></p>
+                                <p class="mt-1 text-xs text-red-700" x-text="adsApiError?.message || ''"></p>
                                 <p class="mt-2 text-xs text-red-600">
                                     {{ __('You can still use "Add manually" above to enter your Customer ID.') }}
                                 </p>
@@ -312,7 +312,7 @@
 
                         {{-- Account Items (Virtual Scroll) --}}
                         <div class="space-y-2 max-h-96 overflow-y-auto">
-                            <template x-for="(account, index) in filteredAdsAccounts.slice(0, adsDisplayLimit)" :key="account.id">
+                            <template x-for="(account, index) in filteredAdsAccounts" :key="account.id">
                                 <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition {{ $isRtl ? 'flex-row-reverse' : '' }}"
                                        :class="{ 'border-green-500 bg-green-50': selectedGoogleAds.includes(account.id) }">
                                     <div class="flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
@@ -332,15 +332,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredAdsAccounts.length > adsDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="adsDisplayLimit += 10"
-                                    class="text-sm text-green-600 hover:text-green-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredAdsAccounts.length - adsDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -447,7 +438,7 @@
 
                         {{-- Properties Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="property in filteredAnalyticsProperties.slice(0, analyticsDisplayLimit)" :key="property.name">
+                            <template x-for="(property, idx) in filteredAnalyticsProperties" :key="'analytics-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes(property.name) }">
                                     <input type="checkbox" name="analytics[]" :value="property.name"
@@ -460,15 +451,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredAnalyticsProperties.length > analyticsDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="analyticsDisplayLimit += 10"
-                                    class="text-sm text-orange-600 hover:text-orange-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredAnalyticsProperties.length - analyticsDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -543,8 +525,8 @@
                         <div class="flex items-start gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
                             <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
                             <div>
-                                <p class="text-sm font-medium text-red-800" x-text="businessProfilesApiError.title || '{{ __('settings.business_profile_quota_zero') }}'"></p>
-                                <p class="mt-1 text-xs text-red-700" x-text="businessProfilesApiError.message || '{{ __('settings.business_profile_quota_zero_desc') }}'"></p>
+                                <p class="text-sm font-medium text-red-800" x-text="businessProfilesApiError?.title || '{{ __('settings.business_profile_quota_zero') }}'"></p>
+                                <p class="mt-1 text-xs text-red-700" x-text="businessProfilesApiError?.message || '{{ __('settings.business_profile_quota_zero_desc') }}'"></p>
                                 <div class="mt-3 space-y-2">
                                     <a href="https://console.cloud.google.com/apis/api/mybusinessaccountmanagement.googleapis.com/quotas"
                                        target="_blank"
@@ -597,7 +579,7 @@
 
                         {{-- Profiles Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="profile in filteredBusinessProfiles.slice(0, businessDisplayLimit)" :key="profile.name">
+                            <template x-for="(profile, idx) in filteredBusinessProfiles" :key="'bp-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-blue-500 bg-blue-50': selectedBusiness.includes(profile.name) }">
                                     <input type="checkbox" name="business_profile[]" :value="profile.name"
@@ -610,15 +592,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredBusinessProfiles.length > businessDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="businessDisplayLimit += 10"
-                                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredBusinessProfiles.length - businessDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -716,7 +689,7 @@
 
                         {{-- Containers Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="container in filteredTagManagerContainers.slice(0, tagManagerDisplayLimit)" :key="container.path">
+                            <template x-for="(container, idx) in filteredTagManagerContainers" :key="'tagmgr-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes(container.path) }">
                                     <input type="checkbox" name="tag_manager[]" :value="container.path"
@@ -729,15 +702,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredTagManagerContainers.length > tagManagerDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="tagManagerDisplayLimit += 10"
-                                    class="text-sm text-purple-600 hover:text-purple-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredTagManagerContainers.length - tagManagerDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -813,7 +777,7 @@
                             <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-medium text-red-800">{{ __('Google Merchant Center requires re-authentication') }}</p>
-                                <p class="mt-1 text-xs text-red-700" x-text="merchantCenterApiError.message"></p>
+                                <p class="mt-1 text-xs text-red-700" x-text="merchantCenterApiError?.message || ''"></p>
                                 <p class="mt-2 text-xs text-red-600">
                                     <i class="fas fa-sync-alt {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
                                     {{ __('Please disconnect and reconnect your Google account to grant the new permission, or use "Add manually" above.') }}
@@ -850,7 +814,7 @@
 
                         {{-- Accounts Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="merchant in filteredMerchantCenterAccounts.slice(0, merchantDisplayLimit)" :key="merchant.id">
+                            <template x-for="(merchant, idx) in filteredMerchantCenterAccounts" :key="'merchant-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-teal-500 bg-teal-50': selectedMerchant.includes(merchant.id) }">
                                     <input type="checkbox" name="merchant_center[]" :value="merchant.id"
@@ -863,15 +827,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredMerchantCenterAccounts.length > merchantDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="merchantDisplayLimit += 10"
-                                    class="text-sm text-teal-600 hover:text-teal-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredMerchantCenterAccounts.length - merchantDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -969,7 +924,7 @@
 
                         {{-- Sites Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="site in filteredSearchConsoleSites.slice(0, searchConsoleDisplayLimit)" :key="site.siteUrl">
+                            <template x-for="(site, idx) in filteredSearchConsoleSites" :key="'sc-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole.includes(site.siteUrl) }">
                                     <input type="checkbox" name="search_console[]" :value="site.siteUrl"
@@ -981,15 +936,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredSearchConsoleSites.length > searchConsoleDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="searchConsoleDisplayLimit += 10"
-                                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredSearchConsoleSites.length - searchConsoleDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -1088,7 +1034,7 @@
 
                         {{-- Calendars Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="calendar in filteredCalendars.slice(0, calendarDisplayLimit)" :key="calendar.id">
+                            <template x-for="(calendar, idx) in filteredCalendars" :key="'cal-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
                                        :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar.includes(calendar.id) }">
                                     <input type="checkbox" name="calendar[]" :value="calendar.id"
@@ -1103,15 +1049,6 @@
                                     </div>
                                 </label>
                             </template>
-                        </div>
-
-                        {{-- Show More Button --}}
-                        <div x-show="filteredCalendars.length > calendarDisplayLimit" class="text-center pt-2">
-                            <button type="button" @click="calendarDisplayLimit += 10"
-                                    class="text-sm text-cyan-600 hover:text-cyan-800 font-medium">
-                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                {{ __('Show more') }} (<span x-text="filteredCalendars.length - calendarDisplayLimit"></span> {{ __('remaining') }})
-                            </button>
                         </div>
 
                         {{-- Results count --}}
@@ -1516,90 +1453,88 @@ function googleAssetsPage() {
         searchConsoleSearch: '',
         calendarSearch: '',
 
-        // Virtual scroll display limits (show more as user scrolls)
-        displayLimit: 10,
-        adsDisplayLimit: 10,
-        analyticsDisplayLimit: 10,
-        businessDisplayLimit: 10,
-        tagManagerDisplayLimit: 10,
-        merchantDisplayLimit: 10,
-        searchConsoleDisplayLimit: 10,
-        calendarDisplayLimit: 10,
-        driveDisplayLimit: 10,
-
         // Computed properties - Filtered lists
         get filteredYoutubeChannels() {
+            if (!Array.isArray(this.youtubeChannels)) return [];
             if (!this.youtubeSearch) return this.youtubeChannels;
             const search = this.youtubeSearch.toLowerCase();
-            return this.youtubeChannels.filter(ch => ch.title.toLowerCase().includes(search));
+            return this.youtubeChannels.filter(ch => ch && ch.title && ch.title.toLowerCase().includes(search));
         },
 
         get filteredAdsAccounts() {
+            if (!Array.isArray(this.adsAccounts)) return [];
             if (!this.adsSearch) return this.adsAccounts;
             const search = this.adsSearch.toLowerCase();
             return this.adsAccounts.filter(acc =>
-                acc.name.toLowerCase().includes(search) ||
-                acc.id.toLowerCase().includes(search)
+                acc && ((acc.name && acc.name.toLowerCase().includes(search)) ||
+                (acc.id && acc.id.toLowerCase().includes(search)))
             );
         },
 
         get filteredAnalyticsProperties() {
+            if (!Array.isArray(this.analyticsProperties)) return [];
             if (!this.analyticsSearch) return this.analyticsProperties;
             const search = this.analyticsSearch.toLowerCase();
             return this.analyticsProperties.filter(prop =>
-                prop.displayName.toLowerCase().includes(search) ||
-                (prop.propertyType && prop.propertyType.toLowerCase().includes(search))
+                prop && ((prop.displayName && prop.displayName.toLowerCase().includes(search)) ||
+                (prop.propertyType && prop.propertyType.toLowerCase().includes(search)))
             );
         },
 
         get filteredBusinessProfiles() {
+            if (!Array.isArray(this.businessProfiles)) return [];
             if (!this.businessSearch) return this.businessProfiles;
             const search = this.businessSearch.toLowerCase();
             return this.businessProfiles.filter(bp =>
-                bp.title.toLowerCase().includes(search) ||
-                (bp.address && bp.address.toLowerCase().includes(search))
+                bp && ((bp.title && bp.title.toLowerCase().includes(search)) ||
+                (bp.address && bp.address.toLowerCase().includes(search)))
             );
         },
 
         get filteredTagManagerContainers() {
+            if (!Array.isArray(this.tagManagerContainers)) return [];
             if (!this.tagManagerSearch) return this.tagManagerContainers;
             const search = this.tagManagerSearch.toLowerCase();
             return this.tagManagerContainers.filter(tm =>
-                tm.name.toLowerCase().includes(search) ||
-                (tm.publicId && tm.publicId.toLowerCase().includes(search))
+                tm && ((tm.name && tm.name.toLowerCase().includes(search)) ||
+                (tm.publicId && tm.publicId.toLowerCase().includes(search)))
             );
         },
 
         get filteredMerchantCenterAccounts() {
+            if (!Array.isArray(this.merchantCenterAccounts)) return [];
             if (!this.merchantSearch) return this.merchantCenterAccounts;
             const search = this.merchantSearch.toLowerCase();
             return this.merchantCenterAccounts.filter(acc =>
-                acc.name.toLowerCase().includes(search) ||
-                acc.id.toLowerCase().includes(search)
+                acc && ((acc.name && acc.name.toLowerCase().includes(search)) ||
+                (acc.id && acc.id.toLowerCase().includes(search)))
             );
         },
 
         get filteredSearchConsoleSites() {
+            if (!Array.isArray(this.searchConsoleSites)) return [];
             if (!this.searchConsoleSearch) return this.searchConsoleSites;
             const search = this.searchConsoleSearch.toLowerCase();
             return this.searchConsoleSites.filter(site =>
-                site.siteUrl.toLowerCase().includes(search)
+                site && site.siteUrl && site.siteUrl.toLowerCase().includes(search)
             );
         },
 
         get filteredCalendars() {
+            if (!Array.isArray(this.calendars)) return [];
             if (!this.calendarSearch) return this.calendars;
             const search = this.calendarSearch.toLowerCase();
             return this.calendars.filter(cal =>
-                cal.summary.toLowerCase().includes(search) ||
-                (cal.description && cal.description.toLowerCase().includes(search))
+                cal && ((cal.summary && cal.summary.toLowerCase().includes(search)) ||
+                (cal.description && cal.description.toLowerCase().includes(search)))
             );
         },
 
         get filteredDrives() {
+            if (!Array.isArray(this.driveFolders)) return [];
             if (!this.driveSearchQuery) return this.driveFolders;
             const search = this.driveSearchQuery.toLowerCase();
-            return this.driveFolders.filter(d => d.name.toLowerCase().includes(search));
+            return this.driveFolders.filter(d => d && d.name && d.name.toLowerCase().includes(search));
         },
 
         // YouTube bulk selection

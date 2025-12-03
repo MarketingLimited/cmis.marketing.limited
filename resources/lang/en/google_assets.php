@@ -1,0 +1,37 @@
+<?php
+
+return [
+    'success' => [
+        'youtube_channels' => 'YouTube channels retrieved successfully',
+        'ads_accounts' => 'Google Ads accounts retrieved successfully',
+        'analytics' => 'Analytics properties retrieved successfully',
+        'business_profiles' => 'Business Profiles retrieved successfully',
+        'tag_manager' => 'Tag Manager containers retrieved successfully',
+        'merchant_center' => 'Merchant Center accounts retrieved successfully',
+        'search_console' => 'Search Console sites retrieved successfully',
+        'calendars' => 'Calendars retrieved successfully',
+        'drive' => 'Drive folders retrieved successfully',
+        'cache_cleared' => 'Cache cleared successfully',
+        'cache_status' => 'Cache status retrieved successfully',
+    ],
+    'errors' => [
+        'connection_not_found' => 'Connection not found',
+        'youtube_channels' => 'Failed to fetch YouTube channels',
+        'ads_accounts' => 'Failed to fetch Google Ads accounts',
+        'analytics' => 'Failed to fetch Analytics properties',
+        'business_profiles' => 'Failed to fetch Business Profiles',
+        'tag_manager' => 'Failed to fetch Tag Manager containers',
+        'merchant_center' => 'Failed to fetch Merchant Center accounts',
+        'search_console' => 'Failed to fetch Search Console sites',
+        'calendars' => 'Failed to fetch Calendars',
+        'drive' => 'Failed to fetch Drive folders',
+        'cache_clear' => 'Failed to clear cache',
+        'cache_status' => 'Failed to get cache status',
+        'missing_developer_token' => 'Google Ads Developer Token is missing. Please configure it in admin settings.',
+        'developer_token_not_approved' => 'The Google Ads Developer Token is not approved for production use yet.',
+        'developer_token_invalid' => 'The Google Ads Developer Token is invalid.',
+        'api_not_enabled' => 'The Google Ads API is not enabled for this project.',
+        'quota_exceeded' => 'API quota exceeded. Please try again later.',
+        'scope_insufficient' => 'Insufficient permissions. Please reconnect your Google account to grant the required permissions.',
+    ],
+];
