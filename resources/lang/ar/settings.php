@@ -831,6 +831,7 @@ return [
     'click_add_manually_credentials' => 'انقر على "إضافة يدوياً" لإضافة بيانات اعتماد حساب الخدمة',
     'select_services_menu' => 'اختر الخدمات',
     'test_connection_button' => 'اختبار الاتصال',
+    'reconnect_oauth' => 'إعادة ربط OAuth',
     'edit_credentials_button' => 'تعديل بيانات الاعتماد',
     'remove_connection_confirm' => 'هل أنت متأكد من إزالة هذا الاتصال؟',
     'disconnect_account_confirm' => 'هل أنت متأكد من فصل حساب :platform هذا؟',

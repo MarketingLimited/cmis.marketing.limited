@@ -495,6 +495,10 @@
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.google.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
                                             <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
                                                class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.edit_credentials_button') }}">
                                                 <i class="fas fa-edit"></i>
@@ -536,6 +540,10 @@
                                                             <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.test_connection_button') }}
                                                         </button>
                                                     </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.google.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-right' : '' }}">
+                                                        <i class="fas fa-plug w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
                                                     <a href="{{ route('orgs.settings.platform-connections.google.edit', [$currentOrg, $connection->connection_id]) }}"
                                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-right' : '' }}">
                                                         <i class="fas fa-edit w-4 {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>{{ __('settings.edit_label') }}

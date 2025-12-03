@@ -520,6 +520,7 @@ return [
     'click_add_manually_credentials' => 'Click "Add Manually" to add service account credentials',
     'select_services_menu' => 'Select Services',
     'test_connection_button' => 'Test Connection',
+    'reconnect_oauth' => 'Reconnect OAuth',
     'edit_credentials_button' => 'Edit Credentials',
     'remove_connection_confirm' => 'Are you sure you want to remove this connection?',
     'disconnect_account_confirm' => 'Are you sure you want to disconnect this :platform account?',
