@@ -322,6 +322,35 @@ return [
         ],
     ],
 
+    'tiktok_ads' => [
+        'name' => 'TikTok Ads',
+        'enabled' => true,
+        'oauth_version' => '2.0',
+        'app_id' => env('TIKTOK_ADS_APP_ID'),
+        'app_secret' => env('TIKTOK_ADS_APP_SECRET'),
+        'redirect_uri' => env('TIKTOK_ADS_REDIRECT_URI', env('APP_URL') . '/integrations/tiktok-ads/callback'),
+        'api_version' => env('TIKTOK_ADS_API_VERSION', 'v1.3'),
+        'rate_limit' => env('TIKTOK_ADS_RATE_LIMIT', 100),
+        'base_url' => 'https://business-api.tiktok.com/open_api/v1.3',
+        'authorize_url' => 'https://business-api.tiktok.com/portal/auth',
+        'token_url' => 'https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/',
+        'advertiser_url' => 'https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/',
+        // Scopes are granted via TikTok Developer Portal app approval, not via OAuth request
+        'features' => [
+            'campaigns' => true,
+            'ad_groups' => true,
+            'ads' => true,
+            'pixels' => true,
+            'catalogs' => true,
+            'audiences' => true,
+            'reporting' => true,
+        ],
+        'notes' => [
+            'token_expiry' => 'Access tokens do not expire unless revoked',
+            'advertiser_ids' => 'Returns list of advertiser_ids that can be managed',
+        ],
+    ],
+
     'tumblr' => [
         'name' => 'Tumblr',
         'enabled' => true,

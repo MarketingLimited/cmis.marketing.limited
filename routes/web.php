@@ -60,6 +60,7 @@ Route::prefix('integrations')->name('integrations.')->group(function () {
     Route::get('/twitter/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTwitter'])->name('twitter.callback');
     Route::get('/pinterest/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackPinterest'])->name('pinterest.callback');
     Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
+    Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokAds'])->name('tiktok-ads.callback');
     Route::get('/tumblr/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTumblr'])->name('tumblr.callback');
     Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
     Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
@@ -666,9 +667,13 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/pinterest/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizePinterest'])->name('pinterest.authorize');
                 Route::get('/pinterest/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackPinterest'])->name('pinterest.callback');
 
-                // TikTok OAuth
+                // TikTok Account OAuth (Login Kit v2 - for video publishing)
                 Route::get('/tiktok/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTok'])->name('tiktok.authorize');
                 Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
+
+                // TikTok Ads OAuth (Business API - for advertising)
+                Route::get('/tiktok-ads/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTokAds'])->name('tiktok-ads.authorize');
+                Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokAds'])->name('tiktok-ads.callback');
 
                 // Reddit OAuth
                 Route::get('/reddit/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeReddit'])->name('reddit.authorize');
@@ -697,9 +702,13 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/twitter/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTwitterAssets'])->name('twitter.assets');
                 Route::post('/twitter/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTwitterAssets'])->name('twitter.assets.store');
 
-                // TikTok Assets
+                // TikTok Account Assets
                 Route::get('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAssets'])->name('tiktok.assets');
                 Route::post('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAssets'])->name('tiktok.assets.store');
+
+                // TikTok Ads Assets (Advertiser Accounts)
+                Route::get('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAdsAssets'])->name('tiktok-ads.assets');
+                Route::post('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAdsAssets'])->name('tiktok-ads.assets.store');
 
                 // Snapchat Assets
                 Route::get('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectSnapchatAssets'])->name('snapchat.assets');
