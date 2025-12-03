@@ -22,6 +22,7 @@ use App\Http\Controllers\UnifiedInboxController;
 use App\Http\Controllers\UnifiedCommentsController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\MetaAssetsApiController;
+use App\Http\Controllers\Api\GoogleAssetsApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -726,6 +727,21 @@ Route::middleware(['auth'])->group(function () {
                 // Google Assets (Business Profile & Ads)
                 Route::get('/google/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectGoogleAssets'])->name('google.assets');
                 Route::post('/google/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeGoogleAssets'])->name('google.assets.store');
+
+                // Google Assets AJAX Endpoints (progressive loading)
+                Route::prefix('google/{connection}/assets/ajax')->name('google.assets.ajax.')->group(function () {
+                    Route::get('/youtube', [GoogleAssetsApiController::class, 'getYouTubeChannels'])->name('youtube');
+                    Route::get('/ads', [GoogleAssetsApiController::class, 'getAdsAccounts'])->name('ads');
+                    Route::get('/analytics', [GoogleAssetsApiController::class, 'getAnalyticsProperties'])->name('analytics');
+                    Route::get('/business-profiles', [GoogleAssetsApiController::class, 'getBusinessProfiles'])->name('business-profiles');
+                    Route::get('/tag-manager', [GoogleAssetsApiController::class, 'getTagManagerContainers'])->name('tag-manager');
+                    Route::get('/merchant-center', [GoogleAssetsApiController::class, 'getMerchantCenterAccounts'])->name('merchant-center');
+                    Route::get('/search-console', [GoogleAssetsApiController::class, 'getSearchConsoleSites'])->name('search-console');
+                    Route::get('/calendars', [GoogleAssetsApiController::class, 'getCalendars'])->name('calendars');
+                    Route::get('/drive', [GoogleAssetsApiController::class, 'getDriveFolders'])->name('drive');
+                    Route::post('/refresh', [GoogleAssetsApiController::class, 'refreshAll'])->name('refresh');
+                    Route::get('/cache-status', [GoogleAssetsApiController::class, 'getCacheStatus'])->name('cache-status');
+                });
 
                 // Reddit Assets
                 Route::get('/reddit/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectRedditAssets'])->name('reddit.assets');

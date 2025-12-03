@@ -1,0 +1,862 @@
+<?php
+
+namespace App\Services\Platform;
+
+use App\Models\Platform\PlatformConnection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+/**
+ * Service for fetching Google platform assets with caching.
+ *
+ * Features:
+ * - Redis caching with 1-hour TTL
+ * - Parallel-friendly design for AJAX loading
+ * - Token refresh handling
+ *
+ * Asset Types:
+ * - YouTube Channels (personal + brand accounts)
+ * - Google Ads Accounts
+ * - Google Analytics Properties (GA4)
+ * - Google Business Profiles
+ * - Google Tag Manager Containers
+ * - Google Merchant Center Accounts
+ * - Google Search Console Sites
+ * - Google Calendar
+ * - Google Drive Folders
+ */
+class GoogleAssetsService
+{
+    private const CACHE_TTL = 3600; // 1 hour
+    private const REQUEST_TIMEOUT = 30;
+
+    /**
+     * Get cache key for a specific asset type and connection.
+     */
+    private function getCacheKey(string $connectionId, string $assetType): string
+    {
+        return "google_assets:{$connectionId}:{$assetType}";
+    }
+
+    /**
+     * Get a valid access token, refreshing if expired.
+     */
+    public function getValidAccessToken(PlatformConnection $connection): ?string
+    {
+        $accessToken = $connection->access_token;
+
+        // Check if token is expired and we have a refresh token
+        if ($connection->token_expires_at && $connection->token_expires_at->isPast() && $connection->refresh_token) {
+            $config = config('social-platforms.google');
+
+            try {
+                $response = Http::asForm()->post($config['token_url'], [
+                    'client_id' => $config['client_id'],
+                    'client_secret' => $config['client_secret'],
+                    'refresh_token' => $connection->refresh_token,
+                    'grant_type' => 'refresh_token',
+                ]);
+
+                if ($response->successful()) {
+                    $tokenData = $response->json();
+                    $connection->update([
+                        'access_token' => $tokenData['access_token'],
+                        'token_expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 3600),
+                    ]);
+                    $accessToken = $tokenData['access_token'];
+                } else {
+                    Log::warning('Failed to refresh Google token', ['response' => $response->json()]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exception refreshing Google token', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $accessToken;
+    }
+
+    /**
+     * Get YouTube channels (personal + brand accounts).
+     */
+    public function getYouTubeChannels(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'youtube_channels');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching YouTube channels from Google API');
+
+            try {
+                $channels = [];
+                $channelIds = [];
+
+                // 1. Get the user's own channel (personal)
+                $mineResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/youtube/v3/channels', [
+                        'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                        'mine' => 'true',
+                    ]);
+
+                if ($mineResponse->successful()) {
+                    foreach ($mineResponse->json('items', []) as $channel) {
+                        $channelId = $channel['id'];
+                        if (!in_array($channelId, $channelIds)) {
+                            $channelIds[] = $channelId;
+                            $channels[] = $this->formatYouTubeChannel($channel, 'personal');
+                        }
+                    }
+                }
+
+                // 2. Try to get managed channels (brand accounts)
+                $delegateResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->withHeaders(['X-Origin' => 'https://www.youtube.com'])
+                    ->get('https://www.googleapis.com/youtube/v3/channels', [
+                        'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                        'managedByMe' => 'true',
+                    ]);
+
+                if ($delegateResponse->successful()) {
+                    foreach ($delegateResponse->json('items', []) as $channel) {
+                        $channelId = $channel['id'];
+                        if (!in_array($channelId, $channelIds)) {
+                            $channelIds[] = $channelId;
+                            $channels[] = $this->formatYouTubeChannel($channel, 'managed');
+                        }
+                    }
+                }
+
+                // 3. Get channels from playlists
+                $playlistsResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/youtube/v3/playlists', [
+                        'part' => 'snippet',
+                        'mine' => 'true',
+                        'maxResults' => 50,
+                    ]);
+
+                if ($playlistsResponse->successful()) {
+                    $playlistChannelIds = [];
+                    foreach ($playlistsResponse->json('items', []) as $playlist) {
+                        $playlistChannelId = $playlist['snippet']['channelId'] ?? null;
+                        if ($playlistChannelId && !in_array($playlistChannelId, $channelIds) && !in_array($playlistChannelId, $playlistChannelIds)) {
+                            $playlistChannelIds[] = $playlistChannelId;
+                        }
+                    }
+
+                    // Fetch details for playlist channels
+                    if (!empty($playlistChannelIds)) {
+                        $channelDetailsResponse = Http::withToken($accessToken)
+                            ->timeout(self::REQUEST_TIMEOUT)
+                            ->get('https://www.googleapis.com/youtube/v3/channels', [
+                                'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                                'id' => implode(',', $playlistChannelIds),
+                            ]);
+
+                        if ($channelDetailsResponse->successful()) {
+                            foreach ($channelDetailsResponse->json('items', []) as $channel) {
+                                $channelId = $channel['id'];
+                                if (!in_array($channelId, $channelIds)) {
+                                    $channelIds[] = $channelId;
+                                    $channels[] = $this->formatYouTubeChannel($channel, 'brand');
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Log::info('YouTube channels fetched', ['count' => count($channels)]);
+                return $channels;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching YouTube channels', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Format a YouTube channel response.
+     */
+    private function formatYouTubeChannel(array $channel, string $type = 'personal'): array
+    {
+        return [
+            'id' => $channel['id'],
+            'title' => $channel['snippet']['title'] ?? 'Unknown Channel',
+            'description' => Str::limit($channel['snippet']['description'] ?? '', 100),
+            'thumbnail' => $channel['snippet']['thumbnails']['default']['url'] ?? null,
+            'subscriber_count' => $channel['statistics']['subscriberCount'] ?? 0,
+            'video_count' => $channel['statistics']['videoCount'] ?? 0,
+            'view_count' => $channel['statistics']['viewCount'] ?? 0,
+            'custom_url' => $channel['snippet']['customUrl'] ?? null,
+            'type' => $type,
+        ];
+    }
+
+    /**
+     * Get Google Ads accounts.
+     *
+     * @return array{accounts: array, error: array|null}
+     */
+    public function getAdsAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'ads_accounts');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Ads accounts from API');
+
+            try {
+                $developerToken = config('services.google_ads.developer_token');
+                if (!$developerToken) {
+                    return [
+                        'accounts' => [],
+                        'error' => [
+                            'type' => 'missing_developer_token',
+                            'message' => __('google_assets.errors.missing_developer_token'),
+                        ],
+                    ];
+                }
+
+                // List accessible customers
+                $response = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->withHeaders(['developer-token' => $developerToken])
+                    ->get('https://googleads.googleapis.com/v18/customers:listAccessibleCustomers');
+
+                if (!$response->successful()) {
+                    $body = $response->json();
+                    $error = $body['error'] ?? [];
+
+                    Log::warning('Google Ads listAccessibleCustomers API failed', [
+                        'status' => $response->status(),
+                        'body' => $body,
+                    ]);
+
+                    // Check for developer token issues
+                    if ($response->status() === 401 || $response->status() === 403) {
+                        $reason = $error['details'][0]['errors'][0]['errorCode']['authenticationError'] ?? null;
+                        if ($reason === 'DEVELOPER_TOKEN_NOT_APPROVED') {
+                            return [
+                                'accounts' => [],
+                                'error' => [
+                                    'type' => 'developer_token_not_approved',
+                                    'message' => __('google_assets.errors.developer_token_not_approved'),
+                                ],
+                            ];
+                        }
+                        if (str_contains($error['message'] ?? '', 'developer token')) {
+                            return [
+                                'accounts' => [],
+                                'error' => [
+                                    'type' => 'developer_token_invalid',
+                                    'message' => $error['message'] ?? __('google_assets.errors.developer_token_invalid'),
+                                ],
+                            ];
+                        }
+                    }
+
+                    if ($response->status() === 501) {
+                        return [
+                            'accounts' => [],
+                            'error' => [
+                                'type' => 'api_not_enabled',
+                                'message' => $error['message'] ?? __('google_assets.errors.api_not_enabled'),
+                            ],
+                        ];
+                    }
+
+                    return ['accounts' => [], 'error' => null];
+                }
+
+                $resourceNames = $response->json('resourceNames', []);
+                if (empty($resourceNames)) {
+                    return ['accounts' => [], 'error' => null];
+                }
+
+                // Fetch details for each customer using parallel requests
+                $customerIds = array_map(fn($r) => str_replace('customers/', '', $r), $resourceNames);
+                $accounts = [];
+
+                // Use Http::pool for parallel requests (fix N+1)
+                $responses = Http::pool(fn ($pool) =>
+                    array_map(fn ($customerId) =>
+                        $pool->as($customerId)
+                            ->withToken($accessToken)
+                            ->withHeaders(['developer-token' => $developerToken])
+                            ->timeout(self::REQUEST_TIMEOUT)
+                            ->post("https://googleads.googleapis.com/v18/customers/{$customerId}/googleAds:searchStream", [
+                                'query' => "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.status FROM customer LIMIT 1",
+                            ]),
+                        $customerIds
+                    )
+                );
+
+                foreach ($customerIds as $customerId) {
+                    $detailResponse = $responses[$customerId] ?? null;
+
+                    if ($detailResponse && $detailResponse->successful()) {
+                        $results = $detailResponse->json();
+                        $customer = $results[0]['results'][0]['customer'] ?? null;
+                        if ($customer) {
+                            $accounts[] = [
+                                'id' => $customer['id'] ?? $customerId,
+                                'name' => $customer['descriptiveName'] ?? "Account {$customerId}",
+                                'descriptive_name' => $customer['descriptiveName'] ?? '',
+                                'currency' => $customer['currencyCode'] ?? null,
+                                'status' => $customer['status'] ?? 'UNKNOWN',
+                            ];
+                            continue;
+                        }
+                    }
+
+                    // If we can't get details, still include the customer ID
+                    $accounts[] = [
+                        'id' => $customerId,
+                        'name' => "Account {$customerId}",
+                        'descriptive_name' => '',
+                        'currency' => null,
+                        'status' => 'UNKNOWN',
+                    ];
+                }
+
+                Log::info('Google Ads accounts fetched', ['count' => count($accounts)]);
+                return ['accounts' => $accounts, 'error' => null];
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Google Ads accounts', ['error' => $e->getMessage()]);
+                return ['accounts' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
+            }
+        });
+    }
+
+    /**
+     * Get Google Analytics properties (GA4).
+     */
+    public function getAnalyticsProperties(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'analytics_properties');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Analytics properties from API');
+
+            try {
+                $response = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://analyticsadmin.googleapis.com/v1beta/accountSummaries');
+
+                if (!$response->successful()) {
+                    Log::warning('Analytics accountSummaries API failed', [
+                        'status' => $response->status(),
+                        'body' => $response->json(),
+                    ]);
+                    return [];
+                }
+
+                $properties = [];
+                foreach ($response->json('accountSummaries', []) as $account) {
+                    foreach ($account['propertySummaries'] ?? [] as $property) {
+                        $properties[] = [
+                            'id' => $property['property'] ?? '',
+                            'displayName' => $property['displayName'] ?? 'Unknown Property',
+                            'accountName' => $account['displayName'] ?? '',
+                            'propertyType' => $property['propertyType'] ?? 'PROPERTY_TYPE_ORDINARY',
+                        ];
+                    }
+                }
+
+                Log::info('Analytics properties fetched', ['count' => count($properties)]);
+                return $properties;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Analytics properties', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Get Google Business Profile locations.
+     *
+     * @return array{profiles: array, error: array|null}
+     */
+    public function getBusinessProfiles(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'business_profiles');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Business Profiles from API');
+
+            try {
+                // First get accounts
+                $accountsResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+
+                if (!$accountsResponse->successful()) {
+                    $body = $accountsResponse->json();
+                    $error = $body['error'] ?? [];
+
+                    Log::warning('Business Profile accounts API failed', [
+                        'status' => $accountsResponse->status(),
+                        'body' => $body,
+                    ]);
+
+                    // Check for quota errors (429)
+                    if ($accountsResponse->status() === 429) {
+                        $projectNumber = null;
+                        foreach ($error['details'] ?? [] as $detail) {
+                            if (($detail['@type'] ?? '') === 'type.googleapis.com/google.rpc.ErrorInfo') {
+                                $projectNumber = $detail['metadata']['consumer'] ?? null;
+                                if ($projectNumber) {
+                                    $projectNumber = str_replace('projects/', '', $projectNumber);
+                                }
+                                break;
+                            }
+                        }
+
+                        return [
+                            'profiles' => [],
+                            'error' => [
+                                'type' => 'quota_exceeded',
+                                'message' => __('google_assets.errors.quota_exceeded'),
+                                'project' => $projectNumber,
+                            ],
+                        ];
+                    }
+
+                    return ['profiles' => [], 'error' => null];
+                }
+
+                $accounts = $accountsResponse->json('accounts', []);
+                if (empty($accounts)) {
+                    return ['profiles' => [], 'error' => null];
+                }
+
+                // Use Http::pool for parallel location requests (fix N+1)
+                $locationResponses = Http::pool(fn ($pool) =>
+                    array_map(fn ($account) =>
+                        $pool->as($account['name'] ?? 'unknown')
+                            ->withToken($accessToken)
+                            ->timeout(self::REQUEST_TIMEOUT)
+                            ->get("https://mybusinessbusinessinformation.googleapis.com/v1/{$account['name']}/locations", [
+                                'readMask' => 'name,title,storefrontAddress,categories',
+                            ]),
+                        $accounts
+                    )
+                );
+
+                $profiles = [];
+                foreach ($accounts as $account) {
+                    $accountName = $account['name'] ?? '';
+                    $locationsResponse = $locationResponses[$accountName] ?? null;
+
+                    if ($locationsResponse && $locationsResponse->successful()) {
+                        foreach ($locationsResponse->json('locations', []) as $location) {
+                            $address = $location['storefrontAddress'] ?? [];
+                            $primaryCategory = $location['categories']['primaryCategory']['displayName'] ?? '';
+                            $profiles[] = [
+                                'id' => $location['name'] ?? '',
+                                'name' => $location['title'] ?? 'Unknown Location',
+                                'address' => implode(', ', array_filter([
+                                    $address['addressLines'][0] ?? '',
+                                    $address['locality'] ?? '',
+                                    $address['administrativeArea'] ?? '',
+                                ])),
+                                'primaryCategory' => $primaryCategory,
+                            ];
+                        }
+                    }
+                }
+
+                Log::info('Business Profiles fetched', ['count' => count($profiles)]);
+                return ['profiles' => $profiles, 'error' => null];
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Business Profiles', ['error' => $e->getMessage()]);
+                return ['profiles' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
+            }
+        });
+    }
+
+    /**
+     * Get Google Tag Manager containers.
+     */
+    public function getTagManagerContainers(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'tag_manager');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Tag Manager containers from API');
+
+            try {
+                // First get accounts
+                $accountsResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/tagmanager/v2/accounts');
+
+                if (!$accountsResponse->successful()) {
+                    Log::warning('Tag Manager accounts API failed', [
+                        'status' => $accountsResponse->status(),
+                        'body' => $accountsResponse->json(),
+                    ]);
+                    return [];
+                }
+
+                $accounts = $accountsResponse->json('account', []);
+                if (empty($accounts)) {
+                    return [];
+                }
+
+                // Use Http::pool for parallel container requests (fix N+1)
+                $containerResponses = Http::pool(fn ($pool) =>
+                    array_map(fn ($account) =>
+                        $pool->as($account['path'] ?? 'unknown')
+                            ->withToken($accessToken)
+                            ->timeout(self::REQUEST_TIMEOUT)
+                            ->get("https://www.googleapis.com/tagmanager/v2/{$account['path']}/containers"),
+                        $accounts
+                    )
+                );
+
+                $containers = [];
+                foreach ($accounts as $account) {
+                    $accountPath = $account['path'] ?? '';
+                    $containersResponse = $containerResponses[$accountPath] ?? null;
+
+                    if ($containersResponse && $containersResponse->successful()) {
+                        foreach ($containersResponse->json('container', []) as $container) {
+                            $containers[] = [
+                                'containerId' => $container['containerId'] ?? '',
+                                'name' => $container['name'] ?? 'Unknown Container',
+                                'publicId' => $container['publicId'] ?? '',
+                                'domainName' => $container['domainName'] ?? [],
+                                'accountId' => $account['accountId'] ?? '',
+                            ];
+                        }
+                    }
+                }
+
+                Log::info('Tag Manager containers fetched', ['count' => count($containers)]);
+                return $containers;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Tag Manager containers', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Get Google Merchant Center accounts.
+     *
+     * @return array{accounts: array, error: array|null}
+     */
+    public function getMerchantCenterAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'merchant_center');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Merchant Center accounts from API');
+
+            try {
+                $response = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://shoppingcontent.googleapis.com/content/v2.1/accounts/authinfo');
+
+                if (!$response->successful()) {
+                    $body = $response->json();
+                    $error = $body['error'] ?? [];
+
+                    Log::warning('Merchant Center authinfo API failed', [
+                        'status' => $response->status(),
+                        'body' => $body,
+                    ]);
+
+                    // Check for scope insufficient errors (403)
+                    if ($response->status() === 403) {
+                        $reason = $error['details'][0]['reason'] ?? '';
+                        if ($reason === 'ACCESS_TOKEN_SCOPE_INSUFFICIENT') {
+                            return [
+                                'accounts' => [],
+                                'error' => [
+                                    'type' => 'scope_insufficient',
+                                    'message' => __('google_assets.errors.scope_insufficient'),
+                                ],
+                            ];
+                        }
+                    }
+
+                    return ['accounts' => [], 'error' => null];
+                }
+
+                $identifiers = $response->json('accountIdentifiers', []);
+                if (empty($identifiers)) {
+                    return ['accounts' => [], 'error' => null];
+                }
+
+                // Use Http::pool for parallel account detail requests
+                $merchantIds = array_filter(array_map(fn($i) => $i['merchantId'] ?? $i['aggregatorId'] ?? null, $identifiers));
+
+                $accountResponses = Http::pool(fn ($pool) =>
+                    array_map(fn ($merchantId) =>
+                        $pool->as($merchantId)
+                            ->withToken($accessToken)
+                            ->timeout(self::REQUEST_TIMEOUT)
+                            ->get("https://shoppingcontent.googleapis.com/content/v2.1/{$merchantId}/accounts/{$merchantId}"),
+                        $merchantIds
+                    )
+                );
+
+                $accounts = [];
+                foreach ($merchantIds as $merchantId) {
+                    $accountResponse = $accountResponses[$merchantId] ?? null;
+                    $accountData = $accountResponse && $accountResponse->successful() ? $accountResponse->json() : [];
+
+                    $accounts[] = [
+                        'id' => $merchantId,
+                        'name' => $accountData['name'] ?? "Merchant {$merchantId}",
+                        'websiteUrl' => $accountData['websiteUrl'] ?? '',
+                    ];
+                }
+
+                Log::info('Merchant Center accounts fetched', ['count' => count($accounts)]);
+                return ['accounts' => $accounts, 'error' => null];
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Merchant Center accounts', ['error' => $e->getMessage()]);
+                return ['accounts' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
+            }
+        });
+    }
+
+    /**
+     * Get Google Search Console sites.
+     */
+    public function getSearchConsoleSites(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'search_console');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Search Console sites from API');
+
+            try {
+                $response = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/webmasters/v3/sites');
+
+                if (!$response->successful()) {
+                    Log::warning('Search Console sites API failed', [
+                        'status' => $response->status(),
+                        'body' => $response->json(),
+                    ]);
+                    return [];
+                }
+
+                $sites = [];
+                foreach ($response->json('siteEntry', []) as $site) {
+                    $sites[] = [
+                        'siteUrl' => $site['siteUrl'] ?? '',
+                        'permissionLevel' => $site['permissionLevel'] ?? 'siteUnverifiedUser',
+                    ];
+                }
+
+                Log::info('Search Console sites fetched', ['count' => count($sites)]);
+                return $sites;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Search Console sites', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Get Google Calendars.
+     */
+    public function getCalendars(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'calendars');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Calendars from API');
+
+            try {
+                $response = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/calendar/v3/users/me/calendarList', [
+                        'minAccessRole' => 'writer',
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::warning('Calendar list API failed', [
+                        'status' => $response->status(),
+                        'body' => $response->json(),
+                    ]);
+                    return [];
+                }
+
+                $calendars = [];
+                foreach ($response->json('items', []) as $calendar) {
+                    $calendars[] = [
+                        'id' => $calendar['id'] ?? '',
+                        'summary' => $calendar['summary'] ?? 'Unknown Calendar',
+                        'description' => $calendar['description'] ?? '',
+                        'backgroundColor' => $calendar['backgroundColor'] ?? '#4285f4',
+                        'primary' => $calendar['primary'] ?? false,
+                        'accessRole' => $calendar['accessRole'] ?? 'reader',
+                    ];
+                }
+
+                Log::info('Calendars fetched', ['count' => count($calendars)]);
+                return $calendars;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Google Calendars', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Get Google Drive shared drives/folders.
+     */
+    public function getDriveFolders(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'drive');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching Google Drive folders from API');
+
+            try {
+                $drives = [];
+
+                // Get shared drives
+                $drivesResponse = Http::withToken($accessToken)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get('https://www.googleapis.com/drive/v3/drives', [
+                        'pageSize' => 100,
+                    ]);
+
+                if ($drivesResponse->successful()) {
+                    foreach ($drivesResponse->json('drives', []) as $drive) {
+                        $drives[] = [
+                            'id' => $drive['id'] ?? '',
+                            'name' => $drive['name'] ?? 'Unknown Drive',
+                            'kind' => 'drive#drive',
+                        ];
+                    }
+                }
+
+                // Also get root folders from My Drive if no shared drives
+                if (empty($drives)) {
+                    $foldersResponse = Http::withToken($accessToken)
+                        ->timeout(self::REQUEST_TIMEOUT)
+                        ->get('https://www.googleapis.com/drive/v3/files', [
+                            'q' => "mimeType='application/vnd.google-apps.folder' and 'root' in parents",
+                            'pageSize' => 20,
+                            'fields' => 'files(id,name,mimeType)',
+                        ]);
+
+                    if ($foldersResponse->successful()) {
+                        foreach ($foldersResponse->json('files', []) as $folder) {
+                            $drives[] = [
+                                'id' => $folder['id'] ?? '',
+                                'name' => $folder['name'] ?? 'Unknown Folder',
+                                'kind' => 'drive#folder',
+                            ];
+                        }
+                    }
+                }
+
+                Log::info('Drive folders fetched', ['count' => count($drives)]);
+                return $drives;
+            } catch (\Exception $e) {
+                Log::error('Exception fetching Google Drive folders', ['error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Clear all cached assets for a connection.
+     */
+    public function refreshAll(string $connectionId): void
+    {
+        $assetTypes = [
+            'youtube_channels',
+            'ads_accounts',
+            'analytics_properties',
+            'business_profiles',
+            'tag_manager',
+            'merchant_center',
+            'search_console',
+            'calendars',
+            'drive',
+        ];
+
+        foreach ($assetTypes as $type) {
+            Cache::forget($this->getCacheKey($connectionId, $type));
+        }
+
+        Log::info('Cache cleared for all Google assets', ['connection_id' => $connectionId]);
+    }
+
+    /**
+     * Get cache status for all asset types.
+     */
+    public function getCacheStatus(string $connectionId): array
+    {
+        $assetTypes = [
+            'youtube_channels',
+            'ads_accounts',
+            'analytics_properties',
+            'business_profiles',
+            'tag_manager',
+            'merchant_center',
+            'search_console',
+            'calendars',
+            'drive',
+        ];
+
+        $status = [];
+        foreach ($assetTypes as $type) {
+            $cacheKey = $this->getCacheKey($connectionId, $type);
+            $status[$type] = [
+                'cached' => Cache::has($cacheKey),
+                'key' => $cacheKey,
+            ];
+        }
+
+        return $status;
+    }
+}

@@ -1789,6 +1789,7 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Show asset selection page for Google connection.
+     * Assets are loaded progressively via AJAX for faster page render.
      */
     public function selectGoogleAssets(Request $request, string $org, string $connectionId)
     {
@@ -1797,50 +1798,11 @@ class PlatformConnectionsController extends Controller
             ->where('platform', 'google')
             ->firstOrFail();
 
-        $selectedAssets = $connection->account_metadata['selected_assets'] ?? [];
-
-        // Fetch assets from various Google APIs
-        $youtubeChannels = $this->getGoogleYouTubeChannels($connection);
-
-        // Google Ads returns structured response with error info
-        $googleAdsResult = $this->getGoogleAdsAccounts($connection);
-        $googleAdsAccounts = $googleAdsResult['accounts'];
-        $googleAdsError = $googleAdsResult['error'];
-
-        $analyticsProperties = $this->getGoogleAnalyticsProperties($connection);
-
-        // Business Profiles returns structured response with error info
-        $businessProfileResult = $this->getGoogleBusinessProfiles($connection);
-        $businessProfiles = $businessProfileResult['profiles'];
-        $businessProfileError = $businessProfileResult['error'];
-
-        $tagManagerContainers = $this->getGoogleTagManagerContainers($connection);
-
-        // Merchant Center returns structured response with error info
-        $merchantCenterResult = $this->getGoogleMerchantCenterAccounts($connection);
-        $merchantCenterAccounts = $merchantCenterResult['accounts'];
-        $merchantCenterError = $merchantCenterResult['error'];
-
-        $searchConsoleSites = $this->getGoogleSearchConsoleSites($connection);
-        $googleCalendars = $this->getGoogleCalendars($connection);
-        $driveFolders = $this->getGoogleDriveFolders($connection);
-
+        // Only pass connection info - assets loaded via AJAX
         return view('settings.platform-connections.google-assets', [
             'currentOrg' => $org,
             'connection' => $connection,
-            'selectedAssets' => $selectedAssets,
-            'youtubeChannels' => $youtubeChannels,
-            'googleAdsAccounts' => $googleAdsAccounts,
-            'googleAdsError' => $googleAdsError,
-            'analyticsProperties' => $analyticsProperties,
-            'businessProfiles' => $businessProfiles,
-            'businessProfileError' => $businessProfileError,
-            'tagManagerContainers' => $tagManagerContainers,
-            'merchantCenterAccounts' => $merchantCenterAccounts,
-            'merchantCenterError' => $merchantCenterError,
-            'searchConsoleSites' => $searchConsoleSites,
-            'googleCalendars' => $googleCalendars,
-            'driveFolders' => $driveFolders,
+            'selectedAssets' => $connection->account_metadata['selected_assets'] ?? [],
         ]);
     }
 
