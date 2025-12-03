@@ -1812,7 +1812,12 @@ class PlatformConnectionsController extends Controller
         $businessProfileError = $businessProfileResult['error'];
 
         $tagManagerContainers = $this->getGoogleTagManagerContainers($connection);
-        $merchantCenterAccounts = $this->getGoogleMerchantCenterAccounts($connection);
+
+        // Merchant Center returns structured response with error info
+        $merchantCenterResult = $this->getGoogleMerchantCenterAccounts($connection);
+        $merchantCenterAccounts = $merchantCenterResult['accounts'];
+        $merchantCenterError = $merchantCenterResult['error'];
+
         $searchConsoleSites = $this->getGoogleSearchConsoleSites($connection);
         $googleCalendars = $this->getGoogleCalendars($connection);
         $driveFolders = $this->getGoogleDriveFolders($connection);
@@ -1828,6 +1833,7 @@ class PlatformConnectionsController extends Controller
             'businessProfileError' => $businessProfileError,
             'tagManagerContainers' => $tagManagerContainers,
             'merchantCenterAccounts' => $merchantCenterAccounts,
+            'merchantCenterError' => $merchantCenterError,
             'searchConsoleSites' => $searchConsoleSites,
             'googleCalendars' => $googleCalendars,
             'driveFolders' => $driveFolders,
@@ -2359,19 +2365,41 @@ class PlatformConnectionsController extends Controller
 
     /**
      * Get Google Merchant Center accounts.
+     *
+     * @return array{accounts: array, error: array|null}
      */
     private function getGoogleMerchantCenterAccounts(PlatformConnection $connection): array
     {
         try {
             $accessToken = $this->getValidGoogleAccessToken($connection);
-            if (!$accessToken) return [];
+            if (!$accessToken) {
+                return ['accounts' => [], 'error' => null];
+            }
 
             $response = Http::withToken($accessToken)
                 ->get('https://shoppingcontent.googleapis.com/content/v2.1/accounts/authinfo');
 
             if (!$response->successful()) {
-                Log::warning('Merchant Center authinfo API failed', ['status' => $response->status(), 'body' => $response->json()]);
-                return [];
+                $body = $response->json();
+                $error = $body['error'] ?? [];
+
+                Log::warning('Merchant Center authinfo API failed', ['status' => $response->status(), 'body' => $body]);
+
+                // Check for scope insufficient errors (403)
+                if ($response->status() === 403) {
+                    $reason = $error['details'][0]['reason'] ?? '';
+                    if ($reason === 'ACCESS_TOKEN_SCOPE_INSUFFICIENT') {
+                        return [
+                            'accounts' => [],
+                            'error' => [
+                                'type' => 'scope_insufficient',
+                                'message' => $error['message'] ?? 'Missing OAuth scope for Merchant Center',
+                            ],
+                        ];
+                    }
+                }
+
+                return ['accounts' => [], 'error' => null];
             }
 
             $accounts = [];
@@ -2392,10 +2420,10 @@ class PlatformConnectionsController extends Controller
                 }
             }
 
-            return $accounts;
+            return ['accounts' => $accounts, 'error' => null];
         } catch (\Exception $e) {
             Log::error('Exception fetching Merchant Center accounts', ['error' => $e->getMessage()]);
-            return [];
+            return ['accounts' => [], 'error' => ['type' => 'exception', 'message' => $e->getMessage()]];
         }
     }
 

@@ -46,6 +46,12 @@ class GoogleConnector extends AbstractConnector
 
             // YouTube
             'https://www.googleapis.com/auth/youtube.readonly',
+
+            // Merchant Center (Content API for Shopping)
+            'https://www.googleapis.com/auth/content',
+
+            // Tag Manager
+            'https://www.googleapis.com/auth/tagmanager.readonly',
         ];
 
         $params = [

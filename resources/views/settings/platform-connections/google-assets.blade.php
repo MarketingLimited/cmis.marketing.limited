@@ -496,9 +496,9 @@
                                            {{ in_array($merchant['id'], (array)($selectedAssets['merchant_center'] ?? [])) ? 'checked' : '' }}
                                            x-model="selectedMerchant"
                                            class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
-                                    <div class="ml-3">
+                                    <div class="ms-3">
                                         <span class="text-sm font-medium text-gray-900">{{ $merchant['name'] }}</span>
-                                        <span class="text-xs text-gray-400 ml-1">({{ $merchant['id'] }})</span>
+                                        <span class="text-xs text-gray-400 ms-1">({{ $merchant['id'] }})</span>
                                         @if($merchant['websiteUrl'] ?? null)
                                             <span class="block text-xs text-gray-500">{{ $merchant['websiteUrl'] }}</span>
                                         @endif
@@ -506,11 +506,29 @@
                                 </label>
                             @endforeach
                         </div>
+                    @elseif(isset($merchantCenterError) && ($merchantCenterError['type'] ?? '') === 'scope_insufficient')
+                        {{-- Specific error for missing OAuth scope (403 ACCESS_TOKEN_SCOPE_INSUFFICIENT) --}}
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-red-800">{{ __('Google Merchant Center requires re-authentication') }}</p>
+                                    <p class="mt-1 text-xs text-red-700">
+                                        {{ __('Your Google connection is missing the required permission for Merchant Center.') }}
+                                    </p>
+                                    <p class="mt-2 text-xs text-red-600">
+                                        <i class="fas fa-sync-alt me-1"></i>
+                                        {{ __('Please disconnect and reconnect your Google account to grant the new permission, or use "Add manually" above.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     @else
+                        {{-- Generic empty state --}}
                         <div class="text-center py-6 bg-gray-50 rounded-lg">
                             <i class="fas fa-shopping-cart text-gray-300 text-3xl mb-2"></i>
                             <p class="text-sm text-gray-500">{{ __('No Merchant Center accounts found') }}</p>
-                            <p class="text-xs text-gray-400 mt-1">{{ __('Enable Content API for Shopping') }}</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ __('Enable Content API for Shopping in Google Cloud Console') }}</p>
                         </div>
                     @endif
 
