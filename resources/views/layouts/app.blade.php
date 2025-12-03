@@ -48,9 +48,7 @@
             <!-- Logo Section -->
             <div class="p-6 border-b border-white/20">
                 <div class="flex items-center gap-3">
-                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                        <i class="fas fa-rocket text-white text-2xl"></i>
-                    </div>
+                    <img src="{{ asset('images/cmis-logo-without-background.png') }}" alt="CMIS Logo" class="w-12 h-12 object-contain">
                     <div>
                         <h1 class="text-2xl font-bold text-white">CMIS Platform</h1>
                         <p class="text-white/70 text-xs">{{ __('navigation.platform_tagline') }}</p>
