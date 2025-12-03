@@ -35,8 +35,6 @@ class PlatformConnection extends BaseModel
         'last_error_message',
         'auto_sync',
         'sync_frequency_minutes',
-        'expires_at', // Legacy support
-        'is_active', // Legacy support
     ];
 
     protected $casts = [
@@ -47,8 +45,6 @@ class PlatformConnection extends BaseModel
         'last_error_at' => 'datetime',
         'auto_sync' => 'boolean',
         'sync_frequency_minutes' => 'integer',
-        'is_active' => 'boolean',
-        'expires_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -108,7 +104,6 @@ class PlatformConnection extends BaseModel
     {
         $this->update([
             'status' => 'active',
-            'is_active' => true,
             'last_error_at' => null,
             'last_error_message' => null
         ]);
@@ -118,7 +113,6 @@ class PlatformConnection extends BaseModel
     {
         $this->update([
             'status' => 'expired',
-            'is_active' => false
         ]);
     }
 
@@ -133,8 +127,7 @@ class PlatformConnection extends BaseModel
 
     public function isActive(): bool
     {
-        $status = $this->status ?? ($this->is_active ? 'active' : 'inactive');
-        return $status === 'active' && !$this->isTokenExpired();
+        return $this->status === 'active' && !$this->isTokenExpired();
     }
 
     // ===== Sync Management =====
@@ -179,10 +172,7 @@ class PlatformConnection extends BaseModel
 
     public function scopeActive($query)
     {
-        return $query->where(function ($q) {
-            $q->where('status', 'active')
-              ->orWhere('is_active', true);
-        });
+        return $query->where('status', 'active');
     }
 
     public function scopeForPlatform($query, string $platform)

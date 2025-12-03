@@ -16,6 +16,7 @@ use App\Jobs\Sync\DispatchPlatformSyncs;
 use App\Jobs\Social\ProcessScheduledPostsJob;
 use App\Jobs\Social\RefreshExpiredTokensJob;
 use App\Jobs\Social\SyncPlatformAnalyticsJob;
+use App\Jobs\FetchMetaAssetsJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -153,6 +154,23 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Failed to sync platform analytics');
+            });
+
+        // ==========================================
+        // 📦 Meta Assets Cache Warm-up (NEW)
+        // ==========================================
+
+        // Pre-fetch Meta assets every hour to warm up cache
+        // This ensures instant loading when users visit the Meta Assets page
+        $schedule->job(new FetchMetaAssetsJob())
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Meta assets cache warmed up successfully');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to warm up Meta assets cache');
             });
 
         // 🔐 NEW Week 2: Check for expiring integration tokens daily at 9 AM
