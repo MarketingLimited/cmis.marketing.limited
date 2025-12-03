@@ -470,6 +470,8 @@ return [
             // Drive
             'https://www.googleapis.com/auth/drive.readonly',
             'https://www.googleapis.com/auth/drive.metadata.readonly',
+            // Merchant Center (Content API for Shopping)
+            'https://www.googleapis.com/auth/content',
         ],
         'services' => [
             'youtube' => [
