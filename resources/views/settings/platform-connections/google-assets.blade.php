@@ -292,27 +292,61 @@
                     </div>
 
                     {{-- Ads Accounts List --}}
-                    <div x-show="!loading.ads && !errors.ads && !adsApiError && adsAccounts.length > 0" class="space-y-2">
-                        <template x-for="account in adsAccounts" :key="account.id">
-                            <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition {{ $isRtl ? 'flex-row-reverse' : '' }}"
-                                   :class="{ 'border-green-500 bg-green-50': selectedGoogleAds.includes(account.id) }">
-                                <div class="flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <input type="checkbox" name="google_ads[]" :value="account.id"
-                                           x-model="selectedGoogleAds"
-                                           class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                    <div class="ms-3">
-                                        <span class="text-sm font-medium text-gray-900" x-text="account.name || account.descriptive_name"></span>
-                                        <span class="text-xs text-gray-400 ms-2" x-text="'(' + account.id + ')'"></span>
+                    <div x-show="!loading.ads && !errors.ads && !adsApiError && adsAccounts.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="adsSearch" placeholder="{{ __('Search accounts...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllAds()" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllAds()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Account Items (Virtual Scroll) --}}
+                        <div class="space-y-2 max-h-96 overflow-y-auto">
+                            <template x-for="(account, index) in filteredAdsAccounts.slice(0, adsDisplayLimit)" :key="account.id">
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition {{ $isRtl ? 'flex-row-reverse' : '' }}"
+                                       :class="{ 'border-green-500 bg-green-50': selectedGoogleAds.includes(account.id) }">
+                                    <div class="flex items-center {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                        <input type="checkbox" name="google_ads[]" :value="account.id"
+                                               x-model="selectedGoogleAds"
+                                               class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                        <div class="ms-3">
+                                            <span class="text-sm font-medium text-gray-900" x-text="account.name || account.descriptive_name"></span>
+                                            <span class="text-xs text-gray-400 ms-2" x-text="'(' + account.id + ')'"></span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <span x-show="account.currency" class="text-xs text-gray-500" x-text="account.currency"></span>
-                                    <span class="px-2 py-0.5 rounded-full text-xs"
-                                          :class="account.status === 'ENABLED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
-                                          x-text="account.status || 'Unknown'"></span>
-                                </div>
-                            </label>
-                        </template>
+                                    <div class="flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                        <span x-show="account.currency" class="text-xs text-gray-500" x-text="account.currency"></span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs"
+                                              :class="account.status === 'ENABLED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+                                              x-text="account.status || 'Unknown'"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredAdsAccounts.length > adsDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="adsDisplayLimit += 10"
+                                    class="text-sm text-green-600 hover:text-green-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredAdsAccounts.length - adsDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="adsSearch && filteredAdsAccounts.length !== adsAccounts.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredAdsAccounts.length"></span> {{ __('of') }} <span x-text="adsAccounts.length"></span> {{ __('accounts match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualGoogleAds" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -393,20 +427,54 @@
                     </div>
 
                     {{-- Analytics Properties List --}}
-                    <div x-show="!loading.analytics && !errors.analytics && analyticsProperties.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="property in analyticsProperties" :key="property.id">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes(property.id) }">
-                                <input type="checkbox" name="analytics[]" :value="property.id"
-                                       x-model="selectedAnalytics"
-                                       class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                                <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
-                                    <span class="text-sm font-medium text-gray-900" x-text="property.displayName || property.name"></span>
-                                    <span class="text-xs text-gray-400 ms-1" x-text="'(' + property.id + ')'"></span>
-                                    <span x-show="property.websiteUrl" class="block text-xs text-gray-500" x-text="property.websiteUrl"></span>
-                                </div>
-                            </label>
-                        </template>
+                    <div x-show="!loading.analytics && !errors.analytics && analyticsProperties.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="analyticsSearch" placeholder="{{ __('Search properties...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllAnalytics()" class="text-orange-600 hover:text-orange-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllAnalytics()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Properties Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="property in filteredAnalyticsProperties.slice(0, analyticsDisplayLimit)" :key="property.name">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes(property.name) }">
+                                    <input type="checkbox" name="analytics[]" :value="property.name"
+                                           x-model="selectedAnalytics"
+                                           class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
+                                    <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
+                                        <span class="text-sm font-medium text-gray-900" x-text="property.displayName || property.name"></span>
+                                        <span class="text-xs text-gray-400 ms-1" x-text="'(' + (property.name ? property.name.split('/')[1] : '') + ')'"></span>
+                                        <span x-show="property.propertyType" class="block text-xs text-gray-500" x-text="property.propertyType"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredAnalyticsProperties.length > analyticsDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="analyticsDisplayLimit += 10"
+                                    class="text-sm text-orange-600 hover:text-orange-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredAnalyticsProperties.length - analyticsDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="analyticsSearch && filteredAnalyticsProperties.length !== analyticsProperties.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredAnalyticsProperties.length"></span> {{ __('of') }} <span x-text="analyticsProperties.length"></span> {{ __('properties match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualAnalytics" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -509,20 +577,54 @@
                     </div>
 
                     {{-- Business Profiles List --}}
-                    <div x-show="!loading.businessProfiles && !errors.businessProfiles && !businessProfilesApiError && businessProfiles.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="profile in businessProfiles" :key="profile.id">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-blue-500 bg-blue-50': selectedBusiness.includes(profile.id) }">
-                                <input type="checkbox" name="business_profile[]" :value="profile.id"
-                                       x-model="selectedBusiness"
-                                       class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                <div class="ms-3">
-                                    <span class="text-sm font-medium text-gray-900" x-text="profile.name || profile.locationName"></span>
-                                    <span x-show="profile.address" class="block text-xs text-gray-500" x-text="profile.address"></span>
-                                    <span x-show="profile.primaryCategory" class="text-xs text-blue-600" x-text="profile.primaryCategory"></span>
-                                </div>
-                            </label>
-                        </template>
+                    <div x-show="!loading.businessProfiles && !errors.businessProfiles && !businessProfilesApiError && businessProfiles.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="businessSearch" placeholder="{{ __('Search locations...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllBusiness()" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllBusiness()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Profiles Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="profile in filteredBusinessProfiles.slice(0, businessDisplayLimit)" :key="profile.name">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-blue-500 bg-blue-50': selectedBusiness.includes(profile.name) }">
+                                    <input type="checkbox" name="business_profile[]" :value="profile.name"
+                                           x-model="selectedBusiness"
+                                           class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                    <div class="ms-3">
+                                        <span class="text-sm font-medium text-gray-900" x-text="profile.title || profile.locationName"></span>
+                                        <span x-show="profile.address" class="block text-xs text-gray-500" x-text="profile.address"></span>
+                                        <span x-show="profile.primaryCategory" class="text-xs text-blue-600" x-text="profile.primaryCategory"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredBusinessProfiles.length > businessDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="businessDisplayLimit += 10"
+                                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredBusinessProfiles.length - businessDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="businessSearch && filteredBusinessProfiles.length !== businessProfiles.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredBusinessProfiles.length"></span> {{ __('of') }} <span x-text="businessProfiles.length"></span> {{ __('locations match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualBusiness" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -594,20 +696,54 @@
                     </div>
 
                     {{-- Tag Manager Containers List --}}
-                    <div x-show="!loading.tagManager && !errors.tagManager && tagManagerContainers.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="container in tagManagerContainers" :key="container.containerId">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes(container.containerId) }">
-                                <input type="checkbox" name="tag_manager[]" :value="container.containerId"
-                                       x-model="selectedTagManager"
-                                       class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
-                                <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
-                                    <span class="text-sm font-medium text-gray-900" x-text="container.name"></span>
-                                    <span class="text-xs text-gray-400 ms-1" x-text="'(' + (container.publicId || container.containerId) + ')'"></span>
-                                    <span x-show="container.domainName" class="block text-xs text-gray-500" x-text="Array.isArray(container.domainName) ? container.domainName.join(', ') : container.domainName"></span>
-                                </div>
-                            </label>
-                        </template>
+                    <div x-show="!loading.tagManager && !errors.tagManager && tagManagerContainers.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="tagManagerSearch" placeholder="{{ __('Search containers...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllTagManager()" class="text-purple-600 hover:text-purple-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllTagManager()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Containers Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="container in filteredTagManagerContainers.slice(0, tagManagerDisplayLimit)" :key="container.path">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes(container.path) }">
+                                    <input type="checkbox" name="tag_manager[]" :value="container.path"
+                                           x-model="selectedTagManager"
+                                           class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
+                                    <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
+                                        <span class="text-sm font-medium text-gray-900" x-text="container.name"></span>
+                                        <span class="text-xs text-gray-400 ms-1" x-text="'(' + (container.publicId || container.containerId) + ')'"></span>
+                                        <span x-show="container.domainName" class="block text-xs text-gray-500" x-text="Array.isArray(container.domainName) ? container.domainName.join(', ') : container.domainName"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredTagManagerContainers.length > tagManagerDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="tagManagerDisplayLimit += 10"
+                                    class="text-sm text-purple-600 hover:text-purple-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredTagManagerContainers.length - tagManagerDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="tagManagerSearch && filteredTagManagerContainers.length !== tagManagerContainers.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredTagManagerContainers.length"></span> {{ __('of') }} <span x-text="tagManagerContainers.length"></span> {{ __('containers match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualTagManager" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -694,20 +830,54 @@
                     </div>
 
                     {{-- Merchant Center Accounts List --}}
-                    <div x-show="!loading.merchantCenter && !errors.merchantCenter && !merchantCenterApiError && merchantCenterAccounts.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="merchant in merchantCenterAccounts" :key="merchant.id">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-teal-500 bg-teal-50': selectedMerchant.includes(merchant.id) }">
-                                <input type="checkbox" name="merchant_center[]" :value="merchant.id"
-                                       x-model="selectedMerchant"
-                                       class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
-                                <div class="ms-3">
-                                    <span class="text-sm font-medium text-gray-900" x-text="merchant.name"></span>
-                                    <span class="text-xs text-gray-400 ms-1" x-text="'(' + merchant.id + ')'"></span>
-                                    <span x-show="merchant.websiteUrl" class="block text-xs text-gray-500" x-text="merchant.websiteUrl"></span>
-                                </div>
-                            </label>
-                        </template>
+                    <div x-show="!loading.merchantCenter && !errors.merchantCenter && !merchantCenterApiError && merchantCenterAccounts.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="merchantSearch" placeholder="{{ __('Search accounts...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllMerchant()" class="text-teal-600 hover:text-teal-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllMerchant()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Accounts Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="merchant in filteredMerchantCenterAccounts.slice(0, merchantDisplayLimit)" :key="merchant.id">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-teal-500 bg-teal-50': selectedMerchant.includes(merchant.id) }">
+                                    <input type="checkbox" name="merchant_center[]" :value="merchant.id"
+                                           x-model="selectedMerchant"
+                                           class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                                    <div class="ms-3">
+                                        <span class="text-sm font-medium text-gray-900" x-text="merchant.name"></span>
+                                        <span class="text-xs text-gray-400 ms-1" x-text="'(' + merchant.id + ')'"></span>
+                                        <span x-show="merchant.websiteUrl" class="block text-xs text-gray-500" x-text="merchant.websiteUrl"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredMerchantCenterAccounts.length > merchantDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="merchantDisplayLimit += 10"
+                                    class="text-sm text-teal-600 hover:text-teal-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredMerchantCenterAccounts.length - merchantDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="merchantSearch && filteredMerchantCenterAccounts.length !== merchantCenterAccounts.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredMerchantCenterAccounts.length"></span> {{ __('of') }} <span x-text="merchantCenterAccounts.length"></span> {{ __('accounts match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualMerchant" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -779,19 +949,53 @@
                     </div>
 
                     {{-- Search Console Sites List --}}
-                    <div x-show="!loading.searchConsole && !errors.searchConsole && searchConsoleSites.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="site in searchConsoleSites" :key="site.siteUrl">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole.includes(site.siteUrl) }">
-                                <input type="checkbox" name="search_console[]" :value="site.siteUrl"
-                                       x-model="selectedSearchConsole"
-                                       class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
-                                    <span class="text-sm font-medium text-gray-900" x-text="site.siteUrl"></span>
-                                    <span class="block text-xs text-gray-500" x-text="(site.permissionLevel || 'Full') + ' access'"></span>
-                                </div>
-                            </label>
-                        </template>
+                    <div x-show="!loading.searchConsole && !errors.searchConsole && searchConsoleSites.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="searchConsoleSearch" placeholder="{{ __('Search sites...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllSearchConsole()" class="text-indigo-600 hover:text-indigo-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllSearchConsole()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Sites Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="site in filteredSearchConsoleSites.slice(0, searchConsoleDisplayLimit)" :key="site.siteUrl">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-indigo-500 bg-indigo-50': selectedSearchConsole.includes(site.siteUrl) }">
+                                    <input type="checkbox" name="search_console[]" :value="site.siteUrl"
+                                           x-model="selectedSearchConsole"
+                                           class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                    <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
+                                        <span class="text-sm font-medium text-gray-900" x-text="site.siteUrl"></span>
+                                        <span class="block text-xs text-gray-500" x-text="(site.permissionLevel || 'Full') + ' access'"></span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredSearchConsoleSites.length > searchConsoleDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="searchConsoleDisplayLimit += 10"
+                                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredSearchConsoleSites.length - searchConsoleDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="searchConsoleSearch && filteredSearchConsoleSites.length !== searchConsoleSites.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredSearchConsoleSites.length"></span> {{ __('of') }} <span x-text="searchConsoleSites.length"></span> {{ __('sites match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualSearchConsole" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -864,22 +1068,56 @@
                     </div>
 
                     {{-- Calendars List --}}
-                    <div x-show="!loading.calendars && !errors.calendars && calendars.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <template x-for="calendar in calendars" :key="calendar.id">
-                            <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                   :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar.includes(calendar.id) }">
-                                <input type="checkbox" name="calendar[]" :value="calendar.id"
-                                       x-model="selectedCalendar"
-                                       class="h-4 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-500">
-                                <div class="{{ $isRtl ? 'me-3' : 'ms-3' }} flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                                    <div x-show="calendar.backgroundColor" class="w-3 h-3 rounded-full" :style="{ backgroundColor: calendar.backgroundColor }"></div>
-                                    <div>
-                                        <span class="text-sm font-medium text-gray-900" x-text="calendar.summary || calendar.name"></span>
-                                        <span x-show="calendar.description" class="block text-xs text-gray-500" x-text="calendar.description.substring(0, 50) + (calendar.description.length > 50 ? '...' : '')"></span>
+                    <div x-show="!loading.calendars && !errors.calendars && calendars.length > 0" class="space-y-3">
+                        {{-- Search and Bulk Actions --}}
+                        <div class="flex flex-col sm:flex-row gap-3 {{ $isRtl ? 'sm:flex-row-reverse' : '' }}">
+                            <div class="flex-1">
+                                <input type="text" x-model="calendarSearch" placeholder="{{ __('Search calendars...') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 text-sm {{ $isRtl ? 'text-end' : '' }}">
+                            </div>
+                            <div class="flex items-center gap-2 text-sm {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <button type="button" @click="selectAllCalendars()" class="text-cyan-600 hover:text-cyan-800">
+                                    <i class="fas fa-check-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" @click="deselectAllCalendars()" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-square {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Deselect All') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Calendars Grid (Virtual Scroll) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                            <template x-for="calendar in filteredCalendars.slice(0, calendarDisplayLimit)" :key="calendar.id">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                       :class="{ 'border-cyan-500 bg-cyan-50': selectedCalendar.includes(calendar.id) }">
+                                    <input type="checkbox" name="calendar[]" :value="calendar.id"
+                                           x-model="selectedCalendar"
+                                           class="h-4 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-500">
+                                    <div class="{{ $isRtl ? 'me-3' : 'ms-3' }} flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                        <div x-show="calendar.backgroundColor" class="w-3 h-3 rounded-full" :style="{ backgroundColor: calendar.backgroundColor }"></div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900" x-text="calendar.summary || calendar.name"></span>
+                                            <span x-show="calendar.description" class="block text-xs text-gray-500" x-text="calendar.description.substring(0, 50) + (calendar.description.length > 50 ? '...' : '')"></span>
+                                        </div>
                                     </div>
-                                </div>
-                            </label>
-                        </template>
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Show More Button --}}
+                        <div x-show="filteredCalendars.length > calendarDisplayLimit" class="text-center pt-2">
+                            <button type="button" @click="calendarDisplayLimit += 10"
+                                    class="text-sm text-cyan-600 hover:text-cyan-800 font-medium">
+                                <i class="fas fa-chevron-down {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('Show more') }} (<span x-text="filteredCalendars.length - calendarDisplayLimit"></span> {{ __('remaining') }})
+                            </button>
+                        </div>
+
+                        {{-- Results count --}}
+                        <div x-show="calendarSearch && filteredCalendars.length !== calendars.length" class="text-xs text-gray-500 {{ $isRtl ? 'text-end' : '' }}">
+                            <span x-text="filteredCalendars.length"></span> {{ __('of') }} <span x-text="calendars.length"></span> {{ __('calendars match your search') }}
+                        </div>
                     </div>
 
                     <div x-show="showManualCalendar" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -1270,12 +1508,92 @@ function googleAssetsPage() {
 
         // Search filters
         youtubeSearch: '',
+        adsSearch: '',
+        analyticsSearch: '',
+        businessSearch: '',
+        tagManagerSearch: '',
+        merchantSearch: '',
+        searchConsoleSearch: '',
+        calendarSearch: '',
 
-        // Computed properties
+        // Virtual scroll display limits (show more as user scrolls)
+        displayLimit: 10,
+        adsDisplayLimit: 10,
+        analyticsDisplayLimit: 10,
+        businessDisplayLimit: 10,
+        tagManagerDisplayLimit: 10,
+        merchantDisplayLimit: 10,
+        searchConsoleDisplayLimit: 10,
+        calendarDisplayLimit: 10,
+        driveDisplayLimit: 10,
+
+        // Computed properties - Filtered lists
         get filteredYoutubeChannels() {
             if (!this.youtubeSearch) return this.youtubeChannels;
             const search = this.youtubeSearch.toLowerCase();
             return this.youtubeChannels.filter(ch => ch.title.toLowerCase().includes(search));
+        },
+
+        get filteredAdsAccounts() {
+            if (!this.adsSearch) return this.adsAccounts;
+            const search = this.adsSearch.toLowerCase();
+            return this.adsAccounts.filter(acc =>
+                acc.name.toLowerCase().includes(search) ||
+                acc.id.toLowerCase().includes(search)
+            );
+        },
+
+        get filteredAnalyticsProperties() {
+            if (!this.analyticsSearch) return this.analyticsProperties;
+            const search = this.analyticsSearch.toLowerCase();
+            return this.analyticsProperties.filter(prop =>
+                prop.displayName.toLowerCase().includes(search) ||
+                (prop.propertyType && prop.propertyType.toLowerCase().includes(search))
+            );
+        },
+
+        get filteredBusinessProfiles() {
+            if (!this.businessSearch) return this.businessProfiles;
+            const search = this.businessSearch.toLowerCase();
+            return this.businessProfiles.filter(bp =>
+                bp.title.toLowerCase().includes(search) ||
+                (bp.address && bp.address.toLowerCase().includes(search))
+            );
+        },
+
+        get filteredTagManagerContainers() {
+            if (!this.tagManagerSearch) return this.tagManagerContainers;
+            const search = this.tagManagerSearch.toLowerCase();
+            return this.tagManagerContainers.filter(tm =>
+                tm.name.toLowerCase().includes(search) ||
+                (tm.publicId && tm.publicId.toLowerCase().includes(search))
+            );
+        },
+
+        get filteredMerchantCenterAccounts() {
+            if (!this.merchantSearch) return this.merchantCenterAccounts;
+            const search = this.merchantSearch.toLowerCase();
+            return this.merchantCenterAccounts.filter(acc =>
+                acc.name.toLowerCase().includes(search) ||
+                acc.id.toLowerCase().includes(search)
+            );
+        },
+
+        get filteredSearchConsoleSites() {
+            if (!this.searchConsoleSearch) return this.searchConsoleSites;
+            const search = this.searchConsoleSearch.toLowerCase();
+            return this.searchConsoleSites.filter(site =>
+                site.siteUrl.toLowerCase().includes(search)
+            );
+        },
+
+        get filteredCalendars() {
+            if (!this.calendarSearch) return this.calendars;
+            const search = this.calendarSearch.toLowerCase();
+            return this.calendars.filter(cal =>
+                cal.summary.toLowerCase().includes(search) ||
+                (cal.description && cal.description.toLowerCase().includes(search))
+            );
         },
 
         get filteredDrives() {
@@ -1299,6 +1617,132 @@ function googleAssetsPage() {
                 this.selectedYoutubeChannels = this.selectedYoutubeChannels.filter(id => !filteredIds.includes(id));
             } else {
                 this.selectedYoutubeChannels = [];
+            }
+        },
+
+        // Google Ads bulk selection
+        selectAllAds() {
+            this.filteredAdsAccounts.forEach(acc => {
+                if (!this.selectedGoogleAds.includes(acc.id)) {
+                    this.selectedGoogleAds.push(acc.id);
+                }
+            });
+        },
+
+        deselectAllAds() {
+            if (this.adsSearch) {
+                const filteredIds = this.filteredAdsAccounts.map(acc => acc.id);
+                this.selectedGoogleAds = this.selectedGoogleAds.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedGoogleAds = [];
+            }
+        },
+
+        // Analytics bulk selection
+        selectAllAnalytics() {
+            this.filteredAnalyticsProperties.forEach(prop => {
+                if (!this.selectedAnalytics.includes(prop.name)) {
+                    this.selectedAnalytics.push(prop.name);
+                }
+            });
+        },
+
+        deselectAllAnalytics() {
+            if (this.analyticsSearch) {
+                const filteredIds = this.filteredAnalyticsProperties.map(prop => prop.name);
+                this.selectedAnalytics = this.selectedAnalytics.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedAnalytics = [];
+            }
+        },
+
+        // Business Profiles bulk selection
+        selectAllBusiness() {
+            this.filteredBusinessProfiles.forEach(bp => {
+                if (!this.selectedBusiness.includes(bp.name)) {
+                    this.selectedBusiness.push(bp.name);
+                }
+            });
+        },
+
+        deselectAllBusiness() {
+            if (this.businessSearch) {
+                const filteredIds = this.filteredBusinessProfiles.map(bp => bp.name);
+                this.selectedBusiness = this.selectedBusiness.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedBusiness = [];
+            }
+        },
+
+        // Tag Manager bulk selection
+        selectAllTagManager() {
+            this.filteredTagManagerContainers.forEach(tm => {
+                if (!this.selectedTagManager.includes(tm.path)) {
+                    this.selectedTagManager.push(tm.path);
+                }
+            });
+        },
+
+        deselectAllTagManager() {
+            if (this.tagManagerSearch) {
+                const filteredIds = this.filteredTagManagerContainers.map(tm => tm.path);
+                this.selectedTagManager = this.selectedTagManager.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedTagManager = [];
+            }
+        },
+
+        // Merchant Center bulk selection
+        selectAllMerchant() {
+            this.filteredMerchantCenterAccounts.forEach(acc => {
+                if (!this.selectedMerchant.includes(acc.id)) {
+                    this.selectedMerchant.push(acc.id);
+                }
+            });
+        },
+
+        deselectAllMerchant() {
+            if (this.merchantSearch) {
+                const filteredIds = this.filteredMerchantCenterAccounts.map(acc => acc.id);
+                this.selectedMerchant = this.selectedMerchant.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedMerchant = [];
+            }
+        },
+
+        // Search Console bulk selection
+        selectAllSearchConsole() {
+            this.filteredSearchConsoleSites.forEach(site => {
+                if (!this.selectedSearchConsole.includes(site.siteUrl)) {
+                    this.selectedSearchConsole.push(site.siteUrl);
+                }
+            });
+        },
+
+        deselectAllSearchConsole() {
+            if (this.searchConsoleSearch) {
+                const filteredIds = this.filteredSearchConsoleSites.map(site => site.siteUrl);
+                this.selectedSearchConsole = this.selectedSearchConsole.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedSearchConsole = [];
+            }
+        },
+
+        // Calendar bulk selection
+        selectAllCalendars() {
+            this.filteredCalendars.forEach(cal => {
+                if (!this.selectedCalendar.includes(cal.id)) {
+                    this.selectedCalendar.push(cal.id);
+                }
+            });
+        },
+
+        deselectAllCalendars() {
+            if (this.calendarSearch) {
+                const filteredIds = this.filteredCalendars.map(cal => cal.id);
+                this.selectedCalendar = this.selectedCalendar.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedCalendar = [];
             }
         },
 
