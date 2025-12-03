@@ -441,28 +441,28 @@
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
                                 <div>
-                                    <p class="text-sm font-medium text-red-800">{{ __('Google Business Profile API quota is set to zero') }}</p>
+                                    <p class="text-sm font-medium text-red-800">{{ __('settings.business_profile_quota_zero') }}</p>
                                     <p class="mt-1 text-xs text-red-700">
-                                        {{ __('The API is enabled but Google requires you to request a quota increase before you can use it.') }}
+                                        {{ __('settings.business_profile_quota_zero_desc') }}
                                     </p>
                                     <div class="mt-3 space-y-2">
                                         <a href="https://console.cloud.google.com/apis/api/mybusinessaccountmanagement.googleapis.com/quotas{{ $businessProfileError['project'] ? '?project=' . $businessProfileError['project'] : '' }}"
                                            target="_blank"
                                            class="inline-flex items-center text-sm text-red-700 hover:text-red-900 underline">
                                             <i class="fas fa-external-link-alt me-1"></i>
-                                            {{ __('Request quota for Account Management API') }}
+                                            {{ __('settings.request_quota_account_api') }}
                                         </a>
                                         <br>
                                         <a href="https://console.cloud.google.com/apis/api/mybusinessbusinessinformation.googleapis.com/quotas{{ $businessProfileError['project'] ? '?project=' . $businessProfileError['project'] : '' }}"
                                            target="_blank"
                                            class="inline-flex items-center text-sm text-red-700 hover:text-red-900 underline">
                                             <i class="fas fa-external-link-alt me-1"></i>
-                                            {{ __('Request quota for Business Information API') }}
+                                            {{ __('settings.request_quota_business_api') }}
                                         </a>
                                     </div>
                                     <p class="mt-3 text-xs text-red-600">
                                         <i class="fas fa-clock me-1"></i>
-                                        {{ __('Approval typically takes 24-48 hours. Use "Add manually" above as a workaround.') }}
+                                        {{ __('settings.quota_approval_timeframe') }}
                                     </p>
                                 </div>
                             </div>
@@ -473,15 +473,15 @@
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
                                 <div>
-                                    <p class="text-sm font-medium text-amber-800">{{ __('Google Business Profile API requires setup') }}</p>
+                                    <p class="text-sm font-medium text-amber-800">{{ __('settings.business_profile_requires_setup') }}</p>
                                     <ul class="mt-2 text-xs text-amber-700 space-y-1 list-disc list-inside">
-                                        <li>{{ __('Enable "My Business Account Management API" in Google Cloud Console') }}</li>
-                                        <li>{{ __('Enable "My Business Business Information API" in Google Cloud Console') }}</li>
-                                        <li>{{ __('Request quota increase if API returns rate limit errors') }}</li>
+                                        <li>{{ __('settings.enable_my_business_account_api') }}</li>
+                                        <li>{{ __('settings.enable_my_business_info_api') }}</li>
+                                        <li>{{ __('settings.request_quota_increase') }}</li>
                                     </ul>
                                     <p class="mt-2 text-xs text-amber-600">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        {{ __('Or use "Add manually" to enter your Location ID from Google Business Profile settings.') }}
+                                        {{ __('settings.use_add_manually_location_id') }}
                                     </p>
                                 </div>
                             </div>
