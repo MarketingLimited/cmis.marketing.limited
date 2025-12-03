@@ -3669,7 +3669,7 @@ class PlatformConnectionsController extends Controller
         }
 
         // Create or update the connection within a transaction with RLS context
-        $connection = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData, $userData) {
+        $result = DB::transaction(function () use ($orgId, $accountId, $accountName, $tokenData, $userData) {
             // Set RLS context for the organization (LOCAL = true, applies to this transaction)
             DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
 
@@ -3679,7 +3679,7 @@ class PlatformConnectionsController extends Controller
                 $scopes = is_array($tokenData['scope']) ? $tokenData['scope'] : explode(',', $tokenData['scope']);
             }
 
-            return PlatformConnection::updateOrCreate(
+            $connection = PlatformConnection::updateOrCreate(
                 [
                     'org_id' => $orgId,
                     'platform' => 'tiktok',
@@ -3704,7 +3704,42 @@ class PlatformConnectionsController extends Controller
                     ],
                 ]
             );
+
+            // Also create an Integration record so the profile appears on the Profiles page
+            // This allows users to use TikTok for social publishing
+            $integration = Integration::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'tiktok',
+                    'account_id' => $accountId,
+                ],
+                [
+                    'account_name' => $accountName,
+                    'username' => $userData['display_name'] ?? $accountName,
+                    'avatar_url' => $userData['avatar_url'] ?? null,
+                    'status' => 'active',
+                    'is_active' => true,
+                    'is_enabled' => true,
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_expires_at' => isset($tokenData['expires_in'])
+                        ? now()->addSeconds($tokenData['expires_in'])
+                        : now()->addHours(24),
+                    'scopes' => $scopes,
+                    'platform_connection_id' => $connection->connection_id,
+                    'metadata' => [
+                        'connection_id' => $connection->connection_id,
+                        'open_id' => $tokenData['open_id'] ?? null,
+                        'union_id' => $userData['union_id'] ?? null,
+                        'synced_at' => now()->toIso8601String(),
+                    ],
+                ]
+            );
+
+            return ['connection' => $connection, 'integration' => $integration];
         });
+
+        $connection = $result['connection'];
 
         session()->forget(['oauth_state', 'tiktok_csrf_state']);
 
