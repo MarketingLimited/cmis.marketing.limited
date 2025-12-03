@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Jobs\SyncMetaIntegrationRecords;
 use App\Models\Integration;
 use App\Models\Platform\PlatformConnection;
 use Illuminate\Http\Request;
@@ -1166,6 +1167,15 @@ class PlatformConnectionsController extends Controller
             }
         }
 
+        // Debug logging for selected assets
+        Log::info('Meta assets save - selectedAssets built', [
+            'org_id' => $org,
+            'connection_id' => $connectionId,
+            'instagram_account' => $selectedAssets['instagram_account'] ?? [],
+            'all_types' => array_keys($selectedAssets),
+            'counts' => array_map('count', $selectedAssets),
+        ]);
+
         // Update connection metadata
         $metadata = $connection->account_metadata ?? [];
         $metadata['selected_assets'] = $selectedAssets;
@@ -1173,8 +1183,8 @@ class PlatformConnectionsController extends Controller
 
         $connection->update(['account_metadata' => $metadata]);
 
-        // Create/update Integration records for each selected asset
-        $this->syncIntegrationRecords($org, $connection, $selectedAssets);
+        // Dispatch background job to sync Integration records (non-blocking)
+        SyncMetaIntegrationRecords::dispatch($org, $connection->connection_id, $selectedAssets);
 
         if ($request->wantsJson()) {
             return $this->success([
