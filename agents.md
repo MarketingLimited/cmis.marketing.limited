@@ -2,7 +2,7 @@
 
 ## 1. Purpose (الغرض)
 
-**CMIS** (Cognitive Marketing Information System) هو نظام إدارة حملات تسويقية متكامل مبني على Laravel 12، يوفر:
+**CMIS** (Cognitive Marketing Intelligence Suite) هو نظام إدارة حملات تسويقية متكامل مبني على Laravel 12، يوفر:
 - **Multi-tenancy**: عزل البيانات بين المؤسسات باستخدام PostgreSQL Row-Level Security (RLS)
 - **Platform Integration**: تكامل مع Meta, Google Ads, TikTok, LinkedIn, Twitter, Snapchat
 - **AI-Powered Analytics**: بحث دلالي عبر pgvector + Google Gemini embeddings

@@ -499,7 +499,7 @@ All pages are fully responsive using Tailwind's responsive classes.
 **Database:** PostgreSQL 16+ with pgvector
 **Architecture:** Multi-tenant RLS
 
-**Project:** CMIS - Cognitive Marketing Information System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Organization:** Marketing Limited
 **Analysis Date:** 2025-11-22
 **Implementation:** Claude Code Analysis

@@ -1,6 +1,6 @@
 # CMIS API Documentation
 
-API reference for CMIS (Cognitive Marketing Information System) RESTful API.
+API reference for CMIS (Cognitive Marketing Intelligence Suite) RESTful API.
 
 ## Base URL
 

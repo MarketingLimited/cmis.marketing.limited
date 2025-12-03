@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: CMIS API
   description: |
-    Cognitive Marketing Intelligence System API
+    Cognitive Marketing Intelligence Suite API
 
     Complete API documentation for the CMIS platform including authentication,
     campaign management, content planning, GPT interface, and more.

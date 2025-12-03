@@ -5,7 +5,7 @@
 
 ## 🎯 What is CMIS?
 
-**Cognitive Marketing Information System** - An enterprise-grade, AI-powered marketing management platform for agencies managing multi-tenant campaigns across Meta, Google, TikTok, LinkedIn, Twitter, Snapchat, and more.
+**Cognitive Marketing Intelligence Suite** - An enterprise-grade, AI-powered marketing management platform for agencies managing multi-tenant campaigns across Meta, Google, TikTok, LinkedIn, Twitter, Snapchat, and more.
 
 **Current Status:** 49% Complete (Phase 2 of 4)
 **Health Score:** 72/100 (C+ Grade)

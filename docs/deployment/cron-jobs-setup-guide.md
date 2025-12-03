@@ -1,7 +1,7 @@
 # CMIS Platform - Cron Jobs Configuration Guide
 
 **Last Updated:** 2025-11-30
-**Platform:** CMIS - Cognitive Marketing Information System
+**Platform:** CMIS - Cognitive Marketing Intelligence Suite
 **Environment:** Production/Staging
 
 ---

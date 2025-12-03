@@ -1,6 +1,6 @@
 # CMIS Documentation Hub
 
-Welcome to the CMIS (Campaign Management & Intelligence System) documentation. This hub provides organized access to all documentation by role, task, and feature area.
+Welcome to the CMIS (Cognitive Marketing Intelligence Suite) documentation. This hub provides organized access to all documentation by role, task, and feature area.
 
 ## Quick Navigation
 

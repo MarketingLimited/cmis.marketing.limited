@@ -45,7 +45,7 @@ return [
         'automated_alert' => 'This is an automated alert from CMIS Analytics.',
         'manage_alert_settings' => 'Manage Alert Settings',
         'view_all_alerts' => 'View All Alerts',
-        'copyright' => 'CMIS - Cognitive Marketing Information System',
+        'copyright' => 'CMIS - Cognitive Marketing Intelligence Suite',
     ],
 
     // One-Time Report Email
@@ -66,7 +66,7 @@ return [
         'automated_message' => 'This report was generated on request from CMIS Analytics.',
         'analytics_dashboard' => 'Analytics Dashboard',
         'help_center' => 'Help Center',
-        'copyright' => 'CMIS - Cognitive Marketing Information System',
+        'copyright' => 'CMIS - Cognitive Marketing Intelligence Suite',
     ],
 
     // Scheduled Report Email
@@ -91,7 +91,7 @@ return [
         'automated_message' => 'This is an automated message from CMIS Analytics.',
         'manage_schedules' => 'Manage Report Schedules',
         'analytics_dashboard' => 'Analytics Dashboard',
-        'copyright' => 'CMIS - Cognitive Marketing Information System',
+        'copyright' => 'CMIS - Cognitive Marketing Intelligence Suite',
     ],
 
 ];

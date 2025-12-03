@@ -1,6 +1,6 @@
 # CMIS Feature Toggle System Design Report
 **Date:** 2025-11-20
-**Project:** Cognitive Marketing Information System (CMIS)
+**Project:** Cognitive Marketing Intelligence Suite (CMIS)
 **Scope:** Comprehensive Feature Flag Architecture for Multi-Tenant Laravel Application
 
 ---

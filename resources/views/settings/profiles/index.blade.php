@@ -124,6 +124,9 @@
                                 {{ __('profiles.name') }}
                             </th>
                             <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ __('profiles.platform') }}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 {{ __('profiles.profile_group') }}
                             </th>
                             <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -140,7 +143,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($profiles as $profile)
                             <tr class="hover:bg-gray-50 transition">
-                                {{-- Name with platform icon and avatar --}}
+                                {{-- Name with avatar --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="relative flex-shrink-0">
@@ -153,7 +156,7 @@
                                                     <i class="fas fa-user text-gray-400"></i>
                                                 </div>
                                             @endif
-                                            {{-- Platform badge --}}
+                                            {{-- Platform badge on avatar --}}
                                             <span class="absolute -bottom-1 -end-1 h-5 w-5 rounded-full bg-white border-2 border-white flex items-center justify-center">
                                                 @include('components.platform-icon', ['platform' => $profile->platform, 'size' => 'xs'])
                                             </span>
@@ -169,6 +172,14 @@
                                                 </div>
                                             @endif
                                         </div>
+                                    </div>
+                                </td>
+
+                                {{-- Platform --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        @include('components.platform-icon', ['platform' => $profile->platform, 'size' => 'sm'])
+                                        <span class="text-sm text-gray-900 capitalize">{{ $profile->platform }}</span>
                                     </div>
                                 </td>
 

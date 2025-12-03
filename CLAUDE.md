@@ -1,7 +1,7 @@
 # CMIS Project Guidelines for Claude Code
 
 **Last Updated:** 2025-12-01 (Documentation Reorganization, Test Suite Status Updated)
-**Project:** CMIS - Cognitive Marketing Information System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
 **Languages:** Arabic (Default), English - Full RTL/LTR Support
 
@@ -9,7 +9,7 @@
 
 ## 🎯 Project Overview
 
-CMIS is a Laravel-based Campaign Management & Integration System with:
+CMIS is a Laravel-based Cognitive Marketing Intelligence Suite with:
 - **Multi-tenancy:** PostgreSQL Row-Level Security (RLS)
 - **Database:** 12 schemas, 197 tables, pgvector for AI
 - **Codebase:** 712 PHP files, 244 Models (51 domains), 45 migrations, 27 test files (restructured)

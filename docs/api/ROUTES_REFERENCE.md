@@ -2,7 +2,7 @@
 
 **Last Updated:** 2025-11-22
 **Version:** 3.2
-**Project:** CMIS - Cognitive Marketing Information System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 
 ---
 

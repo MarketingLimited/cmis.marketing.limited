@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
  * @OA\Info(
  *     version="1.0.0",
  *     title="CMIS API Documentation",
- *     description="Cognitive Marketing Information System (CMIS) - RESTful API for campaign management, platform integrations, and AI-powered content generation.",
+ *     description="Cognitive Marketing Intelligence Suite (CMIS) - RESTful API for campaign management, platform integrations, and AI-powered content generation.",
  *     @OA\Contact(
  *         email="support@cmis.marketing",
  *         name="CMIS Support"

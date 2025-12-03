@@ -400,4 +400,4 @@ When adding new components:
 
 ## 📄 License
 
-Part of the CMIS (Cognitive Marketing Information System) project.
+Part of the CMIS (Cognitive Marketing Intelligence Suite) project.

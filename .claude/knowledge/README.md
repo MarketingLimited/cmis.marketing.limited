@@ -466,5 +466,5 @@ Agents use knowledge base for:
 **Remember:** This is a **living knowledge base**. It grows and evolves with the project. Focus on discovery, patterns, and inference - not memorization.
 
 **Last Updated:** 2025-11-27
-**Project:** CMIS - Campaign Management & Integration System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Framework Version:** 3.0 - Optimized for Claude Code 2025

@@ -1,5 +1,5 @@
 # CMIS - نظام إدارة التسويق الإدراكي
-## Cognitive Marketing Information System
+## Cognitive Marketing Intelligence Suite
 
 <div align="center">
 
@@ -37,7 +37,7 @@
 
 ## 🎯 Overview
 
-CMIS (Cognitive Marketing Information System) is an advanced, AI-powered marketing management platform designed for agencies and enterprises managing multi-tenant campaigns across various digital platforms. The system provides comprehensive tools for campaign planning, creative asset management, performance tracking, and automated content publishing.
+CMIS (Cognitive Marketing Intelligence Suite) is an advanced, AI-powered marketing management platform designed for agencies and enterprises managing multi-tenant campaigns across various digital platforms. The system provides comprehensive tools for campaign planning, creative asset management, performance tracking, and automated content publishing.
 
 ### What Makes CMIS Special?
 

@@ -1,5 +1,5 @@
 # CMIS Project Knowledge - Discovery Guide
-## Cognitive Marketing Information System - Teaching Agents HOW to Learn the System
+## Cognitive Marketing Intelligence Suite - Teaching Agents HOW to Learn the System
 
 **Version:** 2.1
 **Last Updated:** 2025-11-27

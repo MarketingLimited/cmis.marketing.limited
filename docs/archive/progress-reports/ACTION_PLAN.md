@@ -1666,7 +1666,7 @@ api.put(`/campaigns/${campaignId}`, data)
 openapi: 3.1.0
 info:
   title: CMIS GPT Actions API
-  description: API for interacting with the Cognitive Marketing Intelligence System
+  description: API for interacting with the Cognitive Marketing Intelligence Suite
   version: 1.0.0
 servers:
   - url: https://cmis.kazaaz.com/api/gpt

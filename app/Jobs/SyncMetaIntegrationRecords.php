@@ -72,7 +72,23 @@ class SyncMetaIntegrationRecords implements ShouldQueue
             try {
                 // Use CACHED data from MetaAssetsService (not re-fetch from API)
                 $assets = $service->$method($this->connectionId, $accessToken, false);
-                $assetsById = collect($assets)->keyBy('id')->toArray();
+
+                // For threads_account: UI sends Instagram ID, so we need to handle two cases:
+                // 1. If Threads API works: key by instagram_id (Threads data includes this)
+                // 2. If Threads API fails (returns empty): fall back to Instagram accounts data
+                if ($assetType === 'threads_account') {
+                    if (!empty($assets)) {
+                        // Threads API worked - key by instagram_id
+                        $assetsById = collect($assets)->keyBy('instagram_id')->toArray();
+                    } else {
+                        // Threads API failed - fall back to Instagram accounts (same IDs)
+                        $instagramAssets = $service->getInstagramAccounts($this->connectionId, $accessToken, false);
+                        $assetsById = collect($instagramAssets)->keyBy('id')->toArray();
+                        Log::info('SyncMetaIntegrationRecords: Using Instagram data fallback for Threads');
+                    }
+                } else {
+                    $assetsById = collect($assets)->keyBy('id')->toArray();
+                }
 
                 foreach ($this->selectedAssets[$assetType] as $assetId) {
                     $assetData = $assetsById[$assetId] ?? null;

@@ -86,7 +86,7 @@ class InstallWizard extends Command
         $this->info('╔════════════════════════════════════════════════════════════╗');
         $this->info('║                                                            ║');
         $this->info('║         🚀 CMIS Installation Wizard                        ║');
-        $this->info('║         Cognitive Marketing Information System            ║');
+        $this->info('║         Cognitive Marketing Intelligence Suite            ║');
         $this->info('║                                                            ║');
         $this->info('╚════════════════════════════════════════════════════════════╝');
         $this->newLine();

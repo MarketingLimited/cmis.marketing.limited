@@ -601,7 +601,7 @@ class GPTController extends Controller
      */
     private function buildConversationalPrompt(string $userMessage, array $context): string
     {
-        $prompt = "You are an AI assistant for CMIS (Cognitive Marketing Intelligence System), helping users manage their marketing campaigns.\n\n";
+        $prompt = "You are an AI assistant for CMIS (Cognitive Marketing Intelligence Suite), helping users manage their marketing campaigns.\n\n";
 
         // Add conversation history
         if (!empty($context['conversation_history'])) {

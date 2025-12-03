@@ -73,7 +73,16 @@
             </div>
 
             {{-- Stats grid --}}
-            <div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div class="flex-1 grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                {{-- Platform --}}
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('profiles.platform') }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        @include('components.platform-icon', ['platform' => $profile->platform, 'size' => 'sm'])
+                        <span class="text-sm font-medium text-gray-900 capitalize">{{ $profile->platform }}</span>
+                    </div>
+                </div>
+
                 {{-- Status --}}
                 <div>
                     <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('profiles.status') }}</p>

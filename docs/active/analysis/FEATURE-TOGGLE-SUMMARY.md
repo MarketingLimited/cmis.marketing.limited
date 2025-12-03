@@ -1,7 +1,7 @@
 # CMIS Feature Toggle System - Executive Summary
 
 **Date:** 2025-11-20
-**Project:** Cognitive Marketing Information System (CMIS)
+**Project:** Cognitive Marketing Intelligence Suite (CMIS)
 **Feature:** Platform Launch with Gradual Feature Enablement
 **Status:** Complete Research & Design Phase
 

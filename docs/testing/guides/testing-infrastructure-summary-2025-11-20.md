@@ -1,7 +1,7 @@
 # CMIS Testing Infrastructure Summary
 
 **Date:** 2025-11-20
-**Project:** CMIS - Cognitive Marketing Information System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Framework:** PHPUnit with Laravel TestCase
 **Agent:** laravel-testing-qa (META_COGNITIVE_FRAMEWORK v2.0)
 

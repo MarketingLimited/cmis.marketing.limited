@@ -1,8 +1,8 @@
 # CMIS AI Agents Framework
-## Specialized AI Agents for CMIS (Cognitive Marketing Information System)
+## Specialized AI Agents for CMIS (Cognitive Marketing Intelligence Suite)
 
 **Last Updated:** 2025-12-01
-**Project:** CMIS - Campaign Management & Integration System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Version:** 3.2 - Model Tier Optimization + Browser Testing Deduplication
 
 ---

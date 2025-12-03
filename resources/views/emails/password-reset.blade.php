@@ -121,7 +121,7 @@
         </div>
 
         <div class="footer">
-            <p>© {{ date('Y') }} CMIS - Cognitive Marketing Information System</p>
+            <p>© {{ date('Y') }} CMIS - Cognitive Marketing Intelligence Suite</p>
         </div>
     </div>
 </body>

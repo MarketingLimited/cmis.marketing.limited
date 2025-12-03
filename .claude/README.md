@@ -2,7 +2,7 @@
 
 **Version:** 3.0 - Optimized for Claude Code 2025
 **Last Updated:** 2025-11-19
-**Project:** CMIS - Campaign Management & Integration System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite
 
 ---
 

@@ -315,4 +315,4 @@ When adding new commands:
 
 **Last Updated:** 2025-12-01
 **Total Commands:** 14
-**Project:** CMIS - Campaign Management & Integration System
+**Project:** CMIS - Cognitive Marketing Intelligence Suite

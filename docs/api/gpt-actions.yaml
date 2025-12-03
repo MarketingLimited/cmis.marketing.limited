@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: CMIS GPT Actions API
   description: |
-    Cognitive Marketing Intelligence System (CMIS) API for GPT integration.
+    Cognitive Marketing Intelligence Suite (CMIS) API for GPT integration.
 
     This API allows ChatGPT to interact with the CMIS platform to:
     - Manage marketing campaigns

@@ -1,5 +1,5 @@
 # تقرير الفحص الشامل لنظام CMIS
-## Cognitive Marketing Intelligence System - Complete System Audit
+## Cognitive Marketing Intelligence Suite - Complete System Audit
 
 **التاريخ:** 2025-11-16
 **الإصدار:** v1.0

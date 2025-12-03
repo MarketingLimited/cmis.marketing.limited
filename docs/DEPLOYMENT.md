@@ -1,6 +1,6 @@
 # CMIS Deployment Guide
 
-Comprehensive guide for deploying CMIS (Cognitive Marketing Information System) to staging and production environments.
+Comprehensive guide for deploying CMIS (Cognitive Marketing Intelligence Suite) to staging and production environments.
 
 ## Table of Contents
 

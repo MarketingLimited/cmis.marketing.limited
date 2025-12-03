@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the comprehensive automated testing strategy for the CMIS (Campaign Management & Integration System). The testing framework provides full coverage across all workflows: development, marketing, organizational, integration, and knowledge management.
+This document describes the comprehensive automated testing strategy for the CMIS (Cognitive Marketing Intelligence Suite). The testing framework provides full coverage across all workflows: development, marketing, organizational, integration, and knowledge management.
 
 ## Table of Contents
 

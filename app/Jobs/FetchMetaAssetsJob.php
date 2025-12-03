@@ -148,10 +148,7 @@ class FetchMetaAssetsJob implements ShouldQueue
             'catalogs' => 'getCatalogs',
             'whatsapp' => 'getWhatsappAccounts',
             'custom_conversions' => 'getCustomConversions',
-            'creative_folders' => 'getCreativeFolders',
-            'domains' => 'getDomains',
             'offline_event_sets' => 'getOfflineEventSets',
-            'apps' => 'getApps',
         ];
 
         $results = [];

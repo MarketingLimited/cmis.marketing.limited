@@ -635,10 +635,7 @@ Route::middleware(['auth'])->group(function () {
                     Route::get('/catalogs', [MetaAssetsApiController::class, 'getCatalogs'])->name('catalogs');
                     Route::get('/whatsapp', [MetaAssetsApiController::class, 'getWhatsappAccounts'])->name('whatsapp');
                     Route::get('/custom-conversions', [MetaAssetsApiController::class, 'getCustomConversions'])->name('custom-conversions');
-                    Route::get('/creative-folders', [MetaAssetsApiController::class, 'getCreativeFolders'])->name('creative-folders');
-                    Route::get('/domains', [MetaAssetsApiController::class, 'getDomains'])->name('domains');
                     Route::get('/offline-event-sets', [MetaAssetsApiController::class, 'getOfflineEventSets'])->name('offline-event-sets');
-                    Route::get('/apps', [MetaAssetsApiController::class, 'getApps'])->name('apps');
                     Route::post('/refresh', [MetaAssetsApiController::class, 'refreshAll'])->name('refresh');
                     Route::get('/cache-status', [MetaAssetsApiController::class, 'getCacheStatus'])->name('cache-status');
                 });

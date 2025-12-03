@@ -1,7 +1,7 @@
 # CMIS Internationalization (i18n) & RTL/LTR Implementation Summary
 
 **Date:** 2025-11-27
-**Project:** CMIS (Cognitive Marketing Information System)
+**Project:** CMIS (Cognitive Marketing Intelligence Suite)
 **Status:** ✅ COMPLETED - Full i18n & RTL/LTR Support Implemented
 
 ---

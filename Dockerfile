@@ -1,4 +1,4 @@
-# CMIS - Cognitive Marketing Information System
+# CMIS - Cognitive Marketing Intelligence Suite
 # Multi-stage Dockerfile for Laravel Application with Nginx + Supervisor
 
 FROM php:8.2-fpm-alpine AS base
@@ -103,7 +103,7 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.version="${VCS_REF}" \
       org.opencontainers.image.vendor="Marketing Limited" \
       org.opencontainers.image.title="CMIS Laravel Application" \
-      org.opencontainers.image.description="CMIS - Cognitive Marketing Information System"
+      org.opencontainers.image.description="CMIS - Cognitive Marketing Intelligence Suite"
 
 # Expose port (Nginx)
 EXPOSE 80

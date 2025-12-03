@@ -16,7 +16,7 @@ return [
 
     'title' => 'CMIS API Documentation',
 
-    'description' => 'Cognitive Marketing Information System (CMIS) - RESTful API for campaign management, platform integrations, and AI-powered content generation.',
+    'description' => 'Cognitive Marketing Intelligence Suite (CMIS) - RESTful API for campaign management, platform integrations, and AI-powered content generation.',
 
     'terms_of_service' => env('APP_URL') . '/terms',
 
