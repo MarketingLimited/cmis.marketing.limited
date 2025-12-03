@@ -801,6 +801,355 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ========== Custom Conversions Section ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exchange-alt text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Custom Conversions') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.customConversions" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.customConversions && !errors.customConversions" x-text="customConversions.length + ' {{ __('conversion(s) available') }}'"></span>
+                                    <span x-show="errors.customConversions" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.customConversions" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 2" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="h-4 w-4 bg-gray-200 rounded me-3"></div>
+                                <div class="flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.customConversions && !errors.customConversions && customConversions.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-exchange-alt text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Custom Conversions found') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Create custom conversions in Meta Events Manager') }}</p>
+                    </div>
+
+                    {{-- Custom Conversions List --}}
+                    <div x-show="!loading.customConversions && !errors.customConversions && customConversions.length > 0">
+                        <div class="mb-4">
+                            <input type="text" x-model="customConversionsSearch" @input.debounce.300ms placeholder="{{ __('Search conversions by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="conversion in filteredCustomConversions" :key="conversion.id">
+                                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                           :class="{ 'border-indigo-500 bg-indigo-50': selectedCustomConversions.includes(conversion.id) }">
+                                        <input type="checkbox" name="custom_conversion[]" :value="conversion.id"
+                                               x-model="selectedCustomConversions"
+                                               class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                        <div class="ms-3">
+                                            <span class="text-sm font-medium text-gray-900" x-text="conversion.name"></span>
+                                            <span x-show="conversion.custom_event_type" class="block text-xs text-gray-500" x-text="conversion.custom_event_type"></span>
+                                            <span class="block text-xs text-indigo-600" x-text="conversion.ad_account_name"></span>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ========== Creative Folders Section ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-folder text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Creative Folders') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.creativeFolders" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.creativeFolders && !errors.creativeFolders" x-text="creativeFolders.length + ' {{ __('folder(s) available') }}'"></span>
+                                    <span x-show="errors.creativeFolders" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.creativeFolders" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 2" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="h-4 w-4 bg-gray-200 rounded me-3"></div>
+                                <div class="flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.creativeFolders && !errors.creativeFolders && creativeFolders.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-folder text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Creative Folders found') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Create folders in Meta Business Manager Asset Library') }}</p>
+                    </div>
+
+                    {{-- Creative Folders List --}}
+                    <div x-show="!loading.creativeFolders && !errors.creativeFolders && creativeFolders.length > 0">
+                        <div class="mb-4">
+                            <input type="text" x-model="creativeFoldersSearch" @input.debounce.300ms placeholder="{{ __('Search folders by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm">
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="folder in filteredCreativeFolders" :key="folder.id">
+                                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                           :class="{ 'border-yellow-500 bg-yellow-50': selectedCreativeFolders.includes(folder.id) }">
+                                        <input type="checkbox" name="creative_folder[]" :value="folder.id"
+                                               x-model="selectedCreativeFolders"
+                                               class="h-4 w-4 text-yellow-600 border-gray-300 focus:ring-yellow-500">
+                                        <div class="ms-3">
+                                            <span class="text-sm font-medium text-gray-900" x-text="folder.name"></span>
+                                            <span class="block text-xs text-yellow-600" x-text="folder.business_name"></span>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ========== Domains Section ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-globe text-cyan-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Verified Domains') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.domains" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.domains && !errors.domains" x-text="domains.length + ' {{ __('domain(s) available') }}'"></span>
+                                    <span x-show="errors.domains" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.domains" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 2" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="h-4 w-4 bg-gray-200 rounded me-3"></div>
+                                <div class="flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.domains && !errors.domains && domains.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-globe text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Verified Domains found') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Add and verify domains in Meta Business Manager') }}</p>
+                    </div>
+
+                    {{-- Domains List --}}
+                    <div x-show="!loading.domains && !errors.domains && domains.length > 0">
+                        <div class="mb-4">
+                            <input type="text" x-model="domainsSearch" @input.debounce.300ms placeholder="{{ __('Search domains...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 text-sm">
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="domain in filteredDomains" :key="domain.id">
+                                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                           :class="{ 'border-cyan-500 bg-cyan-50': selectedDomains.includes(domain.id) }">
+                                        <input type="checkbox" name="domain[]" :value="domain.id"
+                                               x-model="selectedDomains"
+                                               class="h-4 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-500">
+                                        <div class="ms-3 flex-1 flex items-center justify-between">
+                                            <div>
+                                                <span class="text-sm font-medium text-gray-900" x-text="domain.domain_name"></span>
+                                                <span class="block text-xs text-cyan-600" x-text="domain.business_name"></span>
+                                            </div>
+                                            <span class="text-xs px-2 py-0.5 rounded-full"
+                                                  :class="domain.verification_status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+                                                  x-text="domain.verification_status"></span>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ========== Offline Event Sets Section ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-store text-rose-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Offline Event Sets') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.offlineEventSets" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.offlineEventSets && !errors.offlineEventSets" x-text="offlineEventSets.length + ' {{ __('event set(s) available') }}'"></span>
+                                    <span x-show="errors.offlineEventSets" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.offlineEventSets" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 2" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="h-4 w-4 bg-gray-200 rounded me-3"></div>
+                                <div class="flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.offlineEventSets && !errors.offlineEventSets && offlineEventSets.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-store text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Offline Event Sets found') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Create offline event sets in Meta Events Manager') }}</p>
+                    </div>
+
+                    {{-- Offline Event Sets List --}}
+                    <div x-show="!loading.offlineEventSets && !errors.offlineEventSets && offlineEventSets.length > 0">
+                        <div class="mb-4">
+                            <input type="text" x-model="offlineEventSetsSearch" @input.debounce.300ms placeholder="{{ __('Search event sets by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 text-sm">
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="eventSet in filteredOfflineEventSets" :key="eventSet.id">
+                                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                           :class="{ 'border-rose-500 bg-rose-50': selectedOfflineEventSets.includes(eventSet.id) }">
+                                        <input type="checkbox" name="offline_event_set[]" :value="eventSet.id"
+                                               x-model="selectedOfflineEventSets"
+                                               class="h-4 w-4 text-rose-600 border-gray-300 focus:ring-rose-500">
+                                        <div class="ms-3">
+                                            <span class="text-sm font-medium text-gray-900" x-text="eventSet.name"></span>
+                                            <span x-show="eventSet.description" class="block text-xs text-gray-500" x-text="eventSet.description"></span>
+                                            <span class="block text-xs text-rose-600" x-text="eventSet.business_name"></span>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ========== Apps Section ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-mobile-alt text-teal-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Apps') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.apps" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.apps && !errors.apps" x-text="apps.length + ' {{ __('app(s) available') }}'"></span>
+                                    <span x-show="errors.apps" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.apps" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 2" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="h-4 w-4 bg-gray-200 rounded me-3"></div>
+                                <div class="flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.apps && !errors.apps && apps.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-mobile-alt text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Apps found') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Add apps in Meta Business Manager') }}</p>
+                    </div>
+
+                    {{-- Apps List --}}
+                    <div x-show="!loading.apps && !errors.apps && apps.length > 0">
+                        <div class="mb-4">
+                            <input type="text" x-model="appsSearch" @input.debounce.300ms placeholder="{{ __('Search apps by name...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
+                        </div>
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="app in filteredApps" :key="app.id">
+                                    <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                           :class="{ 'border-teal-500 bg-teal-50': selectedApps.includes(app.id) }">
+                                        <input type="checkbox" name="app[]" :value="app.id"
+                                               x-model="selectedApps"
+                                               class="h-4 w-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                                        <div class="ms-3 flex items-center gap-3">
+                                            <img x-show="app.logo_url" :src="app.logo_url" class="w-8 h-8 rounded">
+                                            <div x-show="!app.logo_url" class="w-8 h-8 bg-teal-100 rounded flex items-center justify-center">
+                                                <i class="fas fa-mobile-alt text-teal-600"></i>
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-medium text-gray-900" x-text="app.name"></span>
+                                                <span x-show="app.category" class="block text-xs text-gray-500" x-text="app.category"></span>
+                                                <span class="block text-xs text-teal-600" x-text="app.business_name"></span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Summary & Submit --}}
@@ -844,6 +1193,31 @@
                                 <i class="fab fa-whatsapp" :class="selectedWhatsappAccounts.length > 0 ? '' : 'text-gray-400'"></i>
                                 <span x-text="selectedWhatsappAccounts.length > 0 ? `${selectedWhatsappAccounts.length} {{ __('WhatsApp') }}` : '{{ __('WhatsApp') }}'"></span>
                             </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedCustomConversions.length > 0 }">
+                                <i class="fas" :class="selectedCustomConversions.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedCustomConversions.length > 0 ? `${selectedCustomConversions.length} {{ __('Conversion(s)') }}` : '{{ __('Conversion') }}'"></span>
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedCreativeFolders.length > 0 }">
+                                <i class="fas" :class="selectedCreativeFolders.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedCreativeFolders.length > 0 ? `${selectedCreativeFolders.length} {{ __('Folder(s)') }}` : '{{ __('Folder') }}'"></span>
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedDomains.length > 0 }">
+                                <i class="fas" :class="selectedDomains.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedDomains.length > 0 ? `${selectedDomains.length} {{ __('Domain(s)') }}` : '{{ __('Domain') }}'"></span>
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedOfflineEventSets.length > 0 }">
+                                <i class="fas" :class="selectedOfflineEventSets.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedOfflineEventSets.length > 0 ? `${selectedOfflineEventSets.length} {{ __('Event Set(s)') }}` : '{{ __('Event Set') }}'"></span>
+                            </span>
+                            <span class="mx-1">•</span>
+                            <span :class="{ 'text-green-600 font-medium': selectedApps.length > 0 }">
+                                <i class="fas" :class="selectedApps.length > 0 ? 'fa-check-circle' : 'fa-circle'"></i>
+                                <span x-text="selectedApps.length > 0 ? `${selectedApps.length} {{ __('App(s)') }}` : '{{ __('App') }}'"></span>
+                            </span>
                         </p>
                     </div>
                     <div class="flex gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
@@ -885,6 +1259,11 @@ function metaAssetsPage() {
             pixels: true,
             catalogs: true,
             whatsapp: true,
+            customConversions: true,
+            creativeFolders: true,
+            domains: true,
+            offlineEventSets: true,
+            apps: true,
         },
 
         errors: {
@@ -895,6 +1274,11 @@ function metaAssetsPage() {
             pixels: null,
             catalogs: null,
             whatsapp: null,
+            customConversions: null,
+            creativeFolders: null,
+            domains: null,
+            offlineEventSets: null,
+            apps: null,
         },
 
         // Asset data (loaded via AJAX)
@@ -905,6 +1289,11 @@ function metaAssetsPage() {
         pixels: [],
         catalogs: [],
         whatsappAccounts: [],
+        customConversions: [],
+        creativeFolders: [],
+        domains: [],
+        offlineEventSets: [],
+        apps: [],
 
         // Selected items (pre-populated from server)
         selectedPages: @json((array) ($selectedAssets['page'] ?? [])),
@@ -914,6 +1303,11 @@ function metaAssetsPage() {
         selectedPixels: @json((array) ($selectedAssets['pixel'] ?? [])),
         selectedCatalogs: @json((array) ($selectedAssets['catalog'] ?? [])),
         selectedWhatsappAccounts: @json((array) ($selectedAssets['whatsapp_account'] ?? [])),
+        selectedCustomConversions: @json((array) ($selectedAssets['custom_conversion'] ?? [])),
+        selectedCreativeFolders: @json((array) ($selectedAssets['creative_folder'] ?? [])),
+        selectedDomains: @json((array) ($selectedAssets['domain'] ?? [])),
+        selectedOfflineEventSets: @json((array) ($selectedAssets['offline_event_set'] ?? [])),
+        selectedApps: @json((array) ($selectedAssets['app'] ?? [])),
 
         // Manual input visibility
         showManualPage: false,
@@ -932,6 +1326,11 @@ function metaAssetsPage() {
         pixelsSearch: '',
         catalogsSearch: '',
         whatsappSearch: '',
+        customConversionsSearch: '',
+        creativeFoldersSearch: '',
+        domainsSearch: '',
+        offlineEventSetsSearch: '',
+        appsSearch: '',
 
         // Computed properties
         get filteredPages() {
@@ -994,6 +1393,54 @@ function metaAssetsPage() {
             );
         },
 
+        get filteredCustomConversions() {
+            if (!this.customConversionsSearch) return this.customConversions;
+            const search = this.customConversionsSearch.toLowerCase();
+            return this.customConversions.filter(c =>
+                (c.name || '').toLowerCase().includes(search) ||
+                (c.custom_event_type || '').toLowerCase().includes(search) ||
+                (c.ad_account_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredCreativeFolders() {
+            if (!this.creativeFoldersSearch) return this.creativeFolders;
+            const search = this.creativeFoldersSearch.toLowerCase();
+            return this.creativeFolders.filter(f =>
+                (f.name || '').toLowerCase().includes(search) ||
+                (f.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredDomains() {
+            if (!this.domainsSearch) return this.domains;
+            const search = this.domainsSearch.toLowerCase();
+            return this.domains.filter(d =>
+                (d.domain_name || '').toLowerCase().includes(search) ||
+                (d.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredOfflineEventSets() {
+            if (!this.offlineEventSetsSearch) return this.offlineEventSets;
+            const search = this.offlineEventSetsSearch.toLowerCase();
+            return this.offlineEventSets.filter(e =>
+                (e.name || '').toLowerCase().includes(search) ||
+                (e.description || '').toLowerCase().includes(search) ||
+                (e.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
+        get filteredApps() {
+            if (!this.appsSearch) return this.apps;
+            const search = this.appsSearch.toLowerCase();
+            return this.apps.filter(a =>
+                (a.name || '').toLowerCase().includes(search) ||
+                (a.category || '').toLowerCase().includes(search) ||
+                (a.business_name || '').toLowerCase().includes(search)
+            );
+        },
+
         // Initialize - load assets in parallel
         async init() {
             this.loadingStatus = '{{ __('Loading Facebook Pages and Ad Accounts...') }}';
@@ -1005,7 +1452,7 @@ function metaAssetsPage() {
                 this.loadAdAccounts(),
             ]);
 
-            this.loadingProgress = 50;
+            this.loadingProgress = 40;
             this.loadingStatus = '{{ __('Loading dependent assets...') }}';
 
             // Load dependent assets
@@ -1014,6 +1461,18 @@ function metaAssetsPage() {
                 this.loadPixels(),
                 this.loadCatalogs(),
                 this.loadWhatsappAccounts(),
+            ]);
+
+            this.loadingProgress = 60;
+            this.loadingStatus = '{{ __('Loading additional assets...') }}';
+
+            // Load new asset types
+            await Promise.allSettled([
+                this.loadCustomConversions(),
+                this.loadCreativeFolders(),
+                this.loadDomains(),
+                this.loadOfflineEventSets(),
+                this.loadApps(),
             ]);
 
             this.loadingProgress = 90;
@@ -1049,6 +1508,11 @@ function metaAssetsPage() {
                 this.pixels = [];
                 this.catalogs = [];
                 this.whatsappAccounts = [];
+                this.customConversions = [];
+                this.creativeFolders = [];
+                this.domains = [];
+                this.offlineEventSets = [];
+                this.apps = [];
 
                 Object.keys(this.loading).forEach(k => this.loading[k] = true);
                 Object.keys(this.errors).forEach(k => this.errors[k] = null);
@@ -1217,6 +1681,116 @@ function metaAssetsPage() {
                 console.error('Failed to load WhatsApp:', error);
             } finally {
                 this.loading.whatsapp = false;
+            }
+        },
+
+        // Load Custom Conversions
+        async loadCustomConversions() {
+            this.loading.customConversions = true;
+            this.errors.customConversions = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/custom-conversions`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.customConversions = data.data || [];
+                }
+            } catch (error) {
+                this.errors.customConversions = error.message;
+                console.error('Failed to load Custom Conversions:', error);
+            } finally {
+                this.loading.customConversions = false;
+            }
+        },
+
+        // Load Creative Folders
+        async loadCreativeFolders() {
+            this.loading.creativeFolders = true;
+            this.errors.creativeFolders = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/creative-folders`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.creativeFolders = data.data || [];
+                }
+            } catch (error) {
+                this.errors.creativeFolders = error.message;
+                console.error('Failed to load Creative Folders:', error);
+            } finally {
+                this.loading.creativeFolders = false;
+            }
+        },
+
+        // Load Domains
+        async loadDomains() {
+            this.loading.domains = true;
+            this.errors.domains = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/domains`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.domains = data.data || [];
+                }
+            } catch (error) {
+                this.errors.domains = error.message;
+                console.error('Failed to load Domains:', error);
+            } finally {
+                this.loading.domains = false;
+            }
+        },
+
+        // Load Offline Event Sets
+        async loadOfflineEventSets() {
+            this.loading.offlineEventSets = true;
+            this.errors.offlineEventSets = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/offline-event-sets`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.offlineEventSets = data.data || [];
+                }
+            } catch (error) {
+                this.errors.offlineEventSets = error.message;
+                console.error('Failed to load Offline Event Sets:', error);
+            } finally {
+                this.loading.offlineEventSets = false;
+            }
+        },
+
+        // Load Apps
+        async loadApps() {
+            this.loading.apps = true;
+            this.errors.apps = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/apps`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.apps = data.data || [];
+                }
+            } catch (error) {
+                this.errors.apps = error.message;
+                console.error('Failed to load Apps:', error);
+            } finally {
+                this.loading.apps = false;
             }
         },
 

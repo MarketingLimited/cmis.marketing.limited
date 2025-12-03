@@ -271,6 +271,151 @@ class MetaAssetsApiController extends Controller
     }
 
     /**
+     * Get Custom Conversions.
+     */
+    public function getCustomConversions(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $conversions = $this->metaAssetsService->getCustomConversions(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($conversions, __('Custom Conversions loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Custom Conversions', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Custom Conversions'));
+        }
+    }
+
+    /**
+     * Get Business Creative Folders.
+     */
+    public function getCreativeFolders(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $folders = $this->metaAssetsService->getCreativeFolders(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($folders, __('Creative Folders loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Creative Folders', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Creative Folders'));
+        }
+    }
+
+    /**
+     * Get Verified Domains.
+     */
+    public function getDomains(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $domains = $this->metaAssetsService->getDomains(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($domains, __('Domains loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Domains', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Domains'));
+        }
+    }
+
+    /**
+     * Get Offline Event Sets.
+     */
+    public function getOfflineEventSets(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $eventSets = $this->metaAssetsService->getOfflineEventSets(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($eventSets, __('Offline Event Sets loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Offline Event Sets', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Offline Event Sets'));
+        }
+    }
+
+    /**
+     * Get Owned Apps.
+     */
+    public function getApps(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $apps = $this->metaAssetsService->getApps(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($apps, __('Apps loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Apps', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Apps'));
+        }
+    }
+
+    /**
      * Refresh all assets (clear cache and reload).
      */
     public function refreshAll(Request $request, string $org, string $connectionId): JsonResponse

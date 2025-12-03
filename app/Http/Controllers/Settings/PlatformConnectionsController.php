@@ -1124,7 +1124,7 @@ class PlatformConnectionsController extends Controller
             ->firstOrFail();
 
         // Multi-select asset types
-        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog', 'whatsapp_account'];
+        $multiAssetTypes = ['page', 'instagram_account', 'threads_account', 'ad_account', 'pixel', 'catalog', 'whatsapp_account', 'custom_conversion', 'creative_folder', 'domain', 'offline_event_set', 'app'];
 
         // Build validation rules for multi-select
         $rules = [];
@@ -1202,6 +1202,11 @@ class PlatformConnectionsController extends Controller
             'pixel' => 'Pixel',
             'catalog' => 'Catalog',
             'whatsapp_account' => 'WhatsApp Account',
+            'custom_conversion' => 'Custom Conversion',
+            'creative_folder' => 'Creative Folder',
+            'domain' => 'Domain',
+            'offline_event_set' => 'Offline Event Set',
+            'app' => 'App',
         ];
 
         $assetList = [];

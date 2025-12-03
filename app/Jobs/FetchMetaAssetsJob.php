@@ -24,6 +24,11 @@ use Illuminate\Support\Facades\Log;
  * - Pixels
  * - Product Catalogs
  * - WhatsApp Business Accounts
+ * - Custom Conversions
+ * - Creative Folders
+ * - Verified Domains
+ * - Offline Event Sets
+ * - Apps
  */
 class FetchMetaAssetsJob implements ShouldQueue
 {
@@ -142,6 +147,11 @@ class FetchMetaAssetsJob implements ShouldQueue
             'pixels' => 'getPixels',
             'catalogs' => 'getCatalogs',
             'whatsapp' => 'getWhatsappAccounts',
+            'custom_conversions' => 'getCustomConversions',
+            'creative_folders' => 'getCreativeFolders',
+            'domains' => 'getDomains',
+            'offline_event_sets' => 'getOfflineEventSets',
+            'apps' => 'getApps',
         ];
 
         $results = [];

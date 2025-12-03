@@ -598,11 +598,298 @@ class MetaAssetsService
     }
 
     /**
+     * Get Custom Conversions (from all ad accounts with pagination).
+     */
+    public function getCustomConversions(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'custom_conversions');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching Custom Conversions from Meta API');
+
+            $customConversions = [];
+            $adAccounts = $this->getAdAccounts($connectionId, $accessToken, false);
+
+            foreach ($adAccounts as $account) {
+                $accountId = $account['id'] ?? null;
+                if (!$accountId) continue;
+
+                $formattedAccountId = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
+
+                try {
+                    $conversionData = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . "/{$formattedAccountId}/customconversions",
+                        $accessToken,
+                        ['fields' => 'id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived']
+                    );
+
+                    foreach ($conversionData as $conversion) {
+                        $existingIds = array_column($customConversions, 'id');
+                        if (!in_array($conversion['id'], $existingIds)) {
+                            $customConversions[] = [
+                                'id' => $conversion['id'],
+                                'name' => $conversion['name'] ?? 'Unnamed Conversion',
+                                'description' => $conversion['description'] ?? null,
+                                'custom_event_type' => $conversion['custom_event_type'] ?? null,
+                                'rule' => $conversion['rule'] ?? null,
+                                'pixel_id' => $conversion['pixel']['id'] ?? null,
+                                'ad_account_id' => $account['id'],
+                                'ad_account_name' => $account['name'] ?? 'Unknown',
+                                'creation_time' => $conversion['creation_time'] ?? null,
+                                'last_fired_time' => $conversion['last_fired_time'] ?? null,
+                                'is_archived' => $conversion['is_archived'] ?? false,
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch custom conversions for ad account', [
+                        'account_id' => $formattedAccountId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::info('Custom Conversions fetched', ['count' => count($customConversions)]);
+            return $customConversions;
+        });
+    }
+
+    /**
+     * Get Business Creative Folders (from all businesses).
+     * Note: This endpoint may require special permissions and access might be restricted.
+     */
+    public function getCreativeFolders(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'creative_folders');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching Creative Folders from Meta API');
+
+            $creativeFolders = [];
+            $businesses = $this->getBusinesses($accessToken, $connectionId);
+
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
+
+                try {
+                    $folderData = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/creative_folders",
+                        $accessToken,
+                        ['fields' => 'id,name']
+                    );
+
+                    foreach ($folderData as $folder) {
+                        $existingIds = array_column($creativeFolders, 'id');
+                        if (!in_array($folder['id'], $existingIds)) {
+                            $creativeFolders[] = [
+                                'id' => $folder['id'],
+                                'name' => $folder['name'] ?? 'Unnamed Folder',
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::debug('Failed to fetch creative folders for business (may require special permissions)', [
+                        'business_id' => $businessId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::info('Creative Folders fetched', ['count' => count($creativeFolders)]);
+            return $creativeFolders;
+        });
+    }
+
+    /**
+     * Get Verified Domains (from all businesses).
+     */
+    public function getDomains(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'domains');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching Verified Domains from Meta API');
+
+            $domains = [];
+            $businesses = $this->getBusinesses($accessToken, $connectionId);
+
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
+
+                try {
+                    $domainData = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_domains",
+                        $accessToken,
+                        ['fields' => 'id,domain_name,verification_status']
+                    );
+
+                    foreach ($domainData as $domain) {
+                        $existingIds = array_column($domains, 'id');
+                        if (!in_array($domain['id'], $existingIds)) {
+                            $domains[] = [
+                                'id' => $domain['id'],
+                                'domain_name' => $domain['domain_name'] ?? 'Unknown Domain',
+                                'verification_status' => $domain['verification_status'] ?? 'unknown',
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch domains for business', [
+                        'business_id' => $businessId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::info('Verified Domains fetched', ['count' => count($domains)]);
+            return $domains;
+        });
+    }
+
+    /**
+     * Get Offline Event Sets (from all businesses).
+     */
+    public function getOfflineEventSets(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'offline_event_sets');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching Offline Event Sets from Meta API');
+
+            $offlineEventSets = [];
+            $businesses = $this->getBusinesses($accessToken, $connectionId);
+
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
+
+                try {
+                    $eventSetData = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/offline_conversion_data_sets",
+                        $accessToken,
+                        ['fields' => 'id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin']
+                    );
+
+                    foreach ($eventSetData as $eventSet) {
+                        $existingIds = array_column($offlineEventSets, 'id');
+                        if (!in_array($eventSet['id'], $existingIds)) {
+                            $offlineEventSets[] = [
+                                'id' => $eventSet['id'],
+                                'name' => $eventSet['name'] ?? 'Unnamed Event Set',
+                                'description' => $eventSet['description'] ?? null,
+                                'upload_rate' => $eventSet['upload_rate'] ?? null,
+                                'duplicate_entries' => $eventSet['duplicate_entries'] ?? 0,
+                                'match_rate_approx' => $eventSet['match_rate_approx'] ?? null,
+                                'event_stats' => $eventSet['event_stats'] ?? null,
+                                'data_origin' => $eventSet['data_origin'] ?? null,
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch offline event sets for business', [
+                        'business_id' => $businessId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::info('Offline Event Sets fetched', ['count' => count($offlineEventSets)]);
+            return $offlineEventSets;
+        });
+    }
+
+    /**
+     * Get Owned Apps (from all businesses).
+     */
+    public function getApps(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'apps');
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching Owned Apps from Meta API');
+
+            $apps = [];
+            $businesses = $this->getBusinesses($accessToken, $connectionId);
+
+            foreach ($businesses as $business) {
+                $businessId = $business['id'] ?? null;
+                $businessName = $business['name'] ?? 'Unknown Business';
+                if (!$businessId) continue;
+
+                try {
+                    $appData = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_apps",
+                        $accessToken,
+                        ['fields' => 'id,name,link,category,logo_url']
+                    );
+
+                    foreach ($appData as $app) {
+                        $existingIds = array_column($apps, 'id');
+                        if (!in_array($app['id'], $existingIds)) {
+                            $apps[] = [
+                                'id' => $app['id'],
+                                'name' => $app['name'] ?? 'Unnamed App',
+                                'link' => $app['link'] ?? null,
+                                'category' => $app['category'] ?? null,
+                                'logo_url' => $app['logo_url'] ?? null,
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                            ];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch apps for business', [
+                        'business_id' => $businessId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            Log::info('Owned Apps fetched', ['count' => count($apps)]);
+            return $apps;
+        });
+    }
+
+    /**
      * Clear all cached assets for a connection.
      */
     public function refreshAll(string $connectionId): void
     {
-        $assetTypes = ['pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp', 'businesses'];
+        $assetTypes = [
+            'pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp', 'businesses',
+            'custom_conversions', 'creative_folders', 'domains', 'offline_event_sets', 'apps'
+        ];
 
         foreach ($assetTypes as $type) {
             Cache::forget($this->getCacheKey($connectionId, $type));
@@ -616,7 +903,10 @@ class MetaAssetsService
      */
     public function getCacheStatus(string $connectionId): array
     {
-        $assetTypes = ['pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp'];
+        $assetTypes = [
+            'pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp',
+            'custom_conversions', 'creative_folders', 'domains', 'offline_event_sets', 'apps'
+        ];
         $status = [];
 
         foreach ($assetTypes as $type) {
