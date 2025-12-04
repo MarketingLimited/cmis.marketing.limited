@@ -3,16 +3,17 @@
 namespace App\Services\Social;
 
 use App\Models\Platform\PlatformConnection;
+use App\Services\Social\Publishers\TikTokPublisher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Social Post Publishing Service
  *
  * Handles publishing posts to social media platforms.
- * Currently supports Meta platforms (Facebook, Instagram) with
- * full support for all Graph API features.
+ * Supports: Meta (Facebook, Instagram), TikTok
  */
 class SocialPostPublishService
 {
@@ -43,14 +44,18 @@ class SocialPostPublishService
                 return ['success' => false, 'message' => 'This post cannot be published'];
             }
 
+            // Determine platform type for connection lookup
+            $platform = $socialPost->platform;
+            $connectionPlatform = $this->getConnectionPlatform($platform);
+
             // Get platform connection
             $connection = PlatformConnection::where('org_id', $orgId)
-                ->where('platform', 'meta')
+                ->where('platform', $connectionPlatform)
                 ->where('status', 'active')
                 ->first();
 
             if (!$connection) {
-                return ['success' => false, 'message' => 'No active Meta connection found'];
+                return ['success' => false, 'message' => "No active {$platform} connection found. Please connect your {$platform} account in Settings > Platform Connections."];
             }
 
             // Update status to publishing
@@ -61,10 +66,10 @@ class SocialPostPublishService
             // Parse media URLs
             $mediaUrls = json_decode($socialPost->media ?? '[]', true);
 
-            // Publish to platform
-            $result = $this->publishToMeta(
+            // Route to platform-specific publishing method
+            $result = $this->publishToPlatform(
                 $postId,
-                $socialPost->platform,
+                $platform,
                 $socialPost->account_id,
                 $socialPost->content,
                 $mediaUrls,
@@ -880,5 +885,193 @@ class SocialPostPublishService
 
             return false;
         }
+    }
+
+    /**
+     * Get the connection platform type for a given post platform
+     *
+     * Maps social platforms to their connection platform types
+     * e.g., facebook/instagram -> meta, tiktok -> tiktok
+     */
+    protected function getConnectionPlatform(string $platform): string
+    {
+        return match ($platform) {
+            'facebook', 'instagram' => 'meta',
+            'tiktok' => 'tiktok',
+            'twitter', 'x' => 'twitter',
+            'linkedin' => 'linkedin',
+            'youtube' => 'youtube',
+            default => $platform,
+        };
+    }
+
+    /**
+     * Route publishing to platform-specific method
+     */
+    protected function publishToPlatform(
+        string $postId,
+        string $platform,
+        ?string $accountId,
+        string $content,
+        array $mediaUrls,
+        PlatformConnection $connection
+    ): array {
+        return match ($platform) {
+            'facebook', 'instagram' => $this->publishToMeta(
+                $postId,
+                $platform,
+                $accountId,
+                $content,
+                $mediaUrls,
+                $connection
+            ),
+            'tiktok' => $this->publishToTikTok(
+                $postId,
+                $content,
+                $mediaUrls,
+                $connection
+            ),
+            default => [
+                'success' => false,
+                'message' => "{$platform} publishing not yet implemented. Please check back soon.",
+            ],
+        };
+    }
+
+    /**
+     * Publish content to TikTok
+     *
+     * Uses TikTok Content Posting API v2 with FILE_UPLOAD method.
+     * Note: Unaudited apps can only post PRIVATE/SELF_ONLY content.
+     */
+    public function publishToTikTok(
+        string $postId,
+        string $content,
+        array $mediaUrls,
+        PlatformConnection $connection
+    ): array {
+        try {
+            Log::info('Publishing to TikTok', [
+                'post_id' => $postId,
+                'has_media' => !empty($mediaUrls),
+                'media_count' => count($mediaUrls),
+            ]);
+
+            // TikTok requires video content
+            if (empty($mediaUrls)) {
+                return [
+                    'success' => false,
+                    'message' => 'TikTok requires at least one video. Please add a video to your post.',
+                ];
+            }
+
+            // Find video media
+            $videoMedia = null;
+            foreach ($mediaUrls as $media) {
+                if (($media['type'] ?? 'image') === 'video') {
+                    $videoMedia = $media;
+                    break;
+                }
+            }
+
+            if (!$videoMedia) {
+                return [
+                    'success' => false,
+                    'message' => 'TikTok requires a video. No video found in media attachments.',
+                ];
+            }
+
+            // Get local file path from URL
+            $videoPath = $this->getLocalFilePath($videoMedia);
+            if (!$videoPath || !file_exists($videoPath)) {
+                return [
+                    'success' => false,
+                    'message' => 'Video file not found on server. Please re-upload the video.',
+                ];
+            }
+
+            // Use the TikTokPublisher for actual publishing
+            $publisher = new TikTokPublisher($connection, 'tiktok');
+
+            $result = $publisher->publish($content, $mediaUrls, [
+                'privacy_level' => 'SELF_ONLY', // Safe default for unaudited apps
+            ]);
+
+            if ($result['success']) {
+                return [
+                    'success' => true,
+                    'post_id' => $result['external_id'] ?? null,
+                    'permalink' => $result['permalink'] ?? null,
+                    'message' => 'Published to TikTok successfully. Video is processing.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => $result['error'] ?? 'Failed to publish to TikTok',
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('TikTok publishing exception', [
+                'post_id' => $postId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'TikTok publishing failed: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get local file path from media item
+     */
+    protected function getLocalFilePath(array $mediaItem): ?string
+    {
+        // Check for storage_path first (from MediaAsset)
+        if (!empty($mediaItem['storage_path'])) {
+            $path = Storage::disk('public')->path($mediaItem['storage_path']);
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        // Check for processed_path (H.264 converted video)
+        if (!empty($mediaItem['processed_path'])) {
+            $path = Storage::disk('public')->path($mediaItem['processed_path']);
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        // Try to extract path from URL
+        $url = $mediaItem['processed_url'] ?? $mediaItem['url'] ?? $mediaItem['preview_url'] ?? null;
+        if ($url) {
+            // Handle /storage/ URLs
+            if (preg_match('#/storage/(.+)$#', $url, $matches)) {
+                $path = Storage::disk('public')->path($matches[1]);
+                if (file_exists($path)) {
+                    return $path;
+                }
+            }
+
+            // Handle full public path
+            $publicPath = public_path('storage/' . basename(parse_url($url, PHP_URL_PATH)));
+            if (file_exists($publicPath)) {
+                return $publicPath;
+            }
+        }
+
+        // Check for path directly
+        if (!empty($mediaItem['path'])) {
+            $path = Storage::disk('public')->path($mediaItem['path']);
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 }
