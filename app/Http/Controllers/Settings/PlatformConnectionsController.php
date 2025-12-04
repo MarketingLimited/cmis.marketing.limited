@@ -3742,6 +3742,11 @@ class PlatformConnectionsController extends Controller
             $stateData['wizard_mode'] = true;
         }
 
+        // Include return URL in state if present (for redirecting back after OAuth)
+        if ($request->has('return_url')) {
+            $stateData['return_url'] = $request->get('return_url');
+        }
+
         $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
@@ -3957,6 +3962,12 @@ class PlatformConnectionsController extends Controller
             return redirect()
                 ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'tiktok', $connection->connection_id])
                 ->with('success', __('wizard.mode.direct.connecting'));
+        }
+
+        // Check for return URL (e.g., from TikTok Business Assets page)
+        if (!empty($state['return_url'])) {
+            return redirect($state['return_url'])
+                ->with('success', __('settings.tiktok_account_connected_successfully'));
         }
 
         return redirect()->route('orgs.settings.platform-connections.index', $orgId)
@@ -4229,27 +4240,55 @@ class PlatformConnectionsController extends Controller
 
             $accountId = 'tiktok_ads_' . ($data['advertiser_ids'][0] ?? Str::random(10));
 
-            return PlatformConnection::updateOrCreate(
-                [
-                    'org_id' => $orgId,
-                    'platform' => 'tiktok_ads',
-                ],
-                [
+            // Check for soft-deleted record first and restore it if found
+            $existingConnection = PlatformConnection::withTrashed()
+                ->where('org_id', $orgId)
+                ->where('platform', 'tiktok_ads')
+                ->where('account_id', $accountId)
+                ->first();
+
+            if ($existingConnection) {
+                // Restore if soft-deleted, then update
+                if ($existingConnection->trashed()) {
+                    $existingConnection->restore();
+                }
+
+                $existingConnection->update([
                     'account_name' => __('settings.tiktok_ads_manager'),
-                    'account_id' => $accountId,
                     'status' => 'active',
                     'access_token' => $accessToken,
-                    'refresh_token' => null, // TikTok Business tokens don't use refresh tokens
-                    'token_expires_at' => null, // TikTok Business tokens don't expire
-                    'scopes' => [], // Scopes are managed in TikTok Developer Portal
+                    'refresh_token' => null,
+                    'token_expires_at' => null,
+                    'scopes' => [],
                     'account_metadata' => [
                         'advertiser_ids' => $advertiserIds,
                         'advertiser_count' => count($advertiserIds),
                         'connected_at' => now()->toIso8601String(),
                         'api_version' => config('social-platforms.tiktok_ads.api_version', 'v1.3'),
                     ],
-                ]
-            );
+                ]);
+
+                return $existingConnection;
+            }
+
+            // No existing record, create new one
+            return PlatformConnection::create([
+                'org_id' => $orgId,
+                'platform' => 'tiktok_ads',
+                'account_id' => $accountId,
+                'account_name' => __('settings.tiktok_ads_manager'),
+                'status' => 'active',
+                'access_token' => $accessToken,
+                'refresh_token' => null,
+                'token_expires_at' => null,
+                'scopes' => [],
+                'account_metadata' => [
+                    'advertiser_ids' => $advertiserIds,
+                    'advertiser_count' => count($advertiserIds),
+                    'connected_at' => now()->toIso8601String(),
+                    'api_version' => config('social-platforms.tiktok_ads.api_version', 'v1.3'),
+                ],
+            ]);
         });
 
         session()->forget('oauth_state');
@@ -4346,6 +4385,380 @@ class PlatformConnectionsController extends Controller
         $metadata = $platformConnection->account_metadata ?? [];
         $metadata['selected_assets'] = [
             'advertiser_ids' => $validated['advertiser_ids'] ?? [],
+        ];
+
+        // Update the default advertiser if one is selected
+        if (!empty($validated['advertiser_ids'])) {
+            $metadata['default_advertiser_id'] = $validated['advertiser_ids'][0];
+        }
+
+        $platformConnection->account_metadata = $metadata;
+        $platformConnection->save();
+
+        return redirect()->route('orgs.settings.platform-connections.index', $org)
+            ->with('success', __('settings.assets_saved_successfully'));
+    }
+
+    /**
+     * Initiate TikTok Business OAuth authorization (Business API v1.3).
+     *
+     * TikTok Business API provides access to:
+     * - Business Center management
+     * - Ad Accounts
+     * - Pixels
+     * - Catalogs
+     *
+     * For video publishing, use authorizeTikTok (Login Kit v2) instead.
+     */
+    public function authorizeTikTokBusiness(Request $request, string $org)
+    {
+        $config = config('social-platforms.tiktok_ads');
+
+        if (!$config || empty($config['app_id'])) {
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.tiktok_business_not_configured'));
+        }
+
+        $stateData = ['org_id' => $org, 'platform' => 'tiktok_business'];
+
+        // Include wizard mode in state if present
+        if ($request->has('wizard_mode')) {
+            $stateData['wizard_mode'] = true;
+        }
+
+        $state = base64_encode(json_encode($stateData));
+        session(['oauth_state' => $state]);
+
+        // TikTok Business API authorization URL
+        // Uses app_id instead of client_key (unlike Login Kit)
+        // Note: TikTok Marketing API does NOT use scopes in URL - permissions are set in Developer Portal
+        $params = http_build_query([
+            'app_id' => $config['app_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'state' => $state,
+        ]);
+
+        return redirect($config['authorize_url'] . '?' . $params);
+    }
+
+    /**
+     * Handle TikTok Business OAuth callback (Business API v1.3).
+     *
+     * Returns:
+     * - access_token (never expires unless revoked)
+     * - advertiser_ids (list of ad accounts the user has access to)
+     */
+    public function callbackTikTokBusiness(Request $request)
+    {
+        $state = json_decode(base64_decode($request->get('state')), true);
+        $orgId = $state['org_id'] ?? null;
+        $platform = $state['platform'] ?? 'tiktok_business';
+
+        // Support both tiktok_ads and tiktok_business platforms for backward compatibility
+        if ($platform === 'tiktok_ads') {
+            $platform = 'tiktok_business';
+        }
+
+        if (!$orgId || $request->get('state') !== session('oauth_state')) {
+            Log::warning('TikTok Business OAuth state mismatch', [
+                'expected' => session('oauth_state'),
+                'received' => $request->get('state'),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', __('settings.invalid'));
+        }
+
+        // Check for error from TikTok
+        if ($request->has('error')) {
+            Log::error('TikTok Business OAuth error', [
+                'error' => $request->get('error'),
+                'error_description' => $request->get('error_description'),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.operation_failed') . ': ' . $request->get('error_description', $request->get('error')));
+        }
+
+        $config = config('social-platforms.tiktok_ads');
+        $authCode = $request->get('auth_code');
+
+        if (!$authCode) {
+            Log::error('TikTok Business OAuth: No auth_code received');
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.operation_failed'));
+        }
+
+        // Exchange auth code for access token
+        // TikTok Business API uses JSON body, not form-encoded
+        $response = Http::post($config['token_url'], [
+            'app_id' => $config['app_id'],
+            'secret' => $config['app_secret'],
+            'auth_code' => $authCode,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('TikTok Business token exchange failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.operation_failed'));
+        }
+
+        $responseData = $response->json();
+
+        // TikTok Business API wraps data in 'data' key
+        if (isset($responseData['code']) && $responseData['code'] !== 0) {
+            Log::error('TikTok Business API error', [
+                'code' => $responseData['code'],
+                'message' => $responseData['message'] ?? 'Unknown error',
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.operation_failed') . ': ' . ($responseData['message'] ?? 'Unknown error'));
+        }
+
+        $data = $responseData['data'] ?? $responseData;
+        $accessToken = $data['access_token'] ?? null;
+        $advertiserIds = $data['advertiser_ids'] ?? [];
+
+        if (!$accessToken) {
+            Log::error('TikTok Business: No access_token in response', ['data' => $data]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.operation_failed'));
+        }
+
+        // Create or update the connection within a transaction with RLS context
+        $connection = DB::transaction(function () use ($orgId, $accessToken, $advertiserIds, $data) {
+            // Set RLS context for the organization
+            DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$orgId]);
+
+            $accountId = 'tiktok_business_' . ($data['advertiser_ids'][0] ?? Str::random(10));
+
+            // Check for soft-deleted record first and restore it if found
+            $existingConnection = PlatformConnection::withTrashed()
+                ->where('org_id', $orgId)
+                ->where('platform', 'tiktok_business')
+                ->where('account_id', $accountId)
+                ->first();
+
+            if ($existingConnection) {
+                // Restore if soft-deleted, then update
+                if ($existingConnection->trashed()) {
+                    $existingConnection->restore();
+                }
+
+                $existingConnection->update([
+                    'account_name' => __('settings.tiktok_business_center'),
+                    'status' => 'active',
+                    'access_token' => $accessToken,
+                    'refresh_token' => null,
+                    'token_expires_at' => null,
+                    'scopes' => [], // TikTok Business API permissions are set in Developer Portal, not via OAuth
+                    'account_metadata' => [
+                        'advertiser_ids' => $advertiserIds,
+                        'advertiser_count' => count($advertiserIds),
+                        'connected_at' => now()->toIso8601String(),
+                        'api_version' => config('social-platforms.tiktok_ads.api_version', 'v1.3'),
+                    ],
+                ]);
+
+                return $existingConnection;
+            }
+
+            // No existing record, create new one
+            return PlatformConnection::create([
+                'org_id' => $orgId,
+                'platform' => 'tiktok_business',
+                'account_id' => $accountId,
+                'account_name' => __('settings.tiktok_business_center'),
+                'status' => 'active',
+                'access_token' => $accessToken,
+                'refresh_token' => null,
+                'token_expires_at' => null,
+                'scopes' => [], // TikTok Business API permissions are set in Developer Portal, not via OAuth
+                'account_metadata' => [
+                    'advertiser_ids' => $advertiserIds,
+                    'advertiser_count' => count($advertiserIds),
+                    'connected_at' => now()->toIso8601String(),
+                    'api_version' => config('social-platforms.tiktok_ads.api_version', 'v1.3'),
+                ],
+            ]);
+        });
+
+        session()->forget('oauth_state');
+
+        // Check for wizard mode and redirect accordingly
+        if (!empty($state['wizard_mode'])) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.wizard.assets', [$orgId, 'tiktok_business', $connection->connection_id])
+                ->with('success', __('wizard.mode.direct.connecting'));
+        }
+
+        // Redirect to asset selection to pick specific advertiser accounts, pixels, catalogs
+        if (count($advertiserIds) > 0) {
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-business.assets', [$orgId, $connection->connection_id])
+                ->with('success', __('settings.tiktok_business_connected_successfully'));
+        }
+
+        return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+            ->with('success', __('settings.tiktok_business_connected_successfully'));
+    }
+
+    /**
+     * Display TikTok Business asset selection page.
+     * Allows user to select:
+     * - Advertiser accounts (Ad Accounts)
+     * - Pixels
+     * - Catalogs
+     * Also provides a button to connect TikTok accounts for video publishing.
+     */
+    public function selectTikTokBusinessAssets(Request $request, string $org, string $connection)
+    {
+        // Try to find tiktok_business connection first, fallback to tiktok_ads for legacy support
+        $platformConnection = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->whereIn('platform', ['tiktok_business', 'tiktok_ads'])
+            ->firstOrFail();
+
+        $metadata = $platformConnection->account_metadata ?? [];
+        $advertiserIds = $metadata['advertiser_ids'] ?? [];
+        $selectedAssets = $metadata['selected_assets'] ?? [];
+
+        // Initialize asset arrays
+        $advertisers = [];
+        $pixels = [];
+        $catalogs = [];
+
+        // If we have access token, fetch assets from TikTok API
+        if ($platformConnection->access_token) {
+            $config = config('social-platforms.tiktok_ads');
+
+            // Fetch advertiser accounts
+            if (!empty($advertiserIds)) {
+                try {
+                    $response = Http::withHeaders([
+                        'Access-Token' => $platformConnection->access_token,
+                    ])->get($config['advertiser_url'], [
+                        'app_id' => $config['app_id'],
+                        'secret' => $config['app_secret'],
+                    ]);
+
+                    if ($response->successful()) {
+                        $responseData = $response->json();
+                        if (isset($responseData['data']['list'])) {
+                            $advertisers = $responseData['data']['list'];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch TikTok advertiser details', [
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Fall back to just showing IDs
+                    foreach ($advertiserIds as $id) {
+                        $advertisers[] = [
+                            'advertiser_id' => $id,
+                            'advertiser_name' => __('settings.advertiser_account') . ' ' . $id,
+                        ];
+                    }
+                }
+            }
+
+            // Fetch pixels for each advertiser
+            foreach ($advertiserIds as $advertiserId) {
+                try {
+                    $pixelResponse = Http::withHeaders([
+                        'Access-Token' => $platformConnection->access_token,
+                    ])->get('https://business-api.tiktok.com/open_api/v1.3/pixel/list/', [
+                        'advertiser_id' => $advertiserId,
+                    ]);
+
+                    if ($pixelResponse->successful()) {
+                        $pixelData = $pixelResponse->json();
+                        if (isset($pixelData['data']['pixels'])) {
+                            foreach ($pixelData['data']['pixels'] as $pixel) {
+                                $pixel['advertiser_id'] = $advertiserId;
+                                $pixels[] = $pixel;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch TikTok pixels', [
+                        'advertiser_id' => $advertiserId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Fetch catalogs for each advertiser
+            foreach ($advertiserIds as $advertiserId) {
+                try {
+                    $catalogResponse = Http::withHeaders([
+                        'Access-Token' => $platformConnection->access_token,
+                    ])->get('https://business-api.tiktok.com/open_api/v1.3/catalog/list/', [
+                        'bc_id' => $advertiserId, // Business Center ID
+                    ]);
+
+                    if ($catalogResponse->successful()) {
+                        $catalogData = $catalogResponse->json();
+                        if (isset($catalogData['data']['list'])) {
+                            foreach ($catalogData['data']['list'] as $catalog) {
+                                $catalog['advertiser_id'] = $advertiserId;
+                                $catalogs[] = $catalog;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to fetch TikTok catalogs', [
+                        'advertiser_id' => $advertiserId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+
+        // Get connected TikTok accounts (for video publishing)
+        $tiktokAccounts = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok')
+            ->where('status', 'active')
+            ->get();
+
+        return view('settings.platform-connections.tiktok-business-assets', [
+            'connection' => $platformConnection,
+            'advertisers' => $advertisers,
+            'advertiserIds' => $advertiserIds,
+            'pixels' => $pixels,
+            'catalogs' => $catalogs,
+            'selectedAssets' => $selectedAssets,
+            'tiktokAccounts' => $tiktokAccounts,
+            'currentOrg' => $org,
+        ]);
+    }
+
+    /**
+     * Store TikTok Business asset selection.
+     */
+    public function storeTikTokBusinessAssets(Request $request, string $org, string $connection)
+    {
+        // Try to find tiktok_business connection first, fallback to tiktok_ads for legacy support
+        $platformConnection = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->whereIn('platform', ['tiktok_business', 'tiktok_ads'])
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'advertiser_ids' => 'nullable|array',
+            'advertiser_ids.*' => 'string',
+            'pixel_ids' => 'nullable|array',
+            'pixel_ids.*' => 'string',
+            'catalog_ids' => 'nullable|array',
+            'catalog_ids.*' => 'string',
+        ]);
+
+        $metadata = $platformConnection->account_metadata ?? [];
+        $metadata['selected_assets'] = [
+            'advertiser_ids' => $validated['advertiser_ids'] ?? [],
+            'pixel_ids' => $validated['pixel_ids'] ?? [],
+            'catalog_ids' => $validated['catalog_ids'] ?? [],
         ];
 
         // Update the default advertiser if one is selected
