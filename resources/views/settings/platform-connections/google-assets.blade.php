@@ -795,10 +795,10 @@
 
                         {{-- Containers Grid (Virtual Scroll) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                            <template x-for="(container, idx) in filteredTagManagerContainers" :key="'tagmgr-' + idx">
+                            <template x-for="(container, idx) in filteredTagManagerContainers" :key="'tagmgr-' + container.containerId">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes(container.path) }">
-                                    <input type="checkbox" name="tag_manager[]" :value="container.path"
+                                       :class="{ 'border-purple-500 bg-purple-50': selectedTagManager.includes(container.containerId) }">
+                                    <input type="checkbox" name="tag_manager[]" :value="container.containerId"
                                            x-model="selectedTagManager"
                                            class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500">
                                     <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
@@ -1808,15 +1808,15 @@ function googleAssetsPage() {
         // Tag Manager bulk selection
         selectAllTagManager() {
             this.filteredTagManagerContainers.forEach(tm => {
-                if (!this.selectedTagManager.includes(tm.path)) {
-                    this.selectedTagManager.push(tm.path);
+                if (!this.selectedTagManager.includes(tm.containerId)) {
+                    this.selectedTagManager.push(tm.containerId);
                 }
             });
         },
 
         deselectAllTagManager() {
             if (this.tagManagerSearch) {
-                const filteredIds = this.filteredTagManagerContainers.map(tm => tm.path);
+                const filteredIds = this.filteredTagManagerContainers.map(tm => tm.containerId);
                 this.selectedTagManager = this.selectedTagManager.filter(id => !filteredIds.includes(id));
             } else {
                 this.selectedTagManager = [];
