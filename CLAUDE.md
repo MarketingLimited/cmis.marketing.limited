@@ -1,6 +1,6 @@
 # CMIS Project Guidelines for Claude Code
 
-**Last Updated:** 2025-12-01 (Documentation Reorganization, Test Suite Status Updated)
+**Last Updated:** 2025-12-04 (Added Mandatory Documentation Requirements)
 **Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Framework Version:** 3.2 - Post Duplication Elimination (13,100 lines saved)
 **Languages:** Arabic (Default), English - Full RTL/LTR Support
@@ -124,6 +124,64 @@ feat: Your feature description
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
+```
+
+### Documentation Requirements (CRITICAL - NEW 2025-12-04)
+**📖 Documentation Hub:** `docs/README.md`
+
+**MANDATORY DOCUMENTATION AFTER CODE CHANGES:**
+- ✅ **AFTER** any codebase editing, create/update documentation in `docs/` folder
+- ✅ **DO NOT** wait for user to ask - document immediately after implementation
+- ✅ Document all significant changes, new features, bug fixes, and refactoring
+- ✅ Follow the existing documentation structure in `docs/`
+- ✅ Include code examples, usage instructions, and context
+- ❌ **NEVER** skip documentation for significant code changes
+- ❌ **NEVER** leave features undocumented
+
+**Documentation Location Guidelines:**
+
+| Change Type | Documentation Location |
+|-------------|------------------------|
+| New feature | `docs/features/<feature-name>.md` |
+| Bug fix | `docs/fixes/<date>-<description>.md` or update related feature doc |
+| Refactoring | `docs/refactoring/<date>-<description>.md` |
+| API changes | `docs/api/<endpoint-or-service>.md` |
+| Database changes | `docs/database/<migration-description>.md` |
+| Phase completion | `docs/phases/completed/phase-<N>/<summary>.md` |
+| Analysis/Reports | `docs/active/analysis/<report-name>.md` |
+
+**Documentation Template:**
+```markdown
+# [Feature/Fix/Change Name]
+
+**Date:** YYYY-MM-DD
+**Author:** Claude Code Agent
+**Related Files:** List of modified files
+
+## Summary
+Brief description of what was changed and why.
+
+## Changes Made
+- Change 1
+- Change 2
+
+## Usage (if applicable)
+Code examples or instructions.
+
+## Testing
+How to verify the changes work.
+
+## Related Documentation
+Links to related docs.
+```
+
+**Quick Documentation Workflow:**
+```bash
+# After code changes are complete and committed:
+# 1. Create appropriate documentation file
+# 2. Add to docs/ following the structure above
+# 3. Update docs/README.md index if adding new section
+# 4. Commit documentation with the code changes
 ```
 
 ---
@@ -346,9 +404,9 @@ class CreateNewTable extends Migration
 - [ ] **Automated tests created (NEW):** Feature/Browser tests added?
 - [ ] **Related tests updated (NEW):** Existing tests modified if needed?
 - [ ] **Git commit created (NEW):** Changes committed automatically after verification?
+- [ ] **Documentation created (NEW):** Created/updated docs in `docs/` folder?
 - [ ] Tests written and passing?
 - [ ] Security validated?
-- [ ] Documentation updated?
 - [ ] No hardcoded credentials?
 
 ---
@@ -727,12 +785,13 @@ PGPASSWORD="$(grep DB_PASSWORD .env | cut -d '=' -f2)" psql \
 1. **Hardcoded text (NEW)** - NEVER use hardcoded English/Arabic - use `__('key')` always
 2. **Directional CSS (NEW)** - NEVER use `ml-`, `mr-`, `text-left` - use `ms-`, `me-`, `text-start`
 3. **Skipping i18n audit (NEW)** - ALWAYS audit for i18n issues BEFORE implementing features
-4. **Forgetting RLS context** - Always call `init_transaction_context()`
-5. **Unqualified table names** - Use `cmis.table_name`, not just `table_name`
-6. **Missing indexes** - Add indexes for foreign keys and search columns
-7. **Hardcoded org filtering** - Let RLS handle it, don't add `WHERE org_id = ?`
-8. **Token expiration** - Implement refresh logic for platform tokens
-9. **Rate limit violations** - Queue AI operations, don't run synchronously
+4. **Skipping documentation (NEW)** - ALWAYS create docs in `docs/` after code changes
+5. **Forgetting RLS context** - Always call `init_transaction_context()`
+6. **Unqualified table names** - Use `cmis.table_name`, not just `table_name`
+7. **Missing indexes** - Add indexes for foreign keys and search columns
+8. **Hardcoded org filtering** - Let RLS handle it, don't add `WHERE org_id = ?`
+9. **Token expiration** - Implement refresh logic for platform tokens
+10. **Rate limit violations** - Queue AI operations, don't run synchronously
 
 ---
 
@@ -839,4 +898,4 @@ A comprehensive 8-phase initiative systematically eliminated duplicate code:
 - 📋 Phase 4: Ad campaign orchestration & automation
 - 📋 Production deployment & optimization
 
-**Last Updated:** 2025-12-01 (Documentation reorganization, test suite status updated)
+**Last Updated:** 2025-12-04 (Added Mandatory Documentation Requirements)

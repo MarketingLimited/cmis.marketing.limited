@@ -1,6 +1,6 @@
 # Shared Infrastructure Pre-Flight Checks
-**Version:** 1.2
-**Last Updated:** 2025-11-27
+**Version:** 1.3
+**Last Updated:** 2025-12-04
 
 This is a shared module for all agents that interact with database or testing infrastructure.
 
@@ -615,6 +615,11 @@ Run pre-flight checks when:
 
 ## 📚 Related Resources
 
+**Shared Modules (MUST READ):**
+- **Documentation Requirements:** `.claude/agents/_shared/documentation-requirements.md` - **MANDATORY** after code changes
+- **i18n/RTL Requirements:** `.claude/agents/_shared/i18n-rtl-requirements.md` - Internationalization
+- **Browser Testing:** `.claude/agents/_shared/browser-testing-integration.md` - Testing integration
+
 **Agents:**
 - **Refactoring:** `.claude/agents/laravel-refactor-specialist.md` - For files >499 lines
 - **Code Quality:** `.claude/agents/laravel-code-quality.md` - SRP verification
@@ -655,6 +660,6 @@ Run pre-flight checks when:
 - ✅ **Parallel operations** - Speed and efficiency
 - ✅ **Infrastructure checks** - Prevent 90% of errors
 
-**Last Updated:** 2025-11-27
-**Version:** 1.2
+**Last Updated:** 2025-12-04
+**Version:** 1.3
 **Maintained By:** CMIS AI Agent Development Team

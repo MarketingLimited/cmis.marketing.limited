@@ -1,7 +1,7 @@
 # CMIS AI Agents Framework
 ## Specialized AI Agents for CMIS (Cognitive Marketing Intelligence Suite)
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-04
 **Project:** CMIS - Cognitive Marketing Intelligence Suite
 **Version:** 3.2 - Model Tier Optimization + Browser Testing Deduplication
 
@@ -1585,6 +1585,7 @@ Agent:
 - Use schema-qualified table names
 - Check rate limits for AI operations
 - Provide CMIS-specific examples
+- **CREATE DOCUMENTATION after ANY code changes** (see below)
 
 ❌ **NEVER:**
 - Bypass RLS with manual org filtering
@@ -1592,6 +1593,35 @@ Agent:
 - Give generic Laravel advice for CMIS-specific patterns
 - Hard-delete records (use soft deletes)
 - Expose secrets or credentials
+- **Skip documentation for code changes**
+
+### 📝 MANDATORY: Documentation After Code Changes (NEW - 2025-12-04)
+
+**ALL agents MUST create documentation in `docs/` after ANY codebase editing.**
+
+**📖 Complete Guide:** `.claude/agents/_shared/documentation-requirements.md`
+
+**Quick Reference:**
+
+| Change Type | Documentation Location |
+|-------------|------------------------|
+| New feature | `docs/features/<feature-name>.md` |
+| Bug fix | `docs/fixes/<date>-<description>.md` |
+| Refactoring | `docs/refactoring/<date>-<description>.md` |
+| API changes | `docs/api/<endpoint-or-service>.md` |
+| Database changes | `docs/database/<migration-description>.md` |
+| Phase completion | `docs/phases/completed/phase-<N>/<summary>.md` |
+
+**Workflow:**
+1. Make code changes
+2. Verify changes work (tests, logs)
+3. Create documentation in appropriate `docs/` location
+4. Commit code + documentation together
+
+**DO NOT:**
+- Wait for user to ask for documentation
+- Skip documentation for "small" changes
+- Commit code without documentation
 
 ---
 
