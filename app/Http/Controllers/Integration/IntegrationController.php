@@ -52,7 +52,7 @@ class IntegrationController extends Controller
             'name' => 'TikTok',
             'oauth_url' => 'https://www.tiktok.com/auth/authorize',
             'token_url' => 'https://open-api.tiktok.com/oauth/access_token',
-            'scopes' => ['user.info.basic', 'video.list', 'video.upload'],
+            'scopes' => ['user.info.basic', 'user.info.profile', 'user.info.stats', 'video.list', 'video.upload', 'video.publish'],
         ],
         'snapchat' => [
             'name' => 'Snapchat',

@@ -33,7 +33,7 @@ class TikTokConnector extends AbstractConnector
         $params = [
             'client_key' => config('services.tiktok.client_key'),
             'response_type' => 'code',
-            'scope' => 'user.info.basic,video.list,video.publish',
+            'scope' => 'user.info.basic,user.info.profile,user.info.stats,video.list,video.upload,video.publish',
             'redirect_uri' => config('services.tiktok.redirect_uri'),
             'state' => $options['state'] ?? bin2hex(random_bytes(16)),
         ];
@@ -201,8 +201,27 @@ class TikTokConnector extends AbstractConnector
             return collect();
         }
 
+        // Request all available fields using user.info.basic, user.info.profile, and user.info.stats scopes
         $response = $this->makeRequest($integration, 'POST', '/user/info/', [
             'open_id' => $openId,
+            'fields' => [
+                // user.info.basic fields
+                'open_id',
+                'union_id',
+                'avatar_url',
+                'avatar_url_100',
+                'avatar_large_url',
+                'display_name',
+                // user.info.profile fields
+                'bio_description',
+                'profile_deep_link',
+                'is_verified',
+                // user.info.stats fields
+                'follower_count',
+                'following_count',
+                'likes_count',
+                'video_count',
+            ],
         ]);
 
         return collect($response['data']['user'] ?? []);

@@ -16,6 +16,8 @@ class TikTokOAuthClient extends OAuth2Client
 
     protected array $scopes = [
         'user.info.basic',
+        'user.info.profile',
+        'user.info.stats',
         'video.upload',
         'video.publish',
         'video.list',

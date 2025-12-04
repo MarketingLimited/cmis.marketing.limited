@@ -1235,7 +1235,7 @@
                 <ol class="mt-2 ml-4 text-sm text-blue-800 space-y-1 list-decimal list-inside">
                     <li>Go to <a href="https://developers.tiktok.com/" target="_blank" class="underline">TikTok for Developers</a></li>
                     <li>Create a new app and apply for Content Posting API access</li>
-                    <li>Required scopes: <code class="bg-blue-100 px-1 rounded text-xs">video.upload, video.publish</code></li>
+                    <li>Required scopes: <code class="bg-blue-100 px-1 rounded text-xs">user.info.basic, user.info.profile, user.info.stats, video.upload, video.publish, video.list</code></li>
                     <li class="text-xs text-red-700"><strong>Note:</strong> Public posting requires audit approval from TikTok</li>
                 </ol>
             </details>

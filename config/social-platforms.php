@@ -289,6 +289,8 @@ return [
         'token_url' => 'https://open.tiktokapis.com/v2/oauth/token/',
         'scopes' => [
             'user.info.basic',
+            'user.info.profile',
+            'user.info.stats',
             'video.upload',
             'video.publish',
             'video.list',

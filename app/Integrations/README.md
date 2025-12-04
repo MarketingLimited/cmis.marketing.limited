@@ -174,14 +174,18 @@ $campaigns = $client->getCampaigns($customerId);
 ### TikTok
 
 **OAuth Scopes:**
-- user.info.basic
-- video.upload
-- video.publish
+- user.info.basic - Basic profile info (open_id, avatar, display name)
+- user.info.profile - Profile links, bio, verification status
+- user.info.stats - Follower count, likes count, video count
+- video.upload - Upload videos as drafts
+- video.publish - Directly publish videos
+- video.list - Read user's public videos
 
 **Special Features:**
 - Different parameter names (client_key vs client_id)
 - Comma-separated scopes
 - Business API integration
+- Content Posting API v2 with direct post capability
 
 ### LinkedIn
 
