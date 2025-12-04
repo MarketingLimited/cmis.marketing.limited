@@ -49,8 +49,9 @@ class MediaLibraryController extends Controller
         ]);
 
         try {
-            // Set RLS context for multi-tenancy
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
+            // Set RLS context for multi-tenancy (requires user_id and org_id)
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
 
             $file = $request->file('file');
             $mimeType = $file->getMimeType();
@@ -91,11 +92,12 @@ class MediaLibraryController extends Controller
                     ],
                 ]);
 
-                // Dispatch background job to process video
+                // Dispatch background job to process video (include user_id for RLS context)
                 ProcessVideoJob::dispatch(
                     $asset->asset_id,
                     $org,
-                    $path
+                    $path,
+                    $userId
                 )->onQueue(config('media.processing.queue', 'default'));
 
                 Log::info('Video upload queued for processing', [

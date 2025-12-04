@@ -38,8 +38,9 @@ class VideoProcessingController extends Controller
         ]);
 
         try {
-            // Set RLS context
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
+            // Set RLS context (requires user_id and org_id)
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
 
             $assetIds = $request->input('asset_ids');
             $statuses = [];
@@ -107,8 +108,9 @@ class VideoProcessingController extends Controller
         ]);
 
         try {
-            // Set RLS context
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
+            // Set RLS context (requires user_id and org_id)
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
 
             $assetId = $request->input('asset_id');
             $timestamp = (float) $request->input('timestamp');
@@ -205,8 +207,9 @@ class VideoProcessingController extends Controller
         ]);
 
         try {
-            // Set RLS context
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
+            // Set RLS context (requires user_id and org_id)
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
 
             $assetId = $request->input('asset_id');
             $frameCount = $request->input('count', 6);

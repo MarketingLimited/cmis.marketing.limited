@@ -45,7 +45,8 @@ class ProcessVideoJob implements ShouldQueue
     public function __construct(
         private string $assetId,
         private string $orgId,
-        private string $originalPath
+        private string $originalPath,
+        private ?string $userId = null
     ) {}
 
     /**
@@ -54,8 +55,8 @@ class ProcessVideoJob implements ShouldQueue
     public function handle(VideoProcessingService $processingService): void
     {
         try {
-            // Set RLS context for multi-tenancy
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$this->orgId]);
+            // Set RLS context for multi-tenancy (requires user_id and org_id)
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$this->userId, $this->orgId]);
 
             // Get the media asset record
             $asset = MediaAsset::findOrFail($this->assetId);
@@ -123,7 +124,7 @@ class ProcessVideoJob implements ShouldQueue
 
             // Update asset with error status
             try {
-                DB::statement("SELECT cmis.init_transaction_context(?)", [$this->orgId]);
+                DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$this->userId, $this->orgId]);
                 $asset = MediaAsset::find($this->assetId);
                 if ($asset) {
                     $asset->update([
@@ -155,8 +156,8 @@ class ProcessVideoJob implements ShouldQueue
         ]);
 
         try {
-            // Set RLS context
-            DB::statement("SELECT cmis.init_transaction_context(?)", [$this->orgId]);
+            // Set RLS context (requires user_id and org_id)
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$this->userId, $this->orgId]);
 
             $asset = MediaAsset::find($this->assetId);
             if ($asset) {
