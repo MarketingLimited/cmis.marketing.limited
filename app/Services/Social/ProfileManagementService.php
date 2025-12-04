@@ -274,23 +274,23 @@ class ProfileManagementService
     public function getProfileStats(string $orgId): array
     {
         $total = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads'])
+            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads', 'google_business'])
             ->count();
 
         $active = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads'])
+            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads', 'google_business'])
             ->whereIn('status', ['active', 'connected'])
             ->count();
 
         $byPlatform = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads'])
+            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads', 'google_business'])
             ->select('platform', DB::raw('count(*) as count'))
             ->groupBy('platform')
             ->pluck('count', 'platform')
             ->toArray();
 
         $withGroups = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads'])
+            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads', 'google_business'])
             ->whereNotNull('profile_group_id')
             ->count();
 
