@@ -28,7 +28,7 @@ class ProfileManagementService
     public function getProfiles(string $orgId, array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Integration::where('org_id', $orgId)
-            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads'])
+            ->whereIn('platform', ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'threads', 'google_business'])
             ->with(['profileGroup', 'connectedByUser', 'queueSettings']);
 
         // Apply search filter
@@ -476,6 +476,7 @@ class ProfileManagementService
             'tiktok' => 'TikTok',
             'youtube' => 'YouTube',
             'threads' => 'Threads',
+            'google_business' => 'Google Business',
         ];
     }
 
