@@ -573,7 +573,8 @@ class GoogleAssetsService
                             $primaryCategory = $location['categories']['primaryCategory']['displayName'] ?? '';
                             $profiles[] = [
                                 'id' => $location['name'] ?? '',
-                                'name' => $location['title'] ?? 'Unknown Location',
+                                'name' => $location['name'] ?? '',  // Resource name for API/checkbox
+                                'title' => $location['title'] ?? 'Unknown Location',  // Display name
                                 'address' => implode(', ', array_filter([
                                     $address['addressLines'][0] ?? '',
                                     $address['locality'] ?? '',

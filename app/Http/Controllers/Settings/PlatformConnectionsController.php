@@ -8,6 +8,7 @@ use App\Jobs\SyncMetaIntegrationRecords;
 use App\Models\Integration;
 use App\Models\Platform\PlatformConnection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -4901,19 +4902,51 @@ class PlatformConnectionsController extends Controller
         $expiresIn = $tokenData['expires_in'] ?? 3600;
         $grantedScopes = explode(' ', $tokenData['scope'] ?? '');
 
+        // DEBUG: Log token data (without sensitive values)
+        Log::info('YouTube OAuth token data received', [
+            'connection_id' => $connectionId,
+            'has_access_token' => !empty($accessToken),
+            'has_refresh_token' => !empty($refreshToken),
+            'expires_in' => $expiresIn,
+            'granted_scopes' => $grantedScopes,
+            'token_type' => $tokenData['token_type'] ?? 'unknown',
+        ]);
+
         // Validate account consistency - get user info and compare sub
         $userInfo = $this->getGoogleUserInfo($accessToken);
         $newSub = $userInfo['id'] ?? null;
 
-        // Verify the same account was used
+        // DEBUG: Log user info
+        Log::info('YouTube OAuth user info', [
+            'connection_id' => $connectionId,
+            'user_id' => $newSub,
+            'user_email' => $userInfo['email'] ?? 'not provided',
+            'user_name' => $userInfo['name'] ?? 'not provided',
+        ]);
+
+        // Verify the same account was used (allow Brand Accounts for YouTube)
+        $userEmail = $userInfo['email'] ?? '';
+        $isBrandAccount = str_ends_with($userEmail, '@pages.plusgoogle.com');
+
         if ($expectedSub && $newSub && $expectedSub !== $newSub) {
-            Log::warning('YouTube OAuth account mismatch', [
-                'connection_id' => $connectionId,
-                'expected_sub' => $expectedSub,
-                'actual_sub' => $newSub,
-            ]);
-            return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
-                ->with('error', __('settings.youtube_account_mismatch'));
+            if ($isBrandAccount) {
+                // Allow Brand Account connections for YouTube
+                Log::info('YouTube OAuth - Brand Account detected, allowing connection', [
+                    'connection_id' => $connectionId,
+                    'original_account_sub' => $expectedSub,
+                    'brand_account_sub' => $newSub,
+                    'brand_account_email' => $userEmail,
+                ]);
+            } else {
+                // Block non-Brand Account mismatches
+                Log::warning('YouTube OAuth account mismatch', [
+                    'connection_id' => $connectionId,
+                    'expected_sub' => $expectedSub,
+                    'actual_sub' => $newSub,
+                ]);
+                return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
+                    ->with('error', __('settings.youtube_account_mismatch'));
+            }
         }
 
         // Merge new scopes with existing scopes
@@ -4926,6 +4959,15 @@ class PlatformConnectionsController extends Controller
         $accountMetadata['youtube_authorized_at'] = now()->toIso8601String();
         $accountMetadata['granted_scopes'] = $mergedScopes;
 
+        // Store Brand Account info if applicable
+        if ($isBrandAccount) {
+            $accountMetadata['youtube_brand_account'] = [
+                'sub' => $newSub,
+                'email' => $userEmail,
+                'connected_at' => now()->toIso8601String(),
+            ];
+        }
+
         // Update connection with new tokens and merged scopes
         $connection->update([
             'access_token' => $accessToken,
@@ -4937,13 +4979,102 @@ class PlatformConnectionsController extends Controller
 
         session()->forget('oauth_state_youtube');
 
+        // Fetch YouTube channels accessible with this token and STORE them in metadata
+        $newChannelName = null;
+        try {
+            $youtubeResponse = Http::withToken($accessToken)
+                ->timeout(30)
+                ->get('https://www.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet,statistics,brandingSettings',
+                    'mine' => 'true',
+                    'maxResults' => 50,
+                ]);
+
+            $youtubeData = $youtubeResponse->json();
+            $discoveredChannels = [];
+
+            foreach ($youtubeData['items'] ?? [] as $ch) {
+                $channelData = [
+                    'id' => $ch['id'] ?? null,
+                    'title' => $ch['snippet']['title'] ?? 'Unknown Channel',
+                    'description' => \Illuminate\Support\Str::limit($ch['snippet']['description'] ?? '', 100),
+                    'thumbnail' => $ch['snippet']['thumbnails']['default']['url'] ?? null,
+                    'custom_url' => $ch['snippet']['customUrl'] ?? null,
+                    'subscriber_count' => $ch['statistics']['subscriberCount'] ?? 0,
+                    'video_count' => $ch['statistics']['videoCount'] ?? 0,
+                    'view_count' => $ch['statistics']['viewCount'] ?? 0,
+                    'type' => $isBrandAccount ? 'brand' : 'personal',
+                    'added_at' => now()->toIso8601String(),
+                    'brand_account_sub' => $isBrandAccount ? $newSub : null,
+                    'brand_account_email' => $isBrandAccount ? $userEmail : null,
+                ];
+                if ($channelData['id']) {
+                    $discoveredChannels[] = $channelData;
+                    $newChannelName = $channelData['title'];
+                }
+            }
+
+            Log::info('YouTube OAuth - Channels discovered', [
+                'connection_id' => $connectionId,
+                'status_code' => $youtubeResponse->status(),
+                'discovered_count' => count($discoveredChannels),
+                'channels' => collect($discoveredChannels)->map(fn($c) => ['id' => $c['id'], 'title' => $c['title']])->toArray(),
+            ]);
+
+            // Get existing stored channels from metadata
+            $existingChannels = $accountMetadata['youtube_channels'] ?? [];
+            $existingChannelIds = array_column($existingChannels, 'id');
+
+            // Add newly discovered channels (avoid duplicates)
+            $addedCount = 0;
+            foreach ($discoveredChannels as $channel) {
+                if (!in_array($channel['id'], $existingChannelIds)) {
+                    $existingChannels[] = $channel;
+                    $existingChannelIds[] = $channel['id'];
+                    $addedCount++;
+                }
+            }
+
+            // Update metadata with merged channels
+            $accountMetadata['youtube_channels'] = $existingChannels;
+            $accountMetadata['youtube_channels_updated_at'] = now()->toIso8601String();
+
+            // Update the connection with the stored channels
+            $connection->update([
+                'account_metadata' => $accountMetadata,
+            ]);
+
+            Log::info('YouTube OAuth - Channels stored in metadata', [
+                'connection_id' => $connectionId,
+                'total_stored' => count($existingChannels),
+                'newly_added' => $addedCount,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::warning('YouTube OAuth - Failed to fetch/store channels', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Clear the YouTube channels cache so fresh data is fetched
+        Cache::forget("google_assets:{$connectionId}:youtube_channels");
+        Log::info('YouTube OAuth - Cleared YouTube channels cache', [
+            'connection_id' => $connectionId,
+        ]);
+
         Log::info('YouTube OAuth completed successfully', [
             'connection_id' => $connectionId,
             'scopes_count' => count($mergedScopes),
         ]);
 
+        // Build success message
+        $successMessage = $newChannelName
+            ? __('settings.youtube_channel_added', ['channel' => $newChannelName])
+            : __('settings.youtube_connected_successfully');
+
         return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
-            ->with('success', __('settings.youtube_connected_successfully'));
+            ->with('success', $successMessage);
     }
 
     /**
