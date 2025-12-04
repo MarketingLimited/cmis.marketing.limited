@@ -2,9 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Models\Integration;
+use App\Models\Core\Integration;
 use App\Models\Platform\PlatformConnection;
+use App\Models\Social\IntegrationQueueSettings;
 use App\Services\Platform\MetaAssetsService;
+use App\Services\Profile\ProfileSoftDeleteService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -97,6 +99,29 @@ class SyncMetaIntegrationRecords implements ShouldQueue
                     $accountUsername = $assetData['username'] ?? null;
                     $avatarUrl = $assetData['profile_picture'] ?? $assetData['picture'] ?? null;
 
+                    // Check if soft-deleted integration exists and restore it
+                    $existingIntegration = Integration::withTrashed()
+                        ->where('org_id', $this->orgId)
+                        ->where('platform', $platform)
+                        ->where('account_id', $assetId)
+                        ->first();
+
+                    if ($existingIntegration && $existingIntegration->trashed()) {
+                        // Restore the profile and its queue settings
+                        $existingIntegration->restore();
+
+                        // Restore queue settings if they exist
+                        IntegrationQueueSettings::withTrashed()
+                            ->where('integration_id', $existingIntegration->integration_id)
+                            ->restore();
+
+                        Log::info('Restored soft-deleted profile and related data', [
+                            'integration_id' => $existingIntegration->integration_id,
+                            'platform' => $platform,
+                            'account_id' => $assetId,
+                        ]);
+                    }
+
                     $integration = Integration::updateOrCreate(
                         [
                             'org_id' => $this->orgId,
@@ -128,22 +153,55 @@ class SyncMetaIntegrationRecords implements ShouldQueue
             }
         }
 
-        // Deactivate old integrations that are no longer selected
-        if (!empty($expectedIntegrationIds)) {
-            Integration::where('org_id', $this->orgId)
-                ->whereIn('platform', ['facebook', 'instagram', 'threads'])
-                ->where('metadata->connection_id', $connection->connection_id)
-                ->whereNotIn('integration_id', $expectedIntegrationIds)
-                ->update([
+        // Process deselected integrations - soft delete or mark inactive
+        $profileService = app(ProfileSoftDeleteService::class);
+        $deselectedProfiles = Integration::where('org_id', $this->orgId)
+            ->whereIn('platform', ['facebook', 'instagram', 'threads'])
+            ->where('metadata->connection_id', $connection->connection_id)
+            ->whereNotIn('integration_id', $expectedIntegrationIds)
+            ->get();
+
+        $softDeletedCount = 0;
+        $markedInactiveCount = 0;
+
+        foreach ($deselectedProfiles as $profile) {
+            // Check if this asset is used in another connection
+            if (!$profileService->isAssetUsedInOtherConnections(
+                $this->orgId,
+                $profile->platform,
+                $profile->account_id,
+                $connection->connection_id
+            )) {
+                // Soft delete if not used elsewhere (observer handles cascade)
+                $profile->delete();
+                $softDeletedCount++;
+
+                Log::info('Profile soft deleted (asset deselected)', [
+                    'integration_id' => $profile->integration_id,
+                    'platform' => $profile->platform,
+                    'account_id' => $profile->account_id,
+                ]);
+            } else {
+                // Just mark inactive if used in another connection
+                $profile->update([
                     'is_active' => false,
                     'status' => 'inactive',
                 ]);
+                $markedInactiveCount++;
+
+                Log::info('Profile marked inactive (asset in other connection)', [
+                    'integration_id' => $profile->integration_id,
+                    'platform' => $profile->platform,
+                ]);
+            }
         }
 
         Log::info('SyncMetaIntegrationRecords completed', [
             'org_id' => $this->orgId,
             'connection_id' => $this->connectionId,
             'integrations_synced' => count($expectedIntegrationIds),
+            'profiles_soft_deleted' => $softDeletedCount,
+            'profiles_marked_inactive' => $markedInactiveCount,
         ]);
     }
 

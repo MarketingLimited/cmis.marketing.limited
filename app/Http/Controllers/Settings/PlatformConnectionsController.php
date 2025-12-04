@@ -7,6 +7,8 @@ use App\Http\Controllers\Concerns\ApiResponse;
 use App\Jobs\SyncMetaIntegrationRecords;
 use App\Models\Integration;
 use App\Models\Platform\PlatformConnection;
+use App\Models\Social\IntegrationQueueSettings;
+use App\Services\Profile\ProfileSoftDeleteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -565,6 +567,19 @@ class PlatformConnectionsController extends Controller
             ->firstOrFail();
 
         $platformName = $connection->getPlatformName();
+
+        // Soft delete profiles that belong ONLY to this connection
+        // Profiles shared with other connections will be marked inactive instead
+        $profileService = app(ProfileSoftDeleteService::class);
+        $deletedCount = $profileService->softDeleteProfilesForConnection($org, $connectionId);
+
+        Log::info('Platform connection deleted', [
+            'connection_id' => $connectionId,
+            'org_id' => $org,
+            'platform' => $connection->platform,
+            'profiles_soft_deleted' => $deletedCount,
+        ]);
+
         $connection->delete();
 
         if ($request->wantsJson()) {
@@ -5383,6 +5398,29 @@ class PlatformConnectionsController extends Controller
                     }
                 }
 
+                // Check if soft-deleted integration exists and restore it
+                $existingIntegration = Integration::withTrashed()
+                    ->where('org_id', $orgId)
+                    ->where('platform', $platform)
+                    ->where('account_id', $assetId)
+                    ->first();
+
+                if ($existingIntegration && $existingIntegration->trashed()) {
+                    // Restore the profile and its queue settings
+                    $existingIntegration->restore();
+
+                    // Restore queue settings if they exist
+                    IntegrationQueueSettings::withTrashed()
+                        ->where('integration_id', $existingIntegration->integration_id)
+                        ->restore();
+
+                    Log::info('Restored soft-deleted Google profile and related data', [
+                        'integration_id' => $existingIntegration->integration_id,
+                        'platform' => $platform,
+                        'account_id' => $assetId,
+                    ]);
+                }
+
                 // Create or update Integration record
                 $integration = Integration::updateOrCreate(
                     [
@@ -5408,16 +5446,43 @@ class PlatformConnectionsController extends Controller
             }
         }
 
-        // Deactivate Integration records that are no longer selected
-        // Only deactivate integrations that were created from this connection
-        Integration::where('org_id', $orgId)
+        // Process deselected integrations - soft delete or mark inactive
+        $profileService = app(ProfileSoftDeleteService::class);
+        $deselectedProfiles = Integration::where('org_id', $orgId)
             ->whereIn('platform', ['youtube', 'google_business'])
             ->where('metadata->connection_id', $connection->connection_id)
             ->whereNotIn('integration_id', $expectedIntegrationIds)
-            ->update([
-                'is_active' => false,
-                'status' => 'inactive',
-            ]);
+            ->get();
+
+        foreach ($deselectedProfiles as $profile) {
+            // Check if this asset is used in another connection
+            if (!$profileService->isAssetUsedInOtherConnections(
+                $orgId,
+                $profile->platform,
+                $profile->account_id,
+                $connection->connection_id
+            )) {
+                // Soft delete if not used elsewhere (observer handles cascade)
+                $profile->delete();
+
+                Log::info('Google profile soft deleted (asset deselected)', [
+                    'integration_id' => $profile->integration_id,
+                    'platform' => $profile->platform,
+                    'account_id' => $profile->account_id,
+                ]);
+            } else {
+                // Just mark inactive if used in another connection
+                $profile->update([
+                    'is_active' => false,
+                    'status' => 'inactive',
+                ]);
+
+                Log::info('Google profile marked inactive (asset in other connection)', [
+                    'integration_id' => $profile->integration_id,
+                    'platform' => $profile->platform,
+                ]);
+            }
+        }
     }
 
     // ==================================================================================

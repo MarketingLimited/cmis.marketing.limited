@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use App\Models\Core\Integration;
+use App\Observers\IntegrationObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -205,6 +207,9 @@ class AppServiceProvider extends ServiceProvider
             Gate::policy($model, $policy);
         }
 
+        // Register model observers
+        $this->registerObservers();
+
         // Load migrations from phases directory
         $this->loadMigrationsFrom(database_path('migrations/phases'));
 
@@ -213,6 +218,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Blade Components (Phase 1B - 2025-11-21)
         $this->registerBladeComponents();
+    }
+
+    /**
+     * Register model observers
+     */
+    protected function registerObservers(): void
+    {
+        // Integration observer for cascade soft delete/restore
+        Integration::observe(IntegrationObserver::class);
     }
 
     /**

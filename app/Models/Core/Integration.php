@@ -41,6 +41,7 @@ class Integration extends BaseModel
         'sync_status',
         'sync_errors',
         'sync_retry_count',
+        'metadata', // JSONB field for platform-specific data
         // Profile management fields
         'profile_group_id',
         'account_name',
@@ -76,6 +77,7 @@ class Integration extends BaseModel
         'token_refreshed_at' => 'datetime',
         'last_synced_at' => 'datetime',
         'sync_errors' => 'array',
+        'metadata' => 'array', // JSONB field for platform-specific data
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

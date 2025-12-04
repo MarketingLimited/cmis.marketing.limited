@@ -5,10 +5,11 @@ namespace App\Models\Social;
 use App\Models\BaseModel;
 use App\Models\Concerns\HasOrganization;
 use App\Models\Platform\Integration;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class IntegrationQueueSettings extends BaseModel
 {
-    use HasOrganization;
+    use HasOrganization, SoftDeletes;
 
     protected $table = 'cmis.integration_queue_settings';
 
