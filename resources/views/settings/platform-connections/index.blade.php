@@ -656,17 +656,14 @@
         {{-- Social Media Platforms --}}
         {{-- Note: Threads is now part of Meta assets, not a standalone platform --}}
         {{-- Note: YouTube and Google Business Profile are now part of Google Services assets --}}
-        {{-- TikTok Business Assets - Link to separate assets page --}}
+        {{-- TikTok (Account + Ads) - Separate section with 2 buttons like Meta/Google --}}
         @php
-            $tiktokBusinessAssets = $connectionsByPlatform->get('tiktok_business', collect());
             $tiktokAccountConnections = $connectionsByPlatform->get('tiktok', collect());
             $tiktokAdsConnections = $connectionsByPlatform->get('tiktok_ads', collect());
-            $totalTiktokAccounts = $tiktokAccountConnections->count();
-            $totalTiktokAds = $tiktokAdsConnections->count();
         @endphp
         <div class="bg-white shadow sm:rounded-lg overflow-hidden">
             <div class="px-4 py-5 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                             <i class="fab fa-tiktok text-gray-800 text-xl sm:text-2xl"></i>
@@ -676,46 +673,247 @@
                             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">{{ __('settings.tiktok_description') }}</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                        {{-- Manage TikTok Assets Button --}}
-                        <a href="{{ route('orgs.settings.platform-connections.tiktok-assets.index', $currentOrg) }}"
-                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 transition">
-                            <i class="fas fa-cog {{ $isRtl ? 'ms-1 sm:ms-2' : 'me-1 sm:me-2' }}"></i>
-                            <span class="truncate">{{ __('settings.manage_tiktok_assets') }}</span>
+                    <div class="flex items-center gap-2 sm:gap-2 flex-shrink-0">
+                        {{-- Connect Account Button (Login Kit - for video publishing) --}}
+                        <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', $currentOrg) }}"
+                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 flex-1 sm:flex-none min-w-0">
+                            <i class="fab fa-tiktok {{ $isRtl ? 'ms-1 sm:ms-2' : 'me-1 sm:me-2' }}"></i>
+                            <span class="truncate">{{ __('settings.connect_account') }}</span>
+                        </a>
+                        {{-- Connect Ads Button (Business API - for advertising) --}}
+                        <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.authorize', $currentOrg) }}"
+                           class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 flex-1 sm:flex-none min-w-0">
+                            <i class="fas fa-ad {{ $isRtl ? 'ms-1 sm:ms-2' : 'me-1 sm:me-2' }}"></i>
+                            <span class="truncate">{{ __('settings.connect_ads') }}</span>
                         </a>
                     </div>
                 </div>
 
-                {{-- Summary of TikTok connections --}}
-                @if($tiktokBusinessAssets->count() > 0 || $totalTiktokAccounts > 0 || $totalTiktokAds > 0)
-                    <div class="mt-4 pt-4 border-t border-gray-200">
-                        <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                            @if($tiktokBusinessAssets->count() > 0)
-                                <span class="inline-flex items-center gap-1.5">
-                                    <i class="fas fa-briefcase text-gray-400"></i>
-                                    {{ trans_choice('settings.tiktok_business_assets_count', $tiktokBusinessAssets->count(), ['count' => $tiktokBusinessAssets->count()]) }}
-                                </span>
-                            @endif
-                            @if($totalTiktokAccounts > 0)
-                                <span class="inline-flex items-center gap-1.5">
-                                    <i class="fab fa-tiktok text-gray-400"></i>
-                                    {{ trans_choice('settings.linked_tiktok_accounts_count', $totalTiktokAccounts, ['count' => $totalTiktokAccounts]) }}
-                                </span>
-                            @endif
-                            @if($totalTiktokAds > 0)
-                                <span class="inline-flex items-center gap-1.5">
-                                    <i class="fas fa-ad text-gray-400"></i>
-                                    {{ trans_choice('settings.linked_tiktok_ads_count', $totalTiktokAds, ['count' => $totalTiktokAds]) }}
-                                </span>
-                            @endif
+                {{-- TikTok Account Connections --}}
+                @if($tiktokAccountConnections->count() > 0)
+                    <div class="mt-4 border-t border-gray-200 pt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">
+                            <i class="fab fa-tiktok {{ $isRtl ? 'ms-1' : 'me-1' }} text-gray-500"></i>
+                            {{ __('settings.tiktok_accounts') }}
+                        </h4>
+                        <div class="space-y-3">
+                            @foreach($tiktokAccountConnections as $connection)
+                                @php
+                                    $connMetadata = $connection->account_metadata ?? [];
+                                    $connSelectedAssets = $connMetadata['selected_assets'] ?? [];
+                                    $hasAssets = !empty(array_filter($connSelectedAssets));
+                                @endphp
+                                <div class="p-3 sm:p-4 bg-gray-50 rounded-lg" x-data="{ mobileMenuOpen: false }">
+                                    <div class="flex items-start sm:items-center justify-between gap-3">
+                                        <div class="flex items-start sm:items-center flex-1 min-w-0">
+                                            <div class="flex-shrink-0">
+                                                @if($connection->status === 'active')
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100">
+                                                        <i class="fas fa-check text-green-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100">
+                                                        <i class="fas fa-clock text-gray-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="ms-2 sm:ms-3 min-w-0 flex-1">
+                                                <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name ?? __('settings.account_label') }}</p>
+                                                <p class="text-xs text-gray-500 mt-0.5">
+                                                    @if($connection->token_expires_at)
+                                                        {{ __('settings.expires_in', ['time' => $connection->token_expires_at->diffForHumans()]) }}
+                                                    @else
+                                                        {{ __('settings.active_connection') }}
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {{-- Desktop Actions --}}
+                                        <div class="hidden md:flex items-center gap-1 flex-shrink-0">
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok.assets', [$currentOrg, $connection->connection_id]) }}"
+                                               class="p-2 text-gray-400 hover:text-purple-600 transition" title="{{ __('settings.select_assets_label') }}">
+                                                <i class="fas fa-layer-group"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.platform_test_connection') }}">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </form>
+                                            {{-- Refresh Token Button (TikTok tokens expire in 24 hours) --}}
+                                            <form action="{{ route('orgs.settings.platform-connections.tiktok.refresh', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.refresh_token') }}">
+                                                    <i class="fas fa-redo"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                  method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok']) }}');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="{{ __('settings.disconnect_label') }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {{-- Mobile Actions --}}
+                                        <div class="md:hidden relative flex-shrink-0" @click.away="mobileMenuOpen = false">
+                                            <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 text-gray-400 hover:text-gray-600 transition" type="button">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div x-show="mobileMenuOpen" x-transition class="absolute {{ $isRtl ? 'left-0' : 'right-0' }} top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10" style="display: none;">
+                                                <div class="py-1">
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok.assets', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.select_assets_label') }}
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.platform_test_connection') }}
+                                                        </button>
+                                                    </form>
+                                                    {{-- Refresh Token Button (TikTok tokens expire in 24 hours) --}}
+                                                    <form action="{{ route('orgs.settings.platform-connections.tiktok.refresh', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-redo w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.refresh_token') }}
+                                                        </button>
+                                                    </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-plug w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                          method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok']) }}');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fas fa-trash w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.delete_label') }}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                @else
-                    {{-- Empty State --}}
+                @endif
+
+                {{-- TikTok Ads Connections --}}
+                @if($tiktokAdsConnections->count() > 0)
+                    <div class="mt-4 border-t border-gray-200 pt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">
+                            <i class="fas fa-ad {{ $isRtl ? 'ms-1' : 'me-1' }} text-gray-500"></i>
+                            {{ __('settings.tiktok_ads_accounts') }}
+                        </h4>
+                        <div class="space-y-3">
+                            @foreach($tiktokAdsConnections as $connection)
+                                @php
+                                    $connMetadata = $connection->account_metadata ?? [];
+                                    $advertiserCount = $connMetadata['advertiser_count'] ?? count($connMetadata['advertiser_ids'] ?? []);
+                                @endphp
+                                <div class="p-3 sm:p-4 bg-gray-50 rounded-lg" x-data="{ mobileMenuOpen: false }">
+                                    <div class="flex items-start sm:items-center justify-between gap-3">
+                                        <div class="flex items-start sm:items-center flex-1 min-w-0">
+                                            <div class="flex-shrink-0">
+                                                @if($connection->status === 'active')
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100">
+                                                        <i class="fas fa-check text-green-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100">
+                                                        <i class="fas fa-clock text-gray-600 text-xs sm:text-sm"></i>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="ms-2 sm:ms-3 min-w-0 flex-1">
+                                                <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                                                    <p class="text-xs sm:text-sm font-medium text-gray-900">{{ $connection->account_name ?? __('settings.tiktok_ads_manager') }}</p>
+                                                    <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded whitespace-nowrap">{{ __('settings.never_expires') }}</span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-0.5">
+                                                    {{ $advertiserCount }} {{ __('settings.advertiser_accounts') }}
+                                                    &bull; {{ __('settings.active_connection') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {{-- Desktop Actions --}}
+                                        <div class="hidden md:flex items-center gap-1 flex-shrink-0">
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.assets', [$currentOrg, $connection->connection_id]) }}"
+                                               class="p-2 text-gray-400 hover:text-purple-600 transition" title="{{ __('settings.select_assets_label') }}">
+                                                <i class="fas fa-layer-group"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-blue-600 transition" title="{{ __('settings.platform_test_connection') }}">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.authorize', $currentOrg) }}"
+                                               class="p-2 text-gray-400 hover:text-green-600 transition" title="{{ __('settings.reconnect_oauth') }}">
+                                                <i class="fas fa-plug"></i>
+                                            </a>
+                                            <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                  method="POST" class="inline" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok Ads']) }}');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition" title="{{ __('settings.disconnect_label') }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {{-- Mobile Actions --}}
+                                        <div class="md:hidden relative flex-shrink-0" @click.away="mobileMenuOpen = false">
+                                            <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 text-gray-400 hover:text-gray-600 transition" type="button">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div x-show="mobileMenuOpen" x-transition class="absolute {{ $isRtl ? 'left-0' : 'right-0' }} top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10" style="display: none;">
+                                                <div class="py-1">
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.assets', [$currentOrg, $connection->connection_id]) }}"
+                                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-layer-group w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.select_assets_label') }}
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.test', [$currentOrg, $connection->connection_id]) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <i class="fas fa-sync-alt w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.platform_test_connection') }}
+                                                        </button>
+                                                    </form>
+                                                    <a href="{{ route('orgs.settings.platform-connections.tiktok-ads.authorize', $currentOrg) }}"
+                                                       class="block px-4 py-2 text-sm text-green-600 hover:bg-green-50 {{ $isRtl ? 'text-end' : '' }}">
+                                                        <i class="fas fa-plug w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.reconnect_oauth') }}
+                                                    </a>
+                                                    <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $connection->connection_id]) }}"
+                                                          method="POST" onsubmit="return confirm('{{ __('settings.confirm_disconnect_platform', ['platform' => 'TikTok Ads']) }}');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="w-full {{ $isRtl ? 'text-end' : 'text-start' }} px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                            <i class="fas fa-trash w-4 {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>{{ __('settings.delete_label') }}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Empty State --}}
+                @if($tiktokAccountConnections->count() === 0 && $tiktokAdsConnections->count() === 0)
                     <div class="mt-4 text-center py-6 bg-gray-50 rounded-lg">
                         <i class="fab fa-tiktok text-gray-300 text-4xl mb-2"></i>
-                        <p class="text-sm text-gray-500">{{ __('settings.no_tiktok_business_assets') }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('settings.create_first_tiktok_asset') }}</p>
+                        <p class="text-sm text-gray-500">{{ __('settings.no_tiktok_connected') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('settings.click_connect_to_authorize') }}</p>
                     </div>
                 @endif
             </div>

@@ -721,15 +721,6 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAdsAssets'])->name('tiktok-ads.assets');
                 Route::post('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAdsAssets'])->name('tiktok-ads.assets.store');
 
-                // TikTok Business Assets (Container for organizing TikTok connections)
-                Route::get('/tiktok-assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'tiktokAssetsIndex'])->name('tiktok-assets.index');
-                Route::post('/tiktok-assets/create', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'createTikTokBusinessAsset'])->name('tiktok-assets.create');
-                Route::get('/tiktok-assets/{businessAsset}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'showTikTokAssets'])->name('tiktok-assets.show');
-                Route::put('/tiktok-assets/{businessAsset}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'updateTikTokBusinessAsset'])->name('tiktok-assets.update');
-                Route::delete('/tiktok-assets/{businessAsset}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroyTikTokBusinessAsset'])->name('tiktok-assets.destroy');
-                Route::post('/tiktok-assets/{businessAsset}/link', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'linkTikTokAccount'])->name('tiktok-assets.link');
-                Route::post('/tiktok-assets/{businessAsset}/unlink', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'unlinkTikTokAccount'])->name('tiktok-assets.unlink');
-
                 // Snapchat Assets
                 Route::get('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectSnapchatAssets'])->name('snapchat.assets');
                 Route::post('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeSnapchatAssets'])->name('snapchat.assets.store');
