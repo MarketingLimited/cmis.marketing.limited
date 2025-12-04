@@ -469,6 +469,58 @@ class GoogleAssetsService
     }
 
     /**
+     * Fetch all locations for a Business Profile account with pagination.
+     *
+     * @return array<int, array> List of location data
+     */
+    private function fetchAllLocationsForAccount(string $accessToken, string $accountName): array
+    {
+        $allLocations = [];
+        $pageToken = null;
+        $maxPages = 10; // Safety limit to prevent infinite loops
+        $pageCount = 0;
+
+        do {
+            $params = [
+                'readMask' => 'name,title,storefrontAddress,categories',
+                'pageSize' => 100,
+            ];
+            if ($pageToken) {
+                $params['pageToken'] = $pageToken;
+            }
+
+            $response = Http::withToken($accessToken)
+                ->timeout(self::REQUEST_TIMEOUT)
+                ->get("https://mybusinessbusinessinformation.googleapis.com/v1/{$accountName}/locations", $params);
+
+            if (!$response->successful()) {
+                Log::warning('Business Profile locations API failed for account', [
+                    'account_name' => $accountName,
+                    'status' => $response->status(),
+                    'error' => $response->json('error.message', 'Unknown'),
+                ]);
+                break;
+            }
+
+            $data = $response->json();
+            $locations = $data['locations'] ?? [];
+            $allLocations = array_merge($allLocations, $locations);
+            $pageToken = $data['nextPageToken'] ?? null;
+            $pageCount++;
+
+            if ($pageToken) {
+                Log::info('Fetching next page of Business Profile locations', [
+                    'account_name' => $accountName,
+                    'page' => $pageCount + 1,
+                ]);
+            }
+
+        } while ($pageToken && $pageCount < $maxPages);
+
+        return $allLocations;
+    }
+
+    /**
      * Get Google Business Profile locations.
      *
      * @return array{profiles: array, error: array|null}
@@ -530,40 +582,28 @@ class GoogleAssetsService
                     return ['profiles' => [], 'error' => null];
                 }
 
-                // Use Http::pool for parallel location requests (fix N+1)
-                $locationResponses = Http::pool(fn ($pool) =>
-                    array_map(fn ($account) =>
-                        $pool->as($account['name'] ?? 'unknown')
-                            ->withToken($accessToken)
-                            ->timeout(self::REQUEST_TIMEOUT)
-                            ->get("https://mybusinessbusinessinformation.googleapis.com/v1/{$account['name']}/locations", [
-                                'readMask' => 'name,title,storefrontAddress,categories',
-                            ]),
-                        $accounts
-                    )
-                );
-
+                // Fetch locations for each account with pagination support
+                // Note: Using sequential calls instead of Http::pool to support pagination
+                // This ensures ALL locations are fetched, not just the first page
                 $profiles = [];
                 foreach ($accounts as $account) {
                     $accountName = $account['name'] ?? '';
-                    $locationsResponse = $locationResponses[$accountName] ?? null;
+                    $locations = $this->fetchAllLocationsForAccount($accessToken, $accountName);
 
-                    if ($locationsResponse && $locationsResponse->successful()) {
-                        foreach ($locationsResponse->json('locations', []) as $location) {
-                            $address = $location['storefrontAddress'] ?? [];
-                            $primaryCategory = $location['categories']['primaryCategory']['displayName'] ?? '';
-                            $profiles[] = [
-                                'id' => $location['name'] ?? '',
-                                'name' => $location['name'] ?? '',  // Resource name for API/checkbox
-                                'title' => $location['title'] ?? 'Unknown Location',  // Display name
-                                'address' => implode(', ', array_filter([
-                                    $address['addressLines'][0] ?? '',
-                                    $address['locality'] ?? '',
-                                    $address['administrativeArea'] ?? '',
-                                ])),
-                                'primaryCategory' => $primaryCategory,
-                            ];
-                        }
+                    foreach ($locations as $location) {
+                        $address = $location['storefrontAddress'] ?? [];
+                        $primaryCategory = $location['categories']['primaryCategory']['displayName'] ?? '';
+                        $profiles[] = [
+                            'id' => $location['name'] ?? '',
+                            'name' => $location['name'] ?? '',  // Resource name for API/checkbox
+                            'title' => $location['title'] ?? 'Unknown Location',  // Display name
+                            'address' => implode(', ', array_filter([
+                                $address['addressLines'][0] ?? '',
+                                $address['locality'] ?? '',
+                                $address['administrativeArea'] ?? '',
+                            ])),
+                            'primaryCategory' => $primaryCategory,
+                        ];
                     }
                 }
 
