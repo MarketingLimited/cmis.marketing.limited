@@ -97,6 +97,82 @@ class GoogleAssetsApiController extends Controller
     }
 
     /**
+     * Search YouTube channels by name.
+     * Helps users find their Brand Account channels.
+     */
+    public function searchYouTubeChannels(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('google_assets.errors.connection_not_found'));
+        }
+
+        $query = $request->input('q', '');
+        if (strlen($query) < 2) {
+            return $this->error(__('google_assets.errors.search_query_too_short'), 400);
+        }
+
+        try {
+            $result = $this->googleAssetsService->searchYouTubeChannels(
+                $data['access_token'],
+                $query
+            );
+
+            if ($result['error']) {
+                return $this->error($result['error'], 400);
+            }
+
+            return $this->success($result['channels'], __('google_assets.success.youtube_search'));
+        } catch (\Exception $e) {
+            Log::error('Failed to search YouTube channels', [
+                'connection_id' => $connectionId,
+                'query' => $query,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('google_assets.errors.youtube_search'));
+        }
+    }
+
+    /**
+     * Get YouTube channel by ID.
+     * Used to validate and fetch details for manually added channels.
+     */
+    public function getYouTubeChannelById(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('google_assets.errors.connection_not_found'));
+        }
+
+        $channelId = $request->input('channel_id', '');
+        if (empty($channelId)) {
+            return $this->error(__('google_assets.errors.channel_id_required'), 400);
+        }
+
+        try {
+            $channel = $this->googleAssetsService->getYouTubeChannelById(
+                $data['access_token'],
+                $channelId
+            );
+
+            if (!$channel) {
+                return $this->notFound(__('google_assets.errors.channel_not_found'));
+            }
+
+            return $this->success($channel, __('google_assets.success.youtube_channel_found'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch YouTube channel by ID', [
+                'connection_id' => $connectionId,
+                'channel_id' => $channelId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('google_assets.errors.youtube_channel_lookup'));
+        }
+    }
+
+    /**
      * Get Google Ads accounts.
      */
     public function getAdsAccounts(Request $request, string $org, string $connectionId): JsonResponse

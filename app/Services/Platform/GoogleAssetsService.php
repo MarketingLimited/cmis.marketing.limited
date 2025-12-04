@@ -222,6 +222,85 @@ class GoogleAssetsService
     }
 
     /**
+     * Search for YouTube channels by name.
+     * This helps users find their Brand Account channels.
+     *
+     * @return array{channels: array, error: string|null}
+     */
+    public function searchYouTubeChannels(string $accessToken, string $query): array
+    {
+        try {
+            Log::info('Searching YouTube channels', ['query' => $query]);
+
+            $response = Http::withToken($accessToken)
+                ->timeout(self::REQUEST_TIMEOUT)
+                ->get('https://www.googleapis.com/youtube/v3/search', [
+                    'part' => 'snippet',
+                    'q' => $query,
+                    'type' => 'channel',
+                    'maxResults' => 10,
+                ]);
+
+            if (!$response->successful()) {
+                Log::error('YouTube search failed', ['status' => $response->status()]);
+                return [
+                    'channels' => [],
+                    'error' => 'Search failed: ' . ($response->json('error.message') ?? 'Unknown error'),
+                ];
+            }
+
+            $channels = [];
+            foreach ($response->json('items', []) as $item) {
+                $channelId = $item['id']['channelId'] ?? $item['snippet']['channelId'] ?? null;
+                if ($channelId) {
+                    $channels[] = [
+                        'id' => $channelId,
+                        'title' => $item['snippet']['title'] ?? 'Unknown Channel',
+                        'description' => Str::limit($item['snippet']['description'] ?? '', 100),
+                        'thumbnail' => $item['snippet']['thumbnails']['default']['url'] ?? null,
+                    ];
+                }
+            }
+
+            Log::info('YouTube search completed', ['count' => count($channels)]);
+            return ['channels' => $channels, 'error' => null];
+        } catch (\Exception $e) {
+            Log::error('Exception searching YouTube channels', ['error' => $e->getMessage()]);
+            return ['channels' => [], 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get YouTube channel by ID.
+     * Used to fetch details for manually added channels.
+     *
+     * @return array|null
+     */
+    public function getYouTubeChannelById(string $accessToken, string $channelId): ?array
+    {
+        try {
+            $response = Http::withToken($accessToken)
+                ->timeout(self::REQUEST_TIMEOUT)
+                ->get('https://www.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet,statistics,contentDetails,brandingSettings',
+                    'id' => $channelId,
+                ]);
+
+            if ($response->successful()) {
+                $items = $response->json('items', []);
+                if (!empty($items)) {
+                    return $this->formatYouTubeChannel($items[0], 'brand');
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Exception fetching YouTube channel by ID', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    /**
      * Get Google Ads accounts.
      *
      * @return array{accounts: array, error: array|null}

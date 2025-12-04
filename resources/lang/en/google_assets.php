@@ -3,6 +3,8 @@
 return [
     'success' => [
         'youtube_channels' => 'YouTube channels retrieved successfully',
+        'youtube_search' => 'YouTube channels search completed',
+        'youtube_channel_found' => 'YouTube channel found',
         'ads_accounts' => 'Google Ads accounts retrieved successfully',
         'analytics' => 'Analytics properties retrieved successfully',
         'business_profiles' => 'Business Profiles retrieved successfully',
@@ -18,6 +20,11 @@ return [
         'connection_not_found' => 'Connection not found',
         'youtube_channels' => 'Failed to fetch YouTube channels',
         'youtube_scope_required' => 'YouTube authorization is required. Please connect your YouTube account.',
+        'youtube_search' => 'Failed to search YouTube channels',
+        'youtube_channel_lookup' => 'Failed to fetch YouTube channel details',
+        'search_query_too_short' => 'Search query must be at least 2 characters',
+        'channel_id_required' => 'Channel ID is required',
+        'channel_not_found' => 'YouTube channel not found',
         'ads_accounts' => 'Failed to fetch Google Ads accounts',
         'analytics' => 'Failed to fetch Analytics properties',
         'business_profiles' => 'Failed to fetch Business Profiles',

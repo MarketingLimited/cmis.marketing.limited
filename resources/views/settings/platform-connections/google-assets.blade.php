@@ -210,16 +210,98 @@
                         </div>
                     </div>
 
-                    {{-- Brand Account Note --}}
-                    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p class="text-xs text-amber-700">
-                            <i class="fas fa-info-circle {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                            <strong>{{ __('Brand Accounts:') }}</strong>
-                            {{ __('If you manage YouTube Brand Channels, click "Add manually" and enter the Channel ID. Find it at YouTube Studio → Settings → Channel → Advanced settings.') }}
+                    {{-- Brand Account Search & Add --}}
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <div class="flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <i class="fas fa-search text-blue-600"></i>
+                                <span class="text-sm font-medium text-blue-800">{{ __('settings.find_brand_channel') }}</span>
+                            </div>
+                            <button type="button" @click="showYoutubeChannelSearch = !showYoutubeChannelSearch"
+                                    class="text-xs text-blue-600 hover:text-blue-800">
+                                <span x-text="showYoutubeChannelSearch ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-blue-700 mb-3">
+                            {{ __('settings.brand_channel_search_description') }}
                         </p>
+
+                        {{-- Search Input --}}
+                        <div x-show="showYoutubeChannelSearch" x-cloak class="space-y-3">
+                            <div class="flex gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                <input type="text"
+                                       x-model="youtubeChannelSearchQuery"
+                                       @keydown.enter.prevent="searchYoutubeChannels()"
+                                       placeholder="{{ __('settings.search_channel_placeholder') }}"
+                                       class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                <button type="button"
+                                        @click="searchYoutubeChannels()"
+                                        :disabled="youtubeChannelSearching || youtubeChannelSearchQuery.length < 2"
+                                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                    <i x-show="!youtubeChannelSearching" class="fas fa-search"></i>
+                                    <i x-show="youtubeChannelSearching" class="fas fa-spinner fa-spin"></i>
+                                    <span>{{ __('Search') }}</span>
+                                </button>
+                            </div>
+
+                            {{-- Search Error --}}
+                            <div x-show="youtubeChannelSearchError" x-cloak class="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                                <i class="fas fa-exclamation-circle {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                <span x-text="youtubeChannelSearchError"></span>
+                            </div>
+
+                            {{-- Search Results --}}
+                            <div x-show="youtubeChannelSearchResults.length > 0" x-cloak class="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                                <div class="px-3 py-2 bg-gray-50 border-b text-xs text-gray-600">
+                                    <span x-text="youtubeChannelSearchResults.length"></span> {{ __('settings.channels_found') }}
+                                </div>
+                                <div class="max-h-64 overflow-y-auto">
+                                    <template x-for="channel in youtubeChannelSearchResults" :key="channel.id">
+                                        <div class="flex items-center justify-between p-3 border-b last:border-b-0 hover:bg-gray-50 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                            <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                                <img x-show="channel.thumbnail" :src="channel.thumbnail" alt="" class="w-10 h-10 rounded-full">
+                                                <div x-show="!channel.thumbnail" class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                                    <i class="fab fa-youtube text-red-600"></i>
+                                                </div>
+                                                <div class="{{ $isRtl ? 'text-end' : '' }}">
+                                                    <p class="text-sm font-medium text-gray-900" x-text="channel.title"></p>
+                                                    <p class="text-xs text-gray-500" x-text="channel.id"></p>
+                                                </div>
+                                            </div>
+                                            <button type="button"
+                                                    @click="addChannelFromSearch(channel)"
+                                                    class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 flex items-center gap-1">
+                                                <i class="fas fa-plus"></i>
+                                                <span>{{ __('Add') }}</span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            {{-- No Results --}}
+                            <div x-show="!youtubeChannelSearching && youtubeChannelSearchResults.length === 0 && youtubeChannelSearchQuery.length >= 2 && !youtubeChannelSearchError" x-cloak
+                                 class="text-center py-4 text-sm text-gray-500">
+                                <i class="fas fa-search text-gray-300 text-2xl mb-2"></i>
+                                <p>{{ __('settings.no_channels_found') }}</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div x-show="showManualYoutube" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg" x-data="{ manualIds: '' }">
+                    {{-- Manual Channel ID Entry (Alternative) --}}
+                    <div class="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <p class="text-xs text-gray-600">
+                                <i class="fas fa-keyboard {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                {{ __('settings.prefer_manual_entry') }}
+                            </p>
+                            <button type="button" @click="showManualYoutube = !showManualYoutube" class="text-xs text-gray-600 hover:text-gray-800">
+                                <span x-text="showManualYoutube ? '{{ __('Hide') }}' : '{{ __('settings.enter_channel_id') }}'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div x-show="showManualYoutube" x-cloak class="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg" x-data="{ manualIds: '' }">
                         <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Enter YouTube Channel IDs (comma or newline separated)') }}</label>
                         <textarea x-model="manualIds" rows="3" placeholder="UC..., UC..., UC..."
                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"></textarea>
@@ -229,9 +311,6 @@
                         <p class="text-xs text-gray-500 mt-2">
                             {{ __('To find your Channel ID: YouTube Studio → Settings → Channel → Advanced settings → Copy "Channel ID"') }}
                         </p>
-                        <button type="button" @click="showManualYoutube = false" class="mt-2 text-sm text-red-600 hover:text-red-800">
-                            <i class="fas fa-times {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Close') }}
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1464,6 +1543,13 @@ function googleAssetsPage() {
 
         // Manual input visibility
         showManualYoutube: false,
+        showYoutubeChannelSearch: false,
+
+        // YouTube Channel Search state
+        youtubeChannelSearchQuery: '',
+        youtubeChannelSearchResults: [],
+        youtubeChannelSearching: false,
+        youtubeChannelSearchError: null,
         showManualGoogleAds: false,
         showManualAnalytics: false,
         showManualBusiness: false,
@@ -1583,6 +1669,60 @@ function googleAssetsPage() {
             } else {
                 this.selectedYoutubeChannels = [];
             }
+        },
+
+        // YouTube Channel Search (for Brand Accounts)
+        async searchYoutubeChannels() {
+            const query = this.youtubeChannelSearchQuery.trim();
+            if (query.length < 2) {
+                this.youtubeChannelSearchError = '{{ __('google_assets.errors.search_query_too_short') }}';
+                return;
+            }
+
+            this.youtubeChannelSearching = true;
+            this.youtubeChannelSearchError = null;
+            this.youtubeChannelSearchResults = [];
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/youtube/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.youtubeChannelSearchResults = data.data || [];
+                } else {
+                    throw new Error(data.message || '{{ __('google_assets.errors.youtube_search') }}');
+                }
+            } catch (error) {
+                this.youtubeChannelSearchError = error.message;
+                console.error('YouTube channel search failed:', error);
+            } finally {
+                this.youtubeChannelSearching = false;
+            }
+        },
+
+        // Add channel from search results to main channel list
+        addChannelFromSearch(channel) {
+            // Check if channel already exists in the list
+            const exists = this.youtubeChannels.some(ch => ch.id === channel.id);
+            if (!exists) {
+                // Add to channels list
+                this.youtubeChannels.push({
+                    id: channel.id,
+                    title: channel.title,
+                    thumbnail: channel.thumbnail,
+                    custom_url: channel.custom_url || null,
+                    subscriber_count: channel.subscriber_count || 0,
+                    type: 'brand'
+                });
+            }
+            // Select the channel
+            if (!this.selectedYoutubeChannels.includes(channel.id)) {
+                this.selectedYoutubeChannels.push(channel.id);
+            }
+            // Remove from search results to indicate it was added
+            this.youtubeChannelSearchResults = this.youtubeChannelSearchResults.filter(ch => ch.id !== channel.id);
         },
 
         // Google Ads bulk selection

@@ -735,6 +735,8 @@ Route::middleware(['auth'])->group(function () {
                 // Google Assets AJAX Endpoints (progressive loading)
                 Route::prefix('google/{connection}/assets/ajax')->name('google.assets.ajax.')->group(function () {
                     Route::get('/youtube', [GoogleAssetsApiController::class, 'getYouTubeChannels'])->name('youtube');
+                    Route::get('/youtube/search', [GoogleAssetsApiController::class, 'searchYouTubeChannels'])->name('youtube.search');
+                    Route::get('/youtube/channel', [GoogleAssetsApiController::class, 'getYouTubeChannelById'])->name('youtube.channel');
                     Route::get('/ads', [GoogleAssetsApiController::class, 'getAdsAccounts'])->name('ads');
                     Route::get('/analytics', [GoogleAssetsApiController::class, 'getAnalyticsProperties'])->name('analytics');
                     Route::get('/business-profiles', [GoogleAssetsApiController::class, 'getBusinessProfiles'])->name('business-profiles');

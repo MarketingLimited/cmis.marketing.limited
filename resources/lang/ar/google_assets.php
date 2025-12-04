@@ -3,6 +3,8 @@
 return [
     'success' => [
         'youtube_channels' => 'تم استرداد قنوات يوتيوب بنجاح',
+        'youtube_search' => 'اكتمل البحث في قنوات يوتيوب',
+        'youtube_channel_found' => 'تم العثور على قناة يوتيوب',
         'ads_accounts' => 'تم استرداد حسابات إعلانات جوجل بنجاح',
         'analytics' => 'تم استرداد خصائص التحليلات بنجاح',
         'business_profiles' => 'تم استرداد ملفات الأعمال بنجاح',
@@ -18,6 +20,11 @@ return [
         'connection_not_found' => 'لم يتم العثور على الاتصال',
         'youtube_channels' => 'فشل في جلب قنوات يوتيوب',
         'youtube_scope_required' => 'مطلوب تفويض YouTube. يرجى ربط حساب YouTube الخاص بك.',
+        'youtube_search' => 'فشل في البحث في قنوات يوتيوب',
+        'youtube_channel_lookup' => 'فشل في جلب تفاصيل قناة يوتيوب',
+        'search_query_too_short' => 'يجب أن يكون البحث حرفين على الأقل',
+        'channel_id_required' => 'معرف القناة مطلوب',
+        'channel_not_found' => 'لم يتم العثور على قناة يوتيوب',
         'ads_accounts' => 'فشل في جلب حسابات إعلانات جوجل',
         'analytics' => 'فشل في جلب خصائص التحليلات',
         'business_profiles' => 'فشل في جلب ملفات الأعمال',
