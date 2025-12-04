@@ -244,12 +244,8 @@
                                                     {{ __('profiles.manage_groups') }}
                                                 </button>
 
-                                                {{-- Remove Profile --}}
-                                                <button @click="confirmRemove('{{ $profile->integration_id }}', '{{ $profile->effective_name }}'); open = false"
-                                                        class="w-full text-start block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                                    <i class="fas fa-trash w-4 me-2"></i>
-                                                    {{ __('profiles.remove_profile') }}
-                                                </button>
+                                                {{-- Remove Profile - Disabled: profiles should be removed via Platform Connections assets page --}}
+                                                {{-- To remove a profile, deselect it from the assets page of its platform connection --}}
                                             </div>
                                         </div>
                                     </div>
