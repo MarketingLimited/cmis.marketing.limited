@@ -223,12 +223,7 @@
                                              x-cloak
                                              class="absolute end-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
                                             <div class="py-1">
-                                                {{-- Refresh Connection --}}
-                                                <button @click="refreshConnection('{{ $profile->integration_id }}'); open = false"
-                                                        class="w-full text-start block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                    <i class="fas fa-sync-alt w-4 me-2"></i>
-                                                    {{ __('profiles.refresh_connection') }}
-                                                </button>
+                                                {{-- Refresh Connection - Disabled: connections should be refreshed via Platform Connections page --}}
 
                                                 {{-- View Profile --}}
                                                 <a href="{{ route('orgs.settings.profiles.show', [$currentOrg, $profile->integration_id]) }}"
