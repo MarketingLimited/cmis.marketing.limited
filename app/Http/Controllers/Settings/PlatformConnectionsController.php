@@ -4704,7 +4704,28 @@ class PlatformConnectionsController extends Controller
                     $existing->restore();
                 }
 
-                // Update the connection
+                // Merge new metadata with existing metadata to preserve YouTube data and user selections
+                $existingMetadata = $existing->account_metadata ?? [];
+                $newMetadata = $updateData['account_metadata'];
+
+                // Preserve important fields that should not be overwritten during reconnection
+                $preserveFields = [
+                    'youtube_channels',           // Stored YouTube channels
+                    'youtube_brand_account',      // Brand Account token data
+                    'youtube_authorized',         // YouTube authorization flag
+                    'youtube_authorized_at',      // YouTube authorization timestamp
+                    'youtube_channels_updated_at', // Channels last updated
+                    'selected_assets',            // User's selected assets
+                    'assets_updated_at',          // Assets selection timestamp
+                ];
+
+                foreach ($preserveFields as $field) {
+                    if (isset($existingMetadata[$field])) {
+                        $newMetadata[$field] = $existingMetadata[$field];
+                    }
+                }
+
+                // Update the connection with merged metadata
                 $existing->update([
                     'account_name' => $updateData['account_name'],
                     'status' => $updateData['status'],
@@ -4712,7 +4733,7 @@ class PlatformConnectionsController extends Controller
                     'refresh_token' => $updateData['refresh_token'],
                     'token_expires_at' => $updateData['token_expires_at'],
                     'scopes' => $updateData['scopes'],
-                    'account_metadata' => $updateData['account_metadata'],
+                    'account_metadata' => $newMetadata,
                     'auto_sync' => $updateData['auto_sync'],
                     'sync_frequency_minutes' => $updateData['sync_frequency_minutes'],
                 ]);
