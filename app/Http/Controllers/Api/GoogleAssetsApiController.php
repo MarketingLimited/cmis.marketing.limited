@@ -86,6 +86,20 @@ class GoogleAssetsApiController extends Controller
             // Support both old format (array of channels) and new format with channels key
             $channels = $result['channels'] ?? $result;
 
+            // Store channels in connection metadata for use during profile sync
+            // This ensures we use the same data user sees when creating profiles
+            if (!empty($channels)) {
+                $connection = $data['connection'];
+                $metadata = $connection->account_metadata ?? [];
+                $metadata['youtube_channels'] = $channels;
+                $connection->update(['account_metadata' => $metadata]);
+
+                Log::info('Stored YouTube channels in connection metadata', [
+                    'connection_id' => $connectionId,
+                    'channel_count' => count($channels),
+                ]);
+            }
+
             return $this->success($channels, __('google_assets.success.youtube_channels'));
         } catch (\Exception $e) {
             Log::error('Failed to fetch YouTube channels', [

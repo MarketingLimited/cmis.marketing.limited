@@ -5363,11 +5363,27 @@ class PlatformConnectionsController extends Controller
             $platform = $config['platform'];
             $method = $config['method'];
 
-            // Fetch asset details from Google API
+            // Get asset details - prefer stored metadata (what user saw when selecting)
             $assets = [];
             try {
                 if ($method === 'getGoogleYouTubeChannels') {
-                    $assets = $this->getGoogleYouTubeChannels($connection);
+                    // First try stored metadata from when user viewed the assets page
+                    $storedChannels = $connection->account_metadata['youtube_channels'] ?? [];
+
+                    if (!empty($storedChannels)) {
+                        $assets = $storedChannels;
+                        Log::info('Using stored YouTube channels for profile sync', [
+                            'connection_id' => $connection->connection_id,
+                            'channel_count' => count($assets),
+                        ]);
+                    } else {
+                        // Fall back to API fetch if no stored data
+                        $assets = $this->getGoogleYouTubeChannels($connection);
+                        Log::info('Fetched YouTube channels from API for profile sync', [
+                            'connection_id' => $connection->connection_id,
+                            'channel_count' => count($assets),
+                        ]);
+                    }
                 } elseif ($method === 'getGoogleBusinessProfiles') {
                     $assets = $this->getGoogleBusinessProfiles($connection);
                 }
