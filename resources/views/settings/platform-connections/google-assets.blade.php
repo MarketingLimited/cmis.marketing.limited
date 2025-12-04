@@ -546,13 +546,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
                             <template x-for="(property, idx) in filteredAnalyticsProperties" :key="'analytics-' + idx">
                                 <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                       :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes(property.name) }">
-                                    <input type="checkbox" name="analytics[]" :value="property.name"
+                                       :class="{ 'border-orange-500 bg-orange-50': selectedAnalytics.includes(property.id) }">
+                                    <input type="checkbox" name="analytics[]" :value="property.id"
                                            x-model="selectedAnalytics"
                                            class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="{{ $isRtl ? 'me-3' : 'ms-3' }}">
-                                        <span class="text-sm font-medium text-gray-900" x-text="property.displayName || property.name"></span>
-                                        <span class="text-xs text-gray-400 ms-1" x-text="'(' + (property.name ? property.name.split('/')[1] : '') + ')'"></span>
+                                        <span class="text-sm font-medium text-gray-900" x-text="property.displayName || property.id"></span>
+                                        <span class="text-xs text-gray-400 ms-1" x-text="'(' + (property.id ? property.id.split('/')[1] : '') + ')'"></span>
                                         <span x-show="property.propertyType" class="block text-xs text-gray-500" x-text="property.propertyType"></span>
                                     </div>
                                 </label>
@@ -1746,15 +1746,15 @@ function googleAssetsPage() {
         // Analytics bulk selection
         selectAllAnalytics() {
             this.filteredAnalyticsProperties.forEach(prop => {
-                if (!this.selectedAnalytics.includes(prop.name)) {
-                    this.selectedAnalytics.push(prop.name);
+                if (!this.selectedAnalytics.includes(prop.id)) {
+                    this.selectedAnalytics.push(prop.id);
                 }
             });
         },
 
         deselectAllAnalytics() {
             if (this.analyticsSearch) {
-                const filteredIds = this.filteredAnalyticsProperties.map(prop => prop.name);
+                const filteredIds = this.filteredAnalyticsProperties.map(prop => prop.id);
                 this.selectedAnalytics = this.selectedAnalytics.filter(id => !filteredIds.includes(id));
             } else {
                 this.selectedAnalytics = [];
