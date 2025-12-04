@@ -267,9 +267,24 @@ class GoogleAssetsApiController extends Controller
                 $forceRefresh
             );
 
+            // Store business profiles in connection metadata for use during profile sync
+            // This ensures we use the same data user sees when creating profiles
+            $profiles = $result['profiles'] ?? [];
+            if (!empty($profiles)) {
+                $connection = $data['connection'];
+                $metadata = $connection->account_metadata ?? [];
+                $metadata['business_profiles'] = $profiles;
+                $connection->update(['account_metadata' => $metadata]);
+
+                Log::info('Stored Google Business Profiles in connection metadata', [
+                    'connection_id' => $connectionId,
+                    'profile_count' => count($profiles),
+                ]);
+            }
+
             // Include error info if present
             return $this->success([
-                'profiles' => $result['profiles'],
+                'profiles' => $profiles,
                 'error' => $result['error'],
             ], __('google_assets.success.business_profiles'));
         } catch (\Exception $e) {

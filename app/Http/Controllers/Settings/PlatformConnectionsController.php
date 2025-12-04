@@ -5385,7 +5385,23 @@ class PlatformConnectionsController extends Controller
                         ]);
                     }
                 } elseif ($method === 'getGoogleBusinessProfiles') {
-                    $assets = $this->getGoogleBusinessProfiles($connection);
+                    // First try stored metadata from when user viewed the assets page
+                    $storedProfiles = $connection->account_metadata['business_profiles'] ?? [];
+
+                    if (!empty($storedProfiles)) {
+                        $assets = $storedProfiles;
+                        Log::info('Using stored Google Business Profiles for profile sync', [
+                            'connection_id' => $connection->connection_id,
+                            'profile_count' => count($assets),
+                        ]);
+                    } else {
+                        // Fall back to API fetch if no stored data
+                        $assets = $this->getGoogleBusinessProfiles($connection);
+                        Log::info('Fetched Google Business Profiles from API for profile sync', [
+                            'connection_id' => $connection->connection_id,
+                            'profile_count' => count($assets),
+                        ]);
+                    }
                 }
             } catch (\Exception $e) {
                 Log::error("Failed to fetch {$platform} assets", ['error' => $e->getMessage()]);
