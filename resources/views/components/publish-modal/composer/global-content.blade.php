@@ -321,8 +321,29 @@
                         <img :src="media.url || media.preview_url" class="w-full h-full object-cover pointer-events-none">
                     </template>
                     <template x-if="media.type === 'video'">
-                        <div class="w-full h-full flex items-center justify-center bg-gray-800 pointer-events-none">
-                            <i class="fas fa-play-circle text-white text-3xl"></i>
+                        <div class="w-full h-full relative pointer-events-none">
+                            {{-- Video processing state --}}
+                            <template x-if="media.processing_status === 'processing' || media.processing_status === 'pending'">
+                                <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 text-white">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <span class="text-xs">{{ __('publish.processing_video') }}</span>
+                                </div>
+                            </template>
+                            {{-- Video with thumbnail --}}
+                            <template x-if="media.processing_status === 'completed' && media.thumbnail_url">
+                                <div class="w-full h-full relative">
+                                    <img :src="media.thumbnail_url" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+                                        <i class="fas fa-play-circle text-white text-3xl"></i>
+                                    </div>
+                                </div>
+                            </template>
+                            {{-- Video without thumbnail (fallback) --}}
+                            <template x-if="!media.processing_status || (media.processing_status === 'completed' && !media.thumbnail_url) || media.processing_status === 'failed'">
+                                <div class="w-full h-full flex items-center justify-center bg-gray-800">
+                                    <i class="fas fa-play-circle text-white text-3xl"></i>
+                                </div>
+                            </template>
                         </div>
                     </template>
 

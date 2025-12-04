@@ -515,4 +515,12 @@ return [
     'retry' => 'إعادة المحاولة',
     'media_still_uploading' => 'يرجى الانتظار حتى اكتمال رفع الوسائط',
 
+    // Video Processing
+    'processing_video' => 'جاري معالجة الفيديو...',
+    'video_ready' => 'الفيديو جاهز',
+    'select_cover_frame' => 'اختر صورة الغلاف',
+    'change_cover' => 'تغيير الغلاف',
+    'video_processing_failed' => 'فشلت معالجة الفيديو',
+    'video_thumbnail_updated' => 'تم تحديث صورة الفيديو',
+
 ];

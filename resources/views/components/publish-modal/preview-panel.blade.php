@@ -178,8 +178,40 @@
 
                             {{-- Media Preview --}}
                             <template x-if="content.global.media.length > 0">
-                                <div class="bg-gray-100" style="aspect-ratio: 1/1;">
-                                    <img :src="content.global.media[0]?.preview_url" class="w-full h-full object-cover">
+                                <div class="bg-gray-100 relative" style="aspect-ratio: 1/1;">
+                                    {{-- Video with thumbnail --}}
+                                    <template x-if="content.global.media[0]?.type === 'video'">
+                                        <div class="w-full h-full relative">
+                                            {{-- Processing state --}}
+                                            <template x-if="content.global.media[0]?.processing_status === 'processing' || content.global.media[0]?.processing_status === 'pending'">
+                                                <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                                    <span class="text-xs">{{ __('publish.processing_video') }}</span>
+                                                </div>
+                                            </template>
+                                            {{-- Completed with thumbnail --}}
+                                            <template x-if="content.global.media[0]?.processing_status === 'completed' && content.global.media[0]?.thumbnail_url">
+                                                <div class="relative w-full h-full">
+                                                    <img :src="content.global.media[0].thumbnail_url" class="w-full h-full object-cover">
+                                                    <div class="absolute inset-0 flex items-center justify-center">
+                                                        <div class="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
+                                                            <i class="fas fa-play text-white text-lg ms-1"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            {{-- Fallback: show preview_url (original upload preview) --}}
+                                            <template x-if="!content.global.media[0]?.processing_status || (content.global.media[0]?.processing_status === 'completed' && !content.global.media[0]?.thumbnail_url)">
+                                                <div class="w-full h-full flex items-center justify-center bg-gray-800">
+                                                    <i class="fas fa-video text-white text-3xl"></i>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    {{-- Image --}}
+                                    <template x-if="content.global.media[0]?.type !== 'video'">
+                                        <img :src="content.global.media[0]?.preview_url" class="w-full h-full object-cover">
+                                    </template>
                                 </div>
                             </template>
 
@@ -214,8 +246,40 @@
 
             {{-- Media Preview --}}
             <template x-if="content.global.media.length > 0">
-                <div class="aspect-square bg-gray-100">
-                    <img :src="content.global.media[0]?.preview_url" class="w-full h-full object-cover">
+                <div class="aspect-square bg-gray-100 relative">
+                    {{-- Video with thumbnail --}}
+                    <template x-if="content.global.media[0]?.type === 'video'">
+                        <div class="w-full h-full relative">
+                            {{-- Processing state --}}
+                            <template x-if="content.global.media[0]?.processing_status === 'processing' || content.global.media[0]?.processing_status === 'pending'">
+                                <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 text-white">
+                                    <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                                    <span class="text-sm">{{ __('publish.processing_video') }}</span>
+                                </div>
+                            </template>
+                            {{-- Completed with thumbnail --}}
+                            <template x-if="content.global.media[0]?.processing_status === 'completed' && content.global.media[0]?.thumbnail_url">
+                                <div class="relative w-full h-full">
+                                    <img :src="content.global.media[0].thumbnail_url" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-play text-white text-xl ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            {{-- Fallback: show placeholder --}}
+                            <template x-if="!content.global.media[0]?.processing_status || (content.global.media[0]?.processing_status === 'completed' && !content.global.media[0]?.thumbnail_url)">
+                                <div class="w-full h-full flex items-center justify-center bg-gray-800">
+                                    <i class="fas fa-video text-white text-4xl"></i>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    {{-- Image --}}
+                    <template x-if="content.global.media[0]?.type !== 'video'">
+                        <img :src="content.global.media[0]?.preview_url" class="w-full h-full object-cover">
+                    </template>
                 </div>
             </template>
 

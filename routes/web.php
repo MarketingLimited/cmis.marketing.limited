@@ -506,6 +506,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/media-library', [App\Http\Controllers\Social\MediaLibraryController::class, 'index'])->name('media-library');
             Route::post('/media/upload', [App\Http\Controllers\Social\MediaLibraryController::class, 'upload'])->name('media.upload');
 
+            // Video Processing
+            Route::post('/media/processing-status', [App\Http\Controllers\Social\VideoProcessingController::class, 'status'])->name('media.processing-status');
+            Route::post('/media/update-thumbnail', [App\Http\Controllers\Social\VideoProcessingController::class, 'updateThumbnail'])->name('media.update-thumbnail');
+            Route::post('/media/frames', [App\Http\Controllers\Social\VideoProcessingController::class, 'getFrames'])->name('media.frames');
+
             // AI Content Transformation
             Route::post('/ai/transform-content', [App\Http\Controllers\API\AIAssistantController::class, 'transformSocialContent'])->name('ai.transform-content');
 

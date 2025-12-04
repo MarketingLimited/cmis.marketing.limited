@@ -515,4 +515,12 @@ return [
     'retry' => 'Retry',
     'media_still_uploading' => 'Please wait for media to finish uploading',
 
+    // Video Processing
+    'processing_video' => 'Processing video...',
+    'video_ready' => 'Video ready',
+    'select_cover_frame' => 'Select cover frame',
+    'change_cover' => 'Change cover',
+    'video_processing_failed' => 'Video processing failed',
+    'video_thumbnail_updated' => 'Video thumbnail updated',
+
 ];

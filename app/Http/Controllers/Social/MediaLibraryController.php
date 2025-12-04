@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Social;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Jobs\ProcessVideoJob;
+use App\Models\Social\MediaAsset;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -40,11 +44,14 @@ class MediaLibraryController extends Controller
     public function upload(Request $request, string $org)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi,wmv|max:102400', // 100MB max
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,mp4,mov,avi,wmv,webm,mkv|max:512000', // 500MB max for videos
             'type' => 'nullable|in:image,video',
         ]);
 
         try {
+            // Set RLS context for multi-tenancy
+            DB::statement("SELECT cmis.init_transaction_context(?)", [$org]);
+
             $file = $request->file('file');
             $mimeType = $file->getMimeType();
             $isVideo = str_starts_with($mimeType, 'video');
@@ -59,28 +66,82 @@ class MediaLibraryController extends Controller
 
                 // Store video file directly
                 $path = $file->storeAs('social-media', $filename, 'public');
+
+                // Generate public URL for original
+                $url = Storage::disk('public')->url($path);
+                if (!str_starts_with($url, 'http')) {
+                    $url = url($url);
+                }
+
+                // Create MediaAsset record for tracking processing
+                $asset = MediaAsset::create([
+                    'org_id' => $org,
+                    'post_id' => null, // Will be linked when post is created
+                    'media_type' => 'video',
+                    'original_url' => $url,
+                    'storage_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'mime_type' => $mimeType,
+                    'file_size' => $file->getSize(),
+                    'is_analyzed' => false,
+                    'analysis_status' => 'pending',
+                    'metadata' => [
+                        'original_extension' => $extension,
+                        'uploaded_at' => now()->toIso8601String(),
+                    ],
+                ]);
+
+                // Dispatch background job to process video
+                ProcessVideoJob::dispatch(
+                    $asset->asset_id,
+                    $org,
+                    $path
+                )->onQueue(config('media.processing.queue', 'default'));
+
+                Log::info('Video upload queued for processing', [
+                    'asset_id' => $asset->asset_id,
+                    'org_id' => $org,
+                    'path' => $path,
+                ]);
+
+                return $this->success([
+                    'url' => $url,
+                    'path' => $path,
+                    'filename' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'type' => 'video',
+                    'asset_id' => $asset->asset_id,
+                    'needs_processing' => true,
+                    'processing_status' => 'pending',
+                ], 'Video uploaded and queued for processing');
+
             } else {
                 // For images, process and convert to JPEG
                 $filename = $org . '/' . $uuid . '.jpg';
                 $path = $this->processAndStoreImage($file, $filename);
+
+                // Generate public URL
+                $url = Storage::disk('public')->url($path);
+                if (!str_starts_with($url, 'http')) {
+                    $url = url($url);
+                }
+
+                return $this->success([
+                    'url' => $url,
+                    'path' => $path,
+                    'filename' => $file->getClientOriginalName(),
+                    'size' => Storage::disk('public')->size($path),
+                    'type' => 'image',
+                    'needs_processing' => false,
+                ], 'Image uploaded successfully');
             }
-
-            // Generate public URL
-            $url = Storage::disk('public')->url($path);
-
-            // If URL is relative, make it absolute
-            if (!str_starts_with($url, 'http')) {
-                $url = url($url);
-            }
-
-            return $this->success([
-                'url' => $url,
-                'path' => $path,
-                'filename' => $file->getClientOriginalName(),
-                'size' => Storage::disk('public')->size($path),
-                'type' => $isVideo ? 'video' : 'image',
-            ], 'Media uploaded successfully');
         } catch (\Exception $e) {
+            Log::error('Media upload failed', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return $this->serverError('Failed to upload media: ' . $e->getMessage());
         }
     }

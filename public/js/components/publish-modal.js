@@ -1031,14 +1031,29 @@ function publishModal() {
             });
 
             try {
-                const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
+                const uploadResult = await this.uploadMediaFile(mediaItem.file);
 
-                if (uploadedUrl) {
-                    // Update the media item with uploaded URL
-                    this.content.global.media[mediaIndex].url = uploadedUrl;
+                if (uploadResult && uploadResult.url) {
+                    // Update the media item with uploaded URL and processing info
+                    this.content.global.media[mediaIndex].url = uploadResult.url;
                     this.content.global.media[mediaIndex].uploadStatus = 'uploaded';
                     this.content.global.media[mediaIndex].uploadProgress = 100;
-                    console.log('[AutoUpload] Upload successful', { index: mediaIndex, url: uploadedUrl });
+                    this.content.global.media[mediaIndex].asset_id = uploadResult.asset_id;
+                    this.content.global.media[mediaIndex].needs_processing = uploadResult.needs_processing;
+                    this.content.global.media[mediaIndex].processing_status = uploadResult.processing_status;
+
+                    console.log('[AutoUpload] Upload successful', {
+                        index: mediaIndex,
+                        url: uploadResult.url,
+                        asset_id: uploadResult.asset_id,
+                        needs_processing: uploadResult.needs_processing
+                    });
+
+                    // If video needs processing, start polling
+                    if (uploadResult.needs_processing && uploadResult.asset_id) {
+                        console.log('[AutoUpload] Starting video processing poll', { asset_id: uploadResult.asset_id });
+                        this.pollVideoProcessingStatus([uploadResult.asset_id]);
+                    }
                 } else {
                     this.content.global.media[mediaIndex].uploadStatus = 'failed';
                     console.error('[AutoUpload] Upload failed', { index: mediaIndex });
@@ -1110,13 +1125,16 @@ function publishModal() {
                     // If still has file but no URL (upload failed or still in progress), try uploading now
                     else if (mediaItem.file && mediaItem.uploadStatus !== 'uploaded') {
                         console.log('[Publishing] Media not pre-uploaded, uploading now...');
-                        const uploadedUrl = await this.uploadMediaFile(mediaItem.file);
-                        if (uploadedUrl) {
+                        const uploadResult = await this.uploadMediaFile(mediaItem.file);
+                        if (uploadResult && uploadResult.url) {
                             uploadedMedia.push({
                                 type: mediaItem.type,
-                                url: uploadedUrl,
+                                url: uploadResult.url,
                                 name: mediaItem.file.name,
-                                size: mediaItem.file.size
+                                size: mediaItem.file.size,
+                                asset_id: uploadResult.asset_id,
+                                thumbnail_url: mediaItem.thumbnail_url,
+                                processed_url: uploadResult.url
                             });
                         } else {
                             console.error('[Publishing] Failed to upload media');
@@ -1140,7 +1158,7 @@ function publishModal() {
         },
 
         /**
-         * Upload a media file and return its URL
+         * Upload a media file and return upload result
          */
         async uploadMediaFile(file) {
             const formData = new FormData();
@@ -1168,9 +1186,16 @@ function publishModal() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    const url = data.data?.url || data.url;
-                    console.log('[Upload] Upload successful', { url, fullResponse: data });
-                    return url;
+                    const responseData = data.data || data;
+                    console.log('[Upload] Upload successful', { fullResponse: responseData });
+                    // Return full response for video processing support
+                    return {
+                        url: responseData.url,
+                        asset_id: responseData.asset_id || null,
+                        needs_processing: responseData.needs_processing || false,
+                        processing_status: responseData.processing_status || 'completed',
+                        type: responseData.type || 'image'
+                    };
                 } else {
                     const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
                     console.error(`[Upload] Failed to upload media file - Status: ${response.status}`, errorData);
@@ -1181,6 +1206,119 @@ function publishModal() {
                 console.error('[Upload] Error uploading media:', e);
                 return null;
             }
+        },
+
+        /**
+         * Poll video processing status
+         */
+        async pollVideoProcessingStatus(assetIds, attempt = 0) {
+            const maxAttempts = 60; // 2 minutes at 2-second intervals
+            const pollInterval = 2000; // 2 seconds
+
+            if (attempt >= maxAttempts) {
+                console.warn('[VideoProcessing] Max polling attempts reached');
+                // Mark remaining videos as failed
+                this.content.global.media.forEach(item => {
+                    if (item.asset_id && assetIds.includes(item.asset_id) && item.processing_status === 'processing') {
+                        item.processing_status = 'timeout';
+                    }
+                });
+                return;
+            }
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            try {
+                const response = await fetch(`/orgs/${window.currentOrgId}/social/media/processing-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ asset_ids: assetIds })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const statuses = data.data?.statuses || {};
+
+                    console.log('[VideoProcessing] Status update', { attempt, statuses });
+
+                    // Update media items with processing results
+                    let stillProcessing = [];
+                    this.content.global.media.forEach(item => {
+                        if (item.asset_id && statuses[item.asset_id]) {
+                            const status = statuses[item.asset_id];
+                            item.processing_status = status.status;
+
+                            if (status.status === 'completed') {
+                                item.thumbnail_url = status.thumbnail_url;
+                                item.processed_url = status.processed_url;
+                                item.width = status.width;
+                                item.height = status.height;
+                                item.duration = status.duration;
+                                console.log('[VideoProcessing] Video ready', { asset_id: item.asset_id, thumbnail: status.thumbnail_url });
+                            } else if (status.status === 'failed') {
+                                item.processing_error = status.error;
+                                console.error('[VideoProcessing] Video processing failed', { asset_id: item.asset_id, error: status.error });
+                            } else if (status.status === 'processing' || status.status === 'pending') {
+                                stillProcessing.push(item.asset_id);
+                            }
+                        }
+                    });
+
+                    // Continue polling if still processing
+                    if (stillProcessing.length > 0) {
+                        setTimeout(() => {
+                            this.pollVideoProcessingStatus(stillProcessing, attempt + 1);
+                        }, pollInterval);
+                    }
+                }
+            } catch (e) {
+                console.error('[VideoProcessing] Polling error:', e);
+                // Retry on network error
+                setTimeout(() => {
+                    this.pollVideoProcessingStatus(assetIds, attempt + 1);
+                }, pollInterval);
+            }
+        },
+
+        /**
+         * Update thumbnail at specific timestamp (user selection)
+         */
+        async updateThumbnailAtTime(assetId, timestamp) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            try {
+                const response = await fetch(`/orgs/${window.currentOrgId}/social/media/update-thumbnail`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({ asset_id: assetId, timestamp: timestamp })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const result = data.data || data;
+
+                    // Update the media item with new thumbnail
+                    const mediaItem = this.content.global.media.find(m => m.asset_id === assetId);
+                    if (mediaItem) {
+                        mediaItem.thumbnail_url = result.thumbnail_url;
+                        mediaItem.thumbnail_time = result.thumbnail_time;
+                    }
+
+                    console.log('[VideoProcessing] Thumbnail updated', { assetId, thumbnail: result.thumbnail_url });
+                    return result;
+                }
+            } catch (e) {
+                console.error('[VideoProcessing] Failed to update thumbnail:', e);
+            }
+            return null;
         },
 
         getPreviewProfile() {
