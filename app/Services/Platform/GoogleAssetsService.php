@@ -79,6 +79,8 @@ class GoogleAssetsService
 
     /**
      * Get YouTube channels (personal + brand accounts).
+     *
+     * @return array{channels?: array, needs_auth?: bool, scope_insufficient?: bool}|array
      */
     public function getYouTubeChannels(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -102,6 +104,27 @@ class GoogleAssetsService
                         'part' => 'snippet,statistics,contentDetails,brandingSettings',
                         'mine' => 'true',
                     ]);
+
+                // Check for scope-related errors (403 with insufficientPermissions)
+                if ($mineResponse->status() === 403) {
+                    $error = $mineResponse->json('error', []);
+                    $reason = $error['errors'][0]['reason'] ?? '';
+                    $message = $error['message'] ?? '';
+
+                    if ($reason === 'insufficientPermissions' ||
+                        str_contains($message, 'scope') ||
+                        str_contains($message, 'permission')) {
+                        Log::info('YouTube API returned scope-insufficient error', [
+                            'reason' => $reason,
+                            'message' => $message,
+                        ]);
+                        return [
+                            'channels' => [],
+                            'needs_auth' => true,
+                            'scope_insufficient' => true,
+                        ];
+                    }
+                }
 
                 if ($mineResponse->successful()) {
                     foreach ($mineResponse->json('items', []) as $channel) {

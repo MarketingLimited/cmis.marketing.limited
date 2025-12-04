@@ -4612,6 +4612,12 @@ class PlatformConnectionsController extends Controller
     {
         $state = json_decode(base64_decode($request->get('state')), true);
         $orgId = $state['org_id'] ?? null;
+        $platform = $state['platform'] ?? 'google';
+
+        // Check if this is YouTube incremental auth callback
+        if ($platform === 'google_youtube') {
+            return $this->handleGoogleYouTubeCallback($request, $state);
+        }
 
         if (!$orgId || $request->get('state') !== session('oauth_state')) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
@@ -4764,6 +4770,180 @@ class PlatformConnectionsController extends Controller
             Log::error('Exception getting Google user info', ['error' => $e->getMessage()]);
             return [];
         }
+    }
+
+    /**
+     * Initiate Google OAuth for YouTube scopes (incremental authorization).
+     * This allows adding YouTube permissions to an existing Google connection.
+     */
+    public function authorizeGoogleYouTube(Request $request, string $org, string $connection)
+    {
+        // Verify connection exists and belongs to this org
+        $platformConnection = PlatformConnection::where('connection_id', $connection)
+            ->where('org_id', $org)
+            ->where('platform', 'google')
+            ->first();
+
+        if (!$platformConnection) {
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.connection_not_found'));
+        }
+
+        $config = config('social-platforms.google');
+
+        if (!$config['client_id'] || !$config['client_secret']) {
+            return redirect()->route('orgs.settings.platform-connections.google.assets', [$org, $connection])
+                ->with('error', __('settings.google_not_configured'));
+        }
+
+        // Get the email and user_id from the existing connection for login_hint and validation
+        $loginHint = $platformConnection->account_metadata['email'] ?? null;
+        $storedSub = $platformConnection->account_metadata['user_id'] ?? null;
+
+        $stateData = [
+            'org_id' => $org,
+            'platform' => 'google_youtube',
+            'connection_id' => $connection,
+            'expected_sub' => $storedSub,
+        ];
+
+        $state = base64_encode(json_encode($stateData));
+        session(['oauth_state_youtube' => $state]);
+
+        // Build OAuth URL with YouTube scopes only + core identity scopes
+        $youtubeScopes = $config['youtube_scopes'] ?? [
+            'https://www.googleapis.com/auth/youtube.readonly',
+            'https://www.googleapis.com/auth/youtube.upload',
+            'https://www.googleapis.com/auth/youtube',
+        ];
+
+        $params = [
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],  // Use same callback as main Google OAuth
+            'response_type' => 'code',
+            'scope' => implode(' ', array_merge(['openid', 'email'], $youtubeScopes)),
+            'state' => $state,
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+            'include_granted_scopes' => 'true',
+        ];
+
+        // Add login_hint if we have the user's email (guides user to correct account)
+        if ($loginHint) {
+            $params['login_hint'] = $loginHint;
+        }
+
+        return redirect($config['authorize_url'] . '?' . http_build_query($params));
+    }
+
+    /**
+     * Handle Google OAuth callback for YouTube incremental authorization.
+     * This is called from callbackGoogle when the state indicates YouTube auth.
+     */
+    private function handleGoogleYouTubeCallback(Request $request, array $state)
+    {
+        $stateParam = $request->get('state');
+        $orgId = $state['org_id'] ?? null;
+        $connectionId = $state['connection_id'] ?? null;
+        $expectedSub = $state['expected_sub'] ?? null;
+
+        // Validate state
+        if (!$orgId || !$connectionId || $stateParam !== session('oauth_state_youtube')) {
+            Log::warning('YouTube OAuth state validation failed', [
+                'has_org' => (bool) $orgId,
+                'has_connection' => (bool) $connectionId,
+                'state_match' => $stateParam === session('oauth_state_youtube'),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId ?? 'default')
+                ->with('error', __('settings.invalid_oauth_state'));
+        }
+
+        if ($request->has('error')) {
+            Log::warning('YouTube OAuth was denied', ['error' => $request->get('error')]);
+            return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
+                ->with('error', __('settings.google_auth_denied', ['error' => $request->get('error_description', $request->get('error'))]));
+        }
+
+        // Get existing connection
+        $connection = PlatformConnection::where('connection_id', $connectionId)
+            ->where('org_id', $orgId)
+            ->where('platform', 'google')
+            ->first();
+
+        if (!$connection) {
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('error', __('settings.connection_not_found'));
+        }
+
+        $config = config('social-platforms.google');
+
+        // Exchange code for tokens
+        $response = Http::asForm()->post($config['token_url'], [
+            'code' => $request->get('code'),
+            'client_id' => $config['client_id'],
+            'client_secret' => $config['client_secret'],
+            'redirect_uri' => $config['redirect_uri'],  // Use same callback as main Google OAuth
+            'grant_type' => 'authorization_code',
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Google YouTube OAuth token exchange failed', [
+                'error' => $response->json(),
+                'status' => $response->status(),
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
+                ->with('error', __('settings.youtube_oauth_failed'));
+        }
+
+        $tokenData = $response->json();
+        $accessToken = $tokenData['access_token'];
+        $refreshToken = $tokenData['refresh_token'] ?? null;
+        $expiresIn = $tokenData['expires_in'] ?? 3600;
+        $grantedScopes = explode(' ', $tokenData['scope'] ?? '');
+
+        // Validate account consistency - get user info and compare sub
+        $userInfo = $this->getGoogleUserInfo($accessToken);
+        $newSub = $userInfo['id'] ?? null;
+
+        // Verify the same account was used
+        if ($expectedSub && $newSub && $expectedSub !== $newSub) {
+            Log::warning('YouTube OAuth account mismatch', [
+                'connection_id' => $connectionId,
+                'expected_sub' => $expectedSub,
+                'actual_sub' => $newSub,
+            ]);
+            return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
+                ->with('error', __('settings.youtube_account_mismatch'));
+        }
+
+        // Merge new scopes with existing scopes
+        $existingScopes = $connection->scopes ?? [];
+        $mergedScopes = array_values(array_unique(array_merge($existingScopes, $grantedScopes)));
+
+        // Update account metadata
+        $accountMetadata = $connection->account_metadata ?? [];
+        $accountMetadata['youtube_authorized'] = true;
+        $accountMetadata['youtube_authorized_at'] = now()->toIso8601String();
+        $accountMetadata['granted_scopes'] = $mergedScopes;
+
+        // Update connection with new tokens and merged scopes
+        $connection->update([
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken ?? $connection->refresh_token,
+            'token_expires_at' => now()->addSeconds($expiresIn),
+            'scopes' => $mergedScopes,
+            'account_metadata' => $accountMetadata,
+        ]);
+
+        session()->forget('oauth_state_youtube');
+
+        Log::info('YouTube OAuth completed successfully', [
+            'connection_id' => $connectionId,
+            'scopes_count' => count($mergedScopes),
+        ]);
+
+        return redirect()->route('orgs.settings.platform-connections.google.assets', [$orgId, $connectionId])
+            ->with('success', __('settings.youtube_connected_successfully'));
     }
 
     /**

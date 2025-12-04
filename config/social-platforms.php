@@ -449,10 +449,6 @@ return [
             'openid',
             'email',
             'profile',
-            // YouTube
-            'https://www.googleapis.com/auth/youtube.readonly',
-            'https://www.googleapis.com/auth/youtube.upload',
-            'https://www.googleapis.com/auth/youtube',
             // Google Ads
             'https://www.googleapis.com/auth/adwords',
             // Analytics
@@ -472,6 +468,13 @@ return [
             'https://www.googleapis.com/auth/drive.metadata.readonly',
             // Merchant Center (Content API for Shopping)
             'https://www.googleapis.com/auth/content',
+            // NOTE: YouTube scopes moved to 'youtube_scopes' for incremental authorization
+        ],
+        // YouTube scopes for incremental authorization (requested separately on Assets page)
+        'youtube_scopes' => [
+            'https://www.googleapis.com/auth/youtube.readonly',
+            'https://www.googleapis.com/auth/youtube.upload',
+            'https://www.googleapis.com/auth/youtube',
         ],
         'services' => [
             'youtube' => [

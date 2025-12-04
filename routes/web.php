@@ -66,6 +66,7 @@ Route::prefix('integrations')->name('integrations.')->group(function () {
     Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
     Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
     Route::get('/google/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogle'])->name('google.callback');
+    // Note: YouTube incremental auth uses the same /google/callback endpoint - detected via state.platform='google_youtube'
     Route::get('/snapchat/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackSnapchat'])->name('snapchat.callback');
 });
 
@@ -691,6 +692,9 @@ Route::middleware(['auth'])->group(function () {
 
                 // Google OAuth (unified for all Google services)
                 Route::get('/google/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeGoogle'])->name('google.authorize');
+
+                // Google YouTube Incremental Authorization (separate OAuth for YouTube scopes)
+                Route::get('/google/{connection}/youtube/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeGoogleYouTube'])->name('google.youtube.authorize');
 
                 // Snapchat OAuth
                 Route::get('/snapchat/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeSnapchat'])->name('snapchat.authorize');

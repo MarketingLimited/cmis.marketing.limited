@@ -17,6 +17,7 @@ return [
     'errors' => [
         'connection_not_found' => 'Connection not found',
         'youtube_channels' => 'Failed to fetch YouTube channels',
+        'youtube_scope_required' => 'YouTube authorization is required. Please connect your YouTube account.',
         'ads_accounts' => 'Failed to fetch Google Ads accounts',
         'analytics' => 'Failed to fetch Analytics properties',
         'business_profiles' => 'Failed to fetch Business Profiles',

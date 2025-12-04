@@ -17,6 +17,7 @@ return [
     'errors' => [
         'connection_not_found' => 'لم يتم العثور على الاتصال',
         'youtube_channels' => 'فشل في جلب قنوات يوتيوب',
+        'youtube_scope_required' => 'مطلوب تفويض YouTube. يرجى ربط حساب YouTube الخاص بك.',
         'ads_accounts' => 'فشل في جلب حسابات إعلانات جوجل',
         'analytics' => 'فشل في جلب خصائص التحليلات',
         'business_profiles' => 'فشل في جلب ملفات الأعمال',

@@ -68,11 +68,23 @@ class GoogleAssetsApiController extends Controller
 
         try {
             $forceRefresh = $request->boolean('refresh', false);
-            $channels = $this->googleAssetsService->getYouTubeChannels(
+            $result = $this->googleAssetsService->getYouTubeChannels(
                 $connectionId,
                 $data['access_token'],
                 $forceRefresh
             );
+
+            // Handle the new response format with scope-insufficient detection
+            if (isset($result['needs_auth']) && $result['needs_auth']) {
+                return $this->success([
+                    'channels' => [],
+                    'needs_auth' => true,
+                    'scope_insufficient' => true,
+                ], __('google_assets.errors.youtube_scope_required'));
+            }
+
+            // Support both old format (array of channels) and new format with channels key
+            $channels = $result['channels'] ?? $result;
 
             return $this->success($channels, __('google_assets.success.youtube_channels'));
         } catch (\Exception $e) {

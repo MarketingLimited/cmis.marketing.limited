@@ -92,14 +92,41 @@
                                 <h3 class="text-lg font-medium text-gray-900">{{ __('YouTube Channel') }}</h3>
                                 <p class="text-sm text-gray-500">
                                     <span x-show="loading.youtube">{{ __('Loading...') }}</span>
-                                    <span x-show="!loading.youtube && !errors.youtube" x-text="youtubeChannels.length + ' {{ __('channel(s) available') }}'"></span>
-                                    <span x-show="errors.youtube" class="text-red-500">{{ __('Error loading') }}</span>
+                                    <span x-show="!loading.youtube && !errors.youtube && !youtubeNeedsAuth" x-text="youtubeChannels.length + ' {{ __('channel(s) available') }}'"></span>
+                                    <span x-show="!loading.youtube && youtubeNeedsAuth" class="text-amber-600">{{ __('settings.youtube_access_not_authorized') }}</span>
+                                    <span x-show="errors.youtube && !youtubeNeedsAuth" class="text-red-500">{{ __('Error loading') }}</span>
                                 </p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualYoutube = !showManualYoutube" class="text-sm text-red-600 hover:text-red-800">
-                            <i class="fas fa-plus {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Add manually') }}
-                        </button>
+                        <div class="flex items-center gap-2 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            {{-- Connect YouTube Button (always visible for re-authorization) --}}
+                            <a href="{{ route('orgs.settings.platform-connections.google.youtube.authorize', [$currentOrg, $connection->connection_id]) }}"
+                               class="inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition {{ $isRtl ? 'flex-row-reverse' : '' }}"
+                               :class="youtubeNeedsAuth ? 'border-red-500 text-red-600 bg-red-50 hover:bg-red-100' : 'border-gray-300 text-gray-600 bg-white hover:bg-gray-50'">
+                                <i class="fab fa-youtube {{ $isRtl ? 'ms-2' : 'me-2' }}"></i>
+                                <span x-text="youtubeNeedsAuth ? '{{ __('settings.connect_youtube') }}' : '{{ __('settings.reconnect_youtube') }}'"></span>
+                            </a>
+                            <button type="button" @click="showManualYoutube = !showManualYoutube" class="text-sm text-red-600 hover:text-red-800">
+                                <i class="fas fa-plus {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>{{ __('Add manually') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- YouTube Authorization Required Info Box --}}
+                    <div x-show="!loading.youtube && youtubeNeedsAuth" x-cloak class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div class="flex items-start gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                            <i class="fas fa-key text-amber-500 mt-0.5"></i>
+                            <div class="{{ $isRtl ? 'text-end' : '' }}">
+                                <p class="text-sm font-medium text-amber-800">{{ __('settings.youtube_authorization_required') }}</p>
+                                <p class="mt-1 text-xs text-amber-700">
+                                    {{ __('settings.youtube_authorization_description') }}
+                                </p>
+                                <p class="mt-2 text-xs text-amber-600">
+                                    <i class="fas fa-info-circle {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                    {{ __('settings.youtube_permissions_preserved') }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Loading Skeleton --}}
@@ -129,8 +156,8 @@
                         </div>
                     </div>
 
-                    {{-- Empty State --}}
-                    <div x-show="!loading.youtube && !errors.youtube && youtubeChannels.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                    {{-- Empty State (only show when authorized but no channels found) --}}
+                    <div x-show="!loading.youtube && !errors.youtube && !youtubeNeedsAuth && youtubeChannels.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
                         <i class="fab fa-youtube text-gray-300 text-3xl mb-2"></i>
                         <p class="text-sm text-gray-500">{{ __('No YouTube channels found') }}</p>
                         <p class="text-xs text-gray-400 mt-1">{{ __('Enable YouTube Data API in Google Console') }}</p>
@@ -1415,6 +1442,9 @@ function googleAssetsPage() {
         calendars: [],
         driveFolders: [],
 
+        // YouTube incremental authorization state
+        youtubeNeedsAuth: false,
+
         // Selected items (pre-populated from server)
         selectedYoutubeChannels: @json((array) ($selectedAssets['youtube_channel'] ?? [])),
         selectedGoogleAds: @json((array) ($selectedAssets['google_ads'] ?? [])),
@@ -1802,6 +1832,7 @@ function googleAssetsPage() {
         async loadYouTube() {
             this.loading.youtube = true;
             this.errors.youtube = null;
+            this.youtubeNeedsAuth = false;
 
             try {
                 const response = await fetch(`${this.apiBaseUrl}/youtube`, {
@@ -1810,7 +1841,14 @@ function googleAssetsPage() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.youtubeChannels = data.data || [];
+                    // Check if YouTube authorization is needed (scope-insufficient)
+                    if (data.data && (data.data.needs_auth || data.data.scope_insufficient)) {
+                        this.youtubeNeedsAuth = true;
+                        this.youtubeChannels = [];
+                    } else {
+                        // Handle both array format and object with channels key
+                        this.youtubeChannels = Array.isArray(data.data) ? data.data : (data.data?.channels || []);
+                    }
                 } else {
                     throw new Error(data.message || '{{ __('Failed to load YouTube channels') }}');
                 }
