@@ -17,6 +17,7 @@ use App\Jobs\Social\ProcessScheduledPostsJob;
 use App\Jobs\Social\RefreshExpiredTokensJob;
 use App\Jobs\Social\SyncPlatformAnalyticsJob;
 use App\Jobs\FetchMetaAssetsJob;
+use App\Jobs\AuditProfileConnectionSyncJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -268,6 +269,24 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo(storage_path('logs/database-backups.log'))
             ->onSuccess(function () {
                 Log::info('✅ Schema backup completed (cmis)');
+            });
+
+        // ==========================================
+        // 🔗 Profile-Connection Sync Audit (NEW)
+        // ==========================================
+
+        // Audit and fix profile-connection-asset sync issues every 6 hours
+        // Detects and fixes: orphaned profiles, missing profiles, deselected
+        // profiles, profiles to restore, and stale queue settings
+        $schedule->job(new AuditProfileConnectionSyncJob(null, true), 'maintenance')
+            ->everySixHours()
+            ->withoutOverlapping(60)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Profile-connection sync audit completed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Profile-connection sync audit failed');
             });
 
         // ==========================================

@@ -297,6 +297,53 @@ class ProfileSoftDeleteService
     }
 
     /**
+     * Check if an asset is selected in ANY active connection within an org.
+     * Unlike isAssetUsedInOtherConnections(), this doesn't exclude any connection.
+     *
+     * @param string $orgId Organization ID
+     * @param string $platform Integration platform name (e.g., 'facebook', 'instagram')
+     * @param string $accountId Asset account ID
+     * @return bool True if asset is selected in any active connection
+     */
+    public function isAssetSelectedInAnyConnection(
+        string $orgId,
+        string $platform,
+        string $accountId
+    ): bool {
+        $connectionPlatform = $this->platformToConnectionMap[$platform] ?? $platform;
+        $assetTypeKey = $this->platformToAssetTypeMap[$platform] ?? 'account';
+
+        return PlatformConnection::where('org_id', $orgId)
+            ->where('platform', $connectionPlatform)
+            ->where('status', 'active')
+            ->whereRaw(
+                "account_metadata->'selected_assets'->? @> ?::jsonb",
+                [$assetTypeKey, json_encode([$accountId])]
+            )
+            ->exists();
+    }
+
+    /**
+     * Get platform to connection mapping.
+     *
+     * @return array
+     */
+    public function getPlatformToConnectionMap(): array
+    {
+        return $this->platformToConnectionMap;
+    }
+
+    /**
+     * Get platform to asset type mapping.
+     *
+     * @return array
+     */
+    public function getPlatformToAssetTypeMap(): array
+    {
+        return $this->platformToAssetTypeMap;
+    }
+
+    /**
      * Get the connection platform for an integration platform.
      *
      * @param string $integrationPlatform
