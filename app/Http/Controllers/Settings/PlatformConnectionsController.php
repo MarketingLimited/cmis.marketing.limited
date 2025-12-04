@@ -3742,6 +3742,11 @@ class PlatformConnectionsController extends Controller
             $stateData['wizard_mode'] = true;
         }
 
+        // Include business_asset_id in state if connecting from TikTok Business Assets page
+        if ($request->has('business_asset_id')) {
+            $stateData['business_asset_id'] = $request->get('business_asset_id');
+        }
+
         $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
@@ -3952,6 +3957,16 @@ class PlatformConnectionsController extends Controller
 
         session()->forget(['oauth_state', 'tiktok_csrf_state']);
 
+        // Link to business asset if connecting from TikTok Business Assets page
+        $businessAssetId = $state['business_asset_id'] ?? null;
+        if ($businessAssetId) {
+            $this->linkConnectionToBusinessAsset($orgId, $businessAssetId, $connection->connection_id, 'tiktok');
+
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-assets.show', [$orgId, $businessAssetId])
+                ->with('success', __('settings.tiktok_account_connected_successfully'));
+        }
+
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
             return redirect()
@@ -4129,6 +4144,11 @@ class PlatformConnectionsController extends Controller
             $stateData['wizard_mode'] = true;
         }
 
+        // Include business_asset_id in state if connecting from TikTok Business Assets page
+        if ($request->has('business_asset_id')) {
+            $stateData['business_asset_id'] = $request->get('business_asset_id');
+        }
+
         $state = base64_encode(json_encode($stateData));
         session(['oauth_state' => $state]);
 
@@ -4253,6 +4273,16 @@ class PlatformConnectionsController extends Controller
         });
 
         session()->forget('oauth_state');
+
+        // Link to business asset if connecting from TikTok Business Assets page
+        $businessAssetId = $state['business_asset_id'] ?? null;
+        if ($businessAssetId) {
+            $this->linkConnectionToBusinessAsset($orgId, $businessAssetId, $connection->connection_id, 'tiktok_ads');
+
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-assets.show', [$orgId, $businessAssetId])
+                ->with('success', __('settings.tiktok_ads_connected_successfully'));
+        }
 
         // Check for wizard mode and redirect accordingly
         if (!empty($state['wizard_mode'])) {
@@ -6121,5 +6151,348 @@ class PlatformConnectionsController extends Controller
             'platforms' => $platformStats,
             'summary' => $summary,
         ], 'Stats retrieved');
+    }
+
+    // ==================== TikTok Business Assets ====================
+
+    /**
+     * Display list of TikTok Business Assets.
+     */
+    public function tiktokAssetsIndex(Request $request, string $org)
+    {
+        $businessAssets = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get counts of linked accounts for each business asset
+        foreach ($businessAssets as $asset) {
+            $metadata = $asset->account_metadata ?? [];
+            $linkedConnections = $metadata['linked_connections'] ?? [];
+            $asset->tiktok_count = count($linkedConnections['tiktok'] ?? []);
+            $asset->tiktok_ads_count = count($linkedConnections['tiktok_ads'] ?? []);
+        }
+
+        return view('settings.platform-connections.tiktok-assets-index', [
+            'currentOrg' => $org,
+            'businessAssets' => $businessAssets,
+        ]);
+    }
+
+    /**
+     * Create a new TikTok Business Asset.
+     */
+    public function createTikTokBusinessAsset(Request $request, string $org)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $connection = DB::transaction(function () use ($org, $validated) {
+                DB::statement("SELECT set_config('app.current_org_id', ?, true)", [$org]);
+
+                return PlatformConnection::create([
+                    'connection_id' => Str::uuid()->toString(),
+                    'org_id' => $org,
+                    'platform' => 'tiktok_business',
+                    'account_id' => 'tba_' . Str::random(10),
+                    'account_name' => $validated['name'],
+                    'status' => 'active',
+                    'account_metadata' => [
+                        'business_asset_type' => 'container',
+                        'custom_name' => $validated['name'],
+                        'created_at' => now()->toIso8601String(),
+                        'linked_connections' => [
+                            'tiktok' => [],
+                            'tiktok_ads' => [],
+                        ],
+                        'selected_assets' => [],
+                    ],
+                ]);
+            });
+
+            if ($request->wantsJson()) {
+                return $this->created($connection, __('settings.tiktok_business_asset_created'));
+            }
+
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-assets.show', [$org, $connection->connection_id])
+                ->with('success', __('settings.tiktok_business_asset_created'));
+        } catch (\Exception $e) {
+            Log::error('Failed to create TikTok Business Asset', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+
+            if ($request->wantsJson()) {
+                return $this->error(__('common.error_occurred'), 500);
+            }
+
+            return back()->with('error', __('common.error_occurred'));
+        }
+    }
+
+    /**
+     * Display TikTok Business Asset details and linked accounts.
+     */
+    public function showTikTokAssets(Request $request, string $org, string $businessAssetId)
+    {
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.tiktok_business_asset_not_found'));
+            }
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-assets.index', $org)
+                ->with('error', __('settings.tiktok_business_asset_not_found'));
+        }
+
+        $metadata = $businessAsset->account_metadata ?? [];
+        $linkedIds = $metadata['linked_connections'] ?? [];
+
+        // Get linked TikTok accounts
+        $tiktokAccounts = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok')
+            ->whereIn('connection_id', $linkedIds['tiktok'] ?? [])
+            ->get();
+
+        // Get linked TikTok Ads accounts
+        $tiktokAdsAccounts = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok_ads')
+            ->whereIn('connection_id', $linkedIds['tiktok_ads'] ?? [])
+            ->get();
+
+        // Get unlinked accounts available for linking
+        $allLinkedTiktokIds = $this->getAllLinkedTikTokAccountIds($org, 'tiktok');
+        $allLinkedTiktokAdsIds = $this->getAllLinkedTikTokAccountIds($org, 'tiktok_ads');
+
+        $availableTiktokAccounts = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok')
+            ->whereNotIn('connection_id', $allLinkedTiktokIds)
+            ->get();
+
+        $availableTiktokAdsAccounts = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok_ads')
+            ->whereNotIn('connection_id', $allLinkedTiktokAdsIds)
+            ->get();
+
+        return view('settings.platform-connections.tiktok-assets', [
+            'currentOrg' => $org,
+            'businessAsset' => $businessAsset,
+            'tiktokAccounts' => $tiktokAccounts,
+            'tiktokAdsAccounts' => $tiktokAdsAccounts,
+            'availableTiktokAccounts' => $availableTiktokAccounts,
+            'availableTiktokAdsAccounts' => $availableTiktokAdsAccounts,
+            'selectedAssets' => $metadata['selected_assets'] ?? [],
+        ]);
+    }
+
+    /**
+     * Update TikTok Business Asset name.
+     */
+    public function updateTikTokBusinessAsset(Request $request, string $org, string $businessAssetId)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.tiktok_business_asset_not_found'));
+            }
+            return back()->with('error', __('settings.tiktok_business_asset_not_found'));
+        }
+
+        $metadata = $businessAsset->account_metadata ?? [];
+        $metadata['custom_name'] = $validated['name'];
+
+        $businessAsset->update([
+            'account_name' => $validated['name'],
+            'account_metadata' => $metadata,
+        ]);
+
+        if ($request->wantsJson()) {
+            return $this->success($businessAsset, __('settings.tiktok_business_asset_updated'));
+        }
+
+        return back()->with('success', __('settings.tiktok_business_asset_updated'));
+    }
+
+    /**
+     * Delete TikTok Business Asset.
+     */
+    public function destroyTikTokBusinessAsset(Request $request, string $org, string $businessAssetId)
+    {
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.tiktok_business_asset_not_found'));
+            }
+            return redirect()
+                ->route('orgs.settings.platform-connections.tiktok-assets.index', $org)
+                ->with('error', __('settings.tiktok_business_asset_not_found'));
+        }
+
+        // Soft delete - linked connections remain but are unlinked
+        $businessAsset->delete();
+
+        if ($request->wantsJson()) {
+            return $this->deleted(__('settings.tiktok_business_asset_deleted'));
+        }
+
+        return redirect()
+            ->route('orgs.settings.platform-connections.tiktok-assets.index', $org)
+            ->with('success', __('settings.tiktok_business_asset_deleted'));
+    }
+
+    /**
+     * Link a TikTok account to a business asset.
+     */
+    public function linkTikTokAccount(Request $request, string $org, string $businessAssetId)
+    {
+        $validated = $request->validate([
+            'connection_id' => 'required|string',
+            'platform' => 'required|in:tiktok,tiktok_ads',
+        ]);
+
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.tiktok_business_asset_not_found'));
+            }
+            return back()->with('error', __('settings.tiktok_business_asset_not_found'));
+        }
+
+        // Verify the connection exists and belongs to this org
+        $connection = PlatformConnection::where('connection_id', $validated['connection_id'])
+            ->where('org_id', $org)
+            ->where('platform', $validated['platform'])
+            ->first();
+
+        if (!$connection) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.connection_not_found'));
+            }
+            return back()->with('error', __('settings.connection_not_found'));
+        }
+
+        // Link the connection
+        $this->linkConnectionToBusinessAsset($businessAssetId, $validated['connection_id'], $validated['platform']);
+
+        if ($request->wantsJson()) {
+            return $this->success(null, __('settings.account_linked_successfully'));
+        }
+
+        return back()->with('success', __('settings.account_linked_successfully'));
+    }
+
+    /**
+     * Unlink a TikTok account from a business asset.
+     */
+    public function unlinkTikTokAccount(Request $request, string $org, string $businessAssetId)
+    {
+        $validated = $request->validate([
+            'connection_id' => 'required|string',
+            'platform' => 'required|in:tiktok,tiktok_ads',
+        ]);
+
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            if ($request->wantsJson()) {
+                return $this->notFound(__('settings.tiktok_business_asset_not_found'));
+            }
+            return back()->with('error', __('settings.tiktok_business_asset_not_found'));
+        }
+
+        // Unlink the connection
+        $metadata = $businessAsset->account_metadata ?? [];
+        $linkedConnections = $metadata['linked_connections'] ?? [];
+        $platform = $validated['platform'];
+
+        if (isset($linkedConnections[$platform])) {
+            $linkedConnections[$platform] = array_values(
+                array_filter($linkedConnections[$platform], fn($id) => $id !== $validated['connection_id'])
+            );
+        }
+
+        $metadata['linked_connections'] = $linkedConnections;
+        $businessAsset->update(['account_metadata' => $metadata]);
+
+        if ($request->wantsJson()) {
+            return $this->success(null, __('settings.account_unlinked_successfully'));
+        }
+
+        return back()->with('success', __('settings.account_unlinked_successfully'));
+    }
+
+    /**
+     * Helper method to link a connection to a business asset.
+     */
+    private function linkConnectionToBusinessAsset(string $businessAssetId, string $connectionId, string $platform): void
+    {
+        $businessAsset = PlatformConnection::where('connection_id', $businessAssetId)
+            ->where('platform', 'tiktok_business')
+            ->first();
+
+        if (!$businessAsset) {
+            return;
+        }
+
+        $metadata = $businessAsset->account_metadata ?? [];
+        $linkedConnections = $metadata['linked_connections'] ?? [];
+
+        if (!isset($linkedConnections[$platform])) {
+            $linkedConnections[$platform] = [];
+        }
+
+        if (!in_array($connectionId, $linkedConnections[$platform])) {
+            $linkedConnections[$platform][] = $connectionId;
+        }
+
+        $metadata['linked_connections'] = $linkedConnections;
+        $businessAsset->update(['account_metadata' => $metadata]);
+    }
+
+    /**
+     * Get all TikTok account IDs that are already linked to any business asset.
+     */
+    private function getAllLinkedTikTokAccountIds(string $org, string $platform): array
+    {
+        $allLinkedIds = [];
+
+        $businessAssets = PlatformConnection::where('org_id', $org)
+            ->where('platform', 'tiktok_business')
+            ->get();
+
+        foreach ($businessAssets as $asset) {
+            $metadata = $asset->account_metadata ?? [];
+            $linkedConnections = $metadata['linked_connections'] ?? [];
+            $linkedIds = $linkedConnections[$platform] ?? [];
+            $allLinkedIds = array_merge($allLinkedIds, $linkedIds);
+        }
+
+        return array_unique($allLinkedIds);
     }
 }
