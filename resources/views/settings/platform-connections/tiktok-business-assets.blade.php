@@ -76,7 +76,8 @@
                 {{-- Connected TikTok Accounts List --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     @foreach($tiktokAccounts as $account)
-                        <div class="flex items-center p-3 border rounded-lg bg-gray-50 gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                        <div class="flex items-center p-3 border rounded-lg bg-gray-50 gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}"
+                             x-data="{ showDeleteConfirm: false }">
                             <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <i class="fab fa-tiktok text-white"></i>
                             </div>
@@ -85,7 +86,73 @@
                                 <span class="text-xs text-gray-500 block">
                                     <i class="fas fa-check-circle text-green-500 {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
                                     {{ __('settings.connected') }}
+                                    @if($account->token_expires_at)
+                                        @if($account->token_expires_at->isPast())
+                                            <span class="text-red-500 {{ $isRtl ? 'me-1' : 'ms-1' }}">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                {{ __('settings.token_expired') }}
+                                            </span>
+                                        @elseif($account->token_expires_at->diffInHours(now()) < 24)
+                                            <span class="text-yellow-500 {{ $isRtl ? 'me-1' : 'ms-1' }}">
+                                                <i class="fas fa-clock"></i>
+                                                {{ __('settings.expires_soon') }}
+                                            </span>
+                                        @endif
+                                    @endif
                                 </span>
+                            </div>
+                            {{-- Action Buttons --}}
+                            <div class="flex items-center gap-1 flex-shrink-0 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                {{-- Reconnect Button --}}
+                                <a href="{{ route('orgs.settings.platform-connections.tiktok.authorize', ['org' => $currentOrg, 'return_url' => route('orgs.settings.platform-connections.tiktok-business.assets', [$currentOrg, $connection->connection_id])]) }}"
+                                   class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
+                                   title="{{ __('settings.reconnect') }}">
+                                    <i class="fas fa-sync-alt text-sm"></i>
+                                </a>
+                                {{-- Delete Button --}}
+                                <button type="button"
+                                        @click="showDeleteConfirm = true"
+                                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition"
+                                        title="{{ __('settings.delete') }}">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+                            {{-- Delete Confirmation Modal --}}
+                            <div x-show="showDeleteConfirm"
+                                 x-cloak
+                                 class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                                 @click.self="showDeleteConfirm = false"
+                                 @keydown.escape.window="showDeleteConfirm = false">
+                                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 {{ $isRtl ? 'text-right' : '' }}"
+                                     @click.stop>
+                                    <div class="flex items-center gap-3 mb-4 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                        </div>
+                                        <h3 class="text-lg font-medium text-gray-900">{{ __('settings.confirm_delete') }}</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        {{ __('settings.delete_tiktok_account_warning', ['name' => $account->account_name]) }}
+                                    </p>
+                                    <div class="flex items-center gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
+                                        <button type="button"
+                                                @click="showDeleteConfirm = false"
+                                                class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                            {{ __('common.cancel') }}
+                                        </button>
+                                        <form action="{{ route('orgs.settings.platform-connections.destroy', [$currentOrg, $account->connection_id]) }}"
+                                              method="POST"
+                                              class="flex-1">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="return_url" value="{{ route('orgs.settings.platform-connections.tiktok-business.assets', [$currentOrg, $connection->connection_id]) }}">
+                                            <button type="submit"
+                                                    class="w-full px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                {{ __('settings.delete') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endforeach

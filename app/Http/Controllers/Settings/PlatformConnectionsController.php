@@ -586,6 +586,12 @@ class PlatformConnectionsController extends Controller
             return $this->deleted('Platform connection deleted successfully');
         }
 
+        // Check for return URL (e.g., from TikTok Business Assets page)
+        if ($request->has('return_url')) {
+            return redirect($request->get('return_url'))
+                ->with('success', __('settings.platform_connection_deleted', ['platform' => $platformName]));
+        }
+
         return redirect()
             ->route('orgs.settings.platform-connections.index', $org)
             ->with('success', __('settings.platform_connection_deleted', ['platform' => $platformName]));
