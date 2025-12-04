@@ -78,7 +78,10 @@ class GoogleAssetsService
     }
 
     /**
-     * Get YouTube channels (personal + brand accounts).
+     * Get YouTube channels from stored metadata.
+     *
+     * Channels are stored in account_metadata['youtube_channels'] when connected via OAuth.
+     * This allows multiple Brand Account channels to persist across different OAuth sessions.
      *
      * @return array{channels?: array, needs_auth?: bool, scope_insufficient?: bool}|array
      */
@@ -90,14 +93,47 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching YouTube channels from Google API');
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            Log::info('Fetching YouTube channels', ['connection_id' => $connectionId]);
 
             try {
                 $channels = [];
                 $channelIds = [];
 
-                // 1. Get the user's own channel (personal)
+                // 1. PRIMARY SOURCE: Get stored channels from connection metadata
+                $connection = PlatformConnection::where('connection_id', $connectionId)->first();
+                $storedChannels = $connection->account_metadata['youtube_channels'] ?? [];
+
+                Log::info('YouTube channels from metadata', [
+                    'connection_id' => $connectionId,
+                    'stored_count' => count($storedChannels),
+                ]);
+
+                foreach ($storedChannels as $storedChannel) {
+                    $channelId = $storedChannel['id'] ?? null;
+                    if ($channelId && !in_array($channelId, $channelIds)) {
+                        $channelIds[] = $channelId;
+                        $channels[] = [
+                            'id' => $channelId,
+                            'title' => $storedChannel['title'] ?? 'Unknown Channel',
+                            'description' => $storedChannel['description'] ?? '',
+                            'thumbnail' => $storedChannel['thumbnail'] ?? null,
+                            'subscriber_count' => $storedChannel['subscriber_count'] ?? 0,
+                            'video_count' => $storedChannel['video_count'] ?? 0,
+                            'view_count' => $storedChannel['view_count'] ?? 0,
+                            'custom_url' => $storedChannel['custom_url'] ?? null,
+                            'type' => $storedChannel['type'] ?? 'brand',
+                        ];
+                    }
+                }
+
+                // 2. If we have stored channels, return them (no need to hit API)
+                if (!empty($channels)) {
+                    Log::info('YouTube channels returned from metadata', ['count' => count($channels)]);
+                    return $channels;
+                }
+
+                // 3. FALLBACK: If no stored channels, try API (for initial connection)
                 $mineResponse = Http::withToken($accessToken)
                     ->timeout(self::REQUEST_TIMEOUT)
                     ->get('https://www.googleapis.com/youtube/v3/channels', [
@@ -136,65 +172,7 @@ class GoogleAssetsService
                     }
                 }
 
-                // 2. Try to get managed channels (brand accounts)
-                $delegateResponse = Http::withToken($accessToken)
-                    ->timeout(self::REQUEST_TIMEOUT)
-                    ->withHeaders(['X-Origin' => 'https://www.youtube.com'])
-                    ->get('https://www.googleapis.com/youtube/v3/channels', [
-                        'part' => 'snippet,statistics,contentDetails,brandingSettings',
-                        'managedByMe' => 'true',
-                    ]);
-
-                if ($delegateResponse->successful()) {
-                    foreach ($delegateResponse->json('items', []) as $channel) {
-                        $channelId = $channel['id'];
-                        if (!in_array($channelId, $channelIds)) {
-                            $channelIds[] = $channelId;
-                            $channels[] = $this->formatYouTubeChannel($channel, 'managed');
-                        }
-                    }
-                }
-
-                // 3. Get channels from playlists
-                $playlistsResponse = Http::withToken($accessToken)
-                    ->timeout(self::REQUEST_TIMEOUT)
-                    ->get('https://www.googleapis.com/youtube/v3/playlists', [
-                        'part' => 'snippet',
-                        'mine' => 'true',
-                        'maxResults' => 50,
-                    ]);
-
-                if ($playlistsResponse->successful()) {
-                    $playlistChannelIds = [];
-                    foreach ($playlistsResponse->json('items', []) as $playlist) {
-                        $playlistChannelId = $playlist['snippet']['channelId'] ?? null;
-                        if ($playlistChannelId && !in_array($playlistChannelId, $channelIds) && !in_array($playlistChannelId, $playlistChannelIds)) {
-                            $playlistChannelIds[] = $playlistChannelId;
-                        }
-                    }
-
-                    // Fetch details for playlist channels
-                    if (!empty($playlistChannelIds)) {
-                        $channelDetailsResponse = Http::withToken($accessToken)
-                            ->timeout(self::REQUEST_TIMEOUT)
-                            ->get('https://www.googleapis.com/youtube/v3/channels', [
-                                'part' => 'snippet,statistics,contentDetails,brandingSettings',
-                                'id' => implode(',', $playlistChannelIds),
-                            ]);
-
-                        if ($channelDetailsResponse->successful()) {
-                            foreach ($channelDetailsResponse->json('items', []) as $channel) {
-                                $channelId = $channel['id'];
-                                if (!in_array($channelId, $channelIds)) {
-                                    $channelIds[] = $channelId;
-                                    $channels[] = $this->formatYouTubeChannel($channel, 'brand');
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Log::info('YouTube channels fetched', ['count' => count($channels)]);
+                Log::info('YouTube channels fetched from API', ['count' => count($channels)]);
                 return $channels;
             } catch (\Exception $e) {
                 Log::error('Exception fetching YouTube channels', ['error' => $e->getMessage()]);

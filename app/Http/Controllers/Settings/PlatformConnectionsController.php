@@ -4953,11 +4953,15 @@ class PlatformConnectionsController extends Controller
         $existingScopes = $connection->scopes ?? [];
         $mergedScopes = array_values(array_unique(array_merge($existingScopes, $grantedScopes)));
 
-        // Update account metadata
+        // Get existing stored YouTube channels BEFORE modifying metadata
+        $existingYoutubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
+
+        // Update account metadata (preserve existing youtube_channels)
         $accountMetadata = $connection->account_metadata ?? [];
         $accountMetadata['youtube_authorized'] = true;
         $accountMetadata['youtube_authorized_at'] = now()->toIso8601String();
         $accountMetadata['granted_scopes'] = $mergedScopes;
+        $accountMetadata['youtube_channels'] = $existingYoutubeChannels; // Preserve existing channels
 
         // Store Brand Account info if applicable
         if ($isBrandAccount) {
