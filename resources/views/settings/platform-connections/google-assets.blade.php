@@ -878,16 +878,42 @@
                     </div>
 
                     {{-- API Error State --}}
-                    <div x-show="!loading.merchantCenter && !errors.merchantCenter && merchantCenterApiError" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div x-show="!loading.merchantCenter && !errors.merchantCenter && merchantCenterApiError" class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                         <div class="flex items-start gap-3 {{ $isRtl ? 'flex-row-reverse' : '' }}">
-                            <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-red-800">{{ __('Google Merchant Center requires re-authentication') }}</p>
-                                <p class="mt-1 text-xs text-red-700" x-text="merchantCenterApiError?.message || ''"></p>
-                                <p class="mt-2 text-xs text-red-600">
-                                    <i class="fas fa-sync-alt {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
-                                    {{ __('Please disconnect and reconnect your Google account to grant the new permission, or use "Add manually" above.') }}
+                            <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-amber-800">
+                                    <template x-if="merchantCenterApiError?.type === 'api_not_enabled'">
+                                        <span>{{ __('Merchant API not enabled') }}</span>
+                                    </template>
+                                    <template x-if="merchantCenterApiError?.type === 'scope_insufficient'">
+                                        <span>{{ __('Additional permissions required') }}</span>
+                                    </template>
+                                    <template x-if="merchantCenterApiError?.type === 'unauthorized'">
+                                        <span>{{ __('Session expired') }}</span>
+                                    </template>
+                                    <template x-if="!['api_not_enabled', 'scope_insufficient', 'unauthorized'].includes(merchantCenterApiError?.type)">
+                                        <span>{{ __('Google Merchant Center error') }}</span>
+                                    </template>
                                 </p>
+                                <p class="mt-1 text-xs text-amber-700" x-text="merchantCenterApiError?.message || ''"></p>
+
+                                {{-- Show activation URL for API not enabled --}}
+                                <template x-if="merchantCenterApiError?.activation_url">
+                                    <a :href="merchantCenterApiError.activation_url" target="_blank"
+                                       class="mt-2 inline-flex items-center text-xs text-blue-600 hover:text-blue-800 underline">
+                                        <i class="fas fa-external-link-alt {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                        {{ __('Enable Merchant API in Google Cloud Console') }}
+                                    </a>
+                                </template>
+
+                                {{-- Show reconnect message for scope/auth issues --}}
+                                <template x-if="merchantCenterApiError?.type === 'scope_insufficient' || merchantCenterApiError?.type === 'unauthorized'">
+                                    <p class="mt-2 text-xs text-amber-600">
+                                        <i class="fas fa-sync-alt {{ $isRtl ? 'ms-1' : 'me-1' }}"></i>
+                                        {{ __('Please disconnect and reconnect your Google account.') }}
+                                    </p>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -896,7 +922,7 @@
                     <div x-show="!loading.merchantCenter && !errors.merchantCenter && !merchantCenterApiError && merchantCenterAccounts.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
                         <i class="fas fa-shopping-cart text-gray-300 text-3xl mb-2"></i>
                         <p class="text-sm text-gray-500">{{ __('No Merchant Center accounts found') }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('Enable Content API for Shopping in Google Cloud Console') }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('Enable Merchant API in Google Cloud Console') }}</p>
                     </div>
 
                     {{-- Merchant Center Accounts List --}}

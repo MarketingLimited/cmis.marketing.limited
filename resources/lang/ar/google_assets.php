@@ -41,5 +41,7 @@ return [
         'api_not_enabled' => 'واجهة برمجة تطبيقات إعلانات جوجل غير مفعلة لهذا المشروع.',
         'quota_exceeded' => 'تم تجاوز حصة API. يرجى المحاولة مرة أخرى لاحقاً.',
         'scope_insufficient' => 'صلاحيات غير كافية. يرجى إعادة ربط حساب جوجل لمنح الصلاحيات المطلوبة.',
+        'api_not_enabled_merchant' => 'واجهة Merchant API غير مفعلة في Google Cloud Console. يرجى تفعيلها للوصول إلى حسابات Merchant Center.',
+        'token_expired' => 'انتهت صلاحية رمز الوصول. يرجى إعادة ربط حساب Google.',
     ],
 ];

@@ -41,5 +41,7 @@ return [
         'api_not_enabled' => 'The Google Ads API is not enabled for this project.',
         'quota_exceeded' => 'API quota exceeded. Please try again later.',
         'scope_insufficient' => 'Insufficient permissions. Please reconnect your Google account to grant the required permissions.',
+        'api_not_enabled_merchant' => 'Merchant API is not enabled in Google Cloud Console. Please enable it to access your Merchant Center accounts.',
+        'token_expired' => 'Your access token has expired. Please reconnect your Google account.',
     ],
 ];

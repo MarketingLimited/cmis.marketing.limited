@@ -645,8 +645,13 @@ class GoogleAssetsService
     }
 
     /**
-     * Get Google Merchant Center accounts.
+     * Get Google Merchant Center accounts using the NEW Merchant API.
      *
+     * The old Content API for Shopping (shoppingcontent.googleapis.com) is deprecated
+     * and will be sunset on August 2026. This method uses the new Merchant API
+     * (merchantapi.googleapis.com) which is now generally available.
+     *
+     * @see https://developers.google.com/merchant/api/reference/rest/accounts_v1beta/accounts/list
      * @return array{accounts: array, error: array|null}
      */
     public function getMerchantCenterAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
@@ -658,26 +663,29 @@ class GoogleAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching Google Merchant Center accounts from API');
+            Log::info('Fetching Google Merchant Center accounts from NEW Merchant API');
 
             try {
+                // Use NEW Merchant API v1beta endpoint (replaces deprecated Content API for Shopping)
                 $response = Http::withToken($accessToken)
                     ->timeout(self::REQUEST_TIMEOUT)
-                    ->get('https://shoppingcontent.googleapis.com/content/v2.1/accounts/authinfo');
+                    ->get('https://merchantapi.googleapis.com/accounts/v1beta/accounts');
 
                 if (!$response->successful()) {
                     $body = $response->json();
                     $error = $body['error'] ?? [];
 
-                    Log::warning('Merchant Center authinfo API failed', [
+                    Log::warning('Merchant API accounts list failed', [
                         'status' => $response->status(),
                         'body' => $body,
                     ]);
 
                     // Check for scope insufficient errors (403)
                     if ($response->status() === 403) {
-                        $reason = $error['details'][0]['reason'] ?? '';
-                        if ($reason === 'ACCESS_TOKEN_SCOPE_INSUFFICIENT') {
+                        $reason = $error['details'][0]['reason'] ?? ($error['status'] ?? '');
+
+                        if ($reason === 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' ||
+                            str_contains($error['message'] ?? '', 'scope')) {
                             return [
                                 'accounts' => [],
                                 'error' => [
@@ -686,42 +694,69 @@ class GoogleAssetsService
                                 ],
                             ];
                         }
+
+                        // Check for API not enabled
+                        if ($reason === 'SERVICE_DISABLED' ||
+                            str_contains($error['message'] ?? '', 'not been used') ||
+                            str_contains($error['message'] ?? '', 'disabled')) {
+                            $activationUrl = null;
+                            foreach ($error['details'] ?? [] as $detail) {
+                                if (isset($detail['metadata']['activationUrl'])) {
+                                    $activationUrl = $detail['metadata']['activationUrl'];
+                                    break;
+                                }
+                            }
+                            return [
+                                'accounts' => [],
+                                'error' => [
+                                    'type' => 'api_not_enabled',
+                                    'message' => __('google_assets.errors.api_not_enabled_merchant'),
+                                    'activation_url' => $activationUrl,
+                                ],
+                            ];
+                        }
+                    }
+
+                    // Check for 401 Unauthorized
+                    if ($response->status() === 401) {
+                        return [
+                            'accounts' => [],
+                            'error' => [
+                                'type' => 'unauthorized',
+                                'message' => __('google_assets.errors.token_expired'),
+                            ],
+                        ];
                     }
 
                     return ['accounts' => [], 'error' => null];
                 }
 
-                $identifiers = $response->json('accountIdentifiers', []);
-                if (empty($identifiers)) {
+                // Parse NEW Merchant API response format
+                $accountsData = $response->json('accounts', []);
+
+                if (empty($accountsData)) {
+                    Log::info('No Merchant Center accounts found for user');
                     return ['accounts' => [], 'error' => null];
                 }
 
-                // Use Http::pool for parallel account detail requests
-                $merchantIds = array_filter(array_map(fn($i) => $i['merchantId'] ?? $i['aggregatorId'] ?? null, $identifiers));
-
-                $accountResponses = Http::pool(fn ($pool) =>
-                    array_map(fn ($merchantId) =>
-                        $pool->as($merchantId)
-                            ->withToken($accessToken)
-                            ->timeout(self::REQUEST_TIMEOUT)
-                            ->get("https://shoppingcontent.googleapis.com/content/v2.1/{$merchantId}/accounts/{$merchantId}"),
-                        $merchantIds
-                    )
-                );
-
                 $accounts = [];
-                foreach ($merchantIds as $merchantId) {
-                    $accountResponse = $accountResponses[$merchantId] ?? null;
-                    $accountData = $accountResponse && $accountResponse->successful() ? $accountResponse->json() : [];
+                foreach ($accountsData as $account) {
+                    // Extract account ID from resource name (e.g., "accounts/123456789")
+                    $resourceName = $account['name'] ?? '';
+                    $accountId = str_replace('accounts/', '', $resourceName);
 
                     $accounts[] = [
-                        'id' => $merchantId,
-                        'name' => $accountData['name'] ?? "Merchant {$merchantId}",
-                        'websiteUrl' => $accountData['websiteUrl'] ?? '',
+                        'id' => $accountId,
+                        'name' => $account['accountName'] ?? "Merchant {$accountId}",
+                        'websiteUrl' => $account['websiteUri'] ?? '',
+                        'accountId' => $accountId,
+                        'resourceName' => $resourceName,
+                        'languageCode' => $account['languageCode'] ?? '',
+                        'timeZone' => $account['timeZone']['id'] ?? '',
                     ];
                 }
 
-                Log::info('Merchant Center accounts fetched', ['count' => count($accounts)]);
+                Log::info('Merchant Center accounts fetched via NEW Merchant API', ['count' => count($accounts)]);
                 return ['accounts' => $accounts, 'error' => null];
             } catch (\Exception $e) {
                 Log::error('Exception fetching Merchant Center accounts', ['error' => $e->getMessage()]);
