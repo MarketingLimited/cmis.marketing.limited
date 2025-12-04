@@ -369,10 +369,21 @@
 
                     {{-- Use Instagram accounts for Threads --}}
                     <div x-show="!loading.threads && instagramAccounts.length > 0">
-                        {{-- Search --}}
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="threadsSearch" @input.debounce.300ms placeholder="{{ __('Search Threads accounts by username...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllThreads" class="text-xs text-gray-600 hover:text-gray-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllThreads" class="text-xs text-gray-600 hover:text-gray-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedThreadsAccounts.length > 0">
+                                    (<span x-text="selectedThreadsAccounts.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -486,10 +497,21 @@
 
                     {{-- Ad Accounts List --}}
                     <div x-show="!loading.adAccounts && !errors.adAccounts && adAccounts.length > 0">
-                        {{-- Search --}}
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="adAccountsSearch" @input.debounce.300ms placeholder="{{ __('Search ad accounts by name or ID...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllAdAccounts" class="text-xs text-green-600 hover:text-green-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllAdAccounts" class="text-xs text-green-600 hover:text-green-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedAdAccounts.length > 0">
+                                    (<span x-text="selectedAdAccounts.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-96 overflow-y-auto space-y-2">
                             <template x-for="account in filteredAdAccounts" :key="account.id">
@@ -577,10 +599,21 @@
 
                     {{-- Pixels List --}}
                     <div x-show="!loading.pixels && !errors.pixels && pixels.length > 0">
-                        {{-- Search --}}
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="pixelsSearch" @input.debounce.300ms placeholder="{{ __('Search pixels by name or ID...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllPixels" class="text-xs text-purple-600 hover:text-purple-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllPixels" class="text-xs text-purple-600 hover:text-purple-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedPixels.length > 0">
+                                    (<span x-text="selectedPixels.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -661,10 +694,21 @@
 
                     {{-- Catalogs List --}}
                     <div x-show="!loading.catalogs && !errors.catalogs && catalogs.length > 0">
-                        {{-- Search --}}
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="catalogsSearch" @input.debounce.300ms placeholder="{{ __('Search catalogs by name...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllCatalogs" class="text-xs text-orange-600 hover:text-orange-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllCatalogs" class="text-xs text-orange-600 hover:text-orange-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedCatalogs.length > 0">
+                                    (<span x-text="selectedCatalogs.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -758,10 +802,21 @@
 
                     {{-- WhatsApp List --}}
                     <div x-show="!loading.whatsapp && !errors.whatsapp && whatsappAccounts.length > 0">
-                        {{-- Search --}}
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="whatsappSearch" @input.debounce.300ms placeholder="{{ __('Search WhatsApp by name or number...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllWhatsapp" class="text-xs text-green-600 hover:text-green-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllWhatsapp" class="text-xs text-green-600 hover:text-green-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedWhatsappAccounts.length > 0">
+                                    (<span x-text="selectedWhatsappAccounts.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -845,9 +900,21 @@
 
                     {{-- Custom Conversions List --}}
                     <div x-show="!loading.customConversions && !errors.customConversions && customConversions.length > 0">
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="customConversionsSearch" @input.debounce.300ms placeholder="{{ __('Search conversions by name...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllCustomConversions" class="text-xs text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllCustomConversions" class="text-xs text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedCustomConversions.length > 0">
+                                    (<span x-text="selectedCustomConversions.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -913,9 +980,21 @@
 
                     {{-- Offline Event Sets List --}}
                     <div x-show="!loading.offlineEventSets && !errors.offlineEventSets && offlineEventSets.length > 0">
-                        <div class="mb-4">
+                        {{-- Search & Bulk Actions --}}
+                        <div class="mb-4 space-y-2">
                             <input type="text" x-model="offlineEventSetsSearch" @input.debounce.300ms placeholder="{{ __('Search event sets by name...') }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 text-sm">
+                            <div class="flex gap-2">
+                                <button type="button" @click="selectAllOfflineEventSets" class="text-xs text-rose-600 hover:text-rose-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-check-square"></i>{{ __('Select All Visible') }}
+                                </button>
+                                <button type="button" @click="deselectAllOfflineEventSets" class="text-xs text-rose-600 hover:text-rose-800 inline-flex items-center gap-1">
+                                    <i class="fas fa-square"></i>{{ __('Deselect All') }}
+                                </button>
+                                <span class="text-xs text-gray-500" x-show="selectedOfflineEventSets.length > 0">
+                                    (<span x-text="selectedOfflineEventSets.length"></span> {{ __('selected') }})
+                                </span>
+                            </div>
                         </div>
                         <div class="max-h-64 overflow-y-auto">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1484,6 +1563,125 @@ function metaAssetsPage() {
                 this.selectedInstagrams = this.selectedInstagrams.filter(id => !filteredIds.includes(id));
             } else {
                 this.selectedInstagrams = [];
+            }
+        },
+
+        selectAllThreads() {
+            this.filteredThreads.forEach(ig => {
+                if (!this.selectedThreadsAccounts.includes(ig.id)) {
+                    this.selectedThreadsAccounts.push(ig.id);
+                }
+            });
+        },
+
+        deselectAllThreads() {
+            if (this.threadsSearch) {
+                const filteredIds = this.filteredThreads.map(ig => ig.id);
+                this.selectedThreadsAccounts = this.selectedThreadsAccounts.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedThreadsAccounts = [];
+            }
+        },
+
+        selectAllAdAccounts() {
+            this.filteredAdAccounts.forEach(account => {
+                if (!this.selectedAdAccounts.includes(account.id)) {
+                    this.selectedAdAccounts.push(account.id);
+                }
+            });
+        },
+
+        deselectAllAdAccounts() {
+            if (this.adAccountsSearch) {
+                const filteredIds = this.filteredAdAccounts.map(a => a.id);
+                this.selectedAdAccounts = this.selectedAdAccounts.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedAdAccounts = [];
+            }
+        },
+
+        selectAllPixels() {
+            this.filteredPixels.forEach(pixel => {
+                if (!this.selectedPixels.includes(pixel.id)) {
+                    this.selectedPixels.push(pixel.id);
+                }
+            });
+        },
+
+        deselectAllPixels() {
+            if (this.pixelsSearch) {
+                const filteredIds = this.filteredPixels.map(p => p.id);
+                this.selectedPixels = this.selectedPixels.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedPixels = [];
+            }
+        },
+
+        selectAllCatalogs() {
+            this.filteredCatalogs.forEach(catalog => {
+                if (!this.selectedCatalogs.includes(catalog.id)) {
+                    this.selectedCatalogs.push(catalog.id);
+                }
+            });
+        },
+
+        deselectAllCatalogs() {
+            if (this.catalogsSearch) {
+                const filteredIds = this.filteredCatalogs.map(c => c.id);
+                this.selectedCatalogs = this.selectedCatalogs.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedCatalogs = [];
+            }
+        },
+
+        selectAllWhatsapp() {
+            this.filteredWhatsapp.forEach(wa => {
+                if (!this.selectedWhatsappAccounts.includes(wa.id)) {
+                    this.selectedWhatsappAccounts.push(wa.id);
+                }
+            });
+        },
+
+        deselectAllWhatsapp() {
+            if (this.whatsappSearch) {
+                const filteredIds = this.filteredWhatsapp.map(w => w.id);
+                this.selectedWhatsappAccounts = this.selectedWhatsappAccounts.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedWhatsappAccounts = [];
+            }
+        },
+
+        selectAllCustomConversions() {
+            this.filteredCustomConversions.forEach(conversion => {
+                if (!this.selectedCustomConversions.includes(conversion.id)) {
+                    this.selectedCustomConversions.push(conversion.id);
+                }
+            });
+        },
+
+        deselectAllCustomConversions() {
+            if (this.customConversionsSearch) {
+                const filteredIds = this.filteredCustomConversions.map(c => c.id);
+                this.selectedCustomConversions = this.selectedCustomConversions.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedCustomConversions = [];
+            }
+        },
+
+        selectAllOfflineEventSets() {
+            this.filteredOfflineEventSets.forEach(eventSet => {
+                if (!this.selectedOfflineEventSets.includes(eventSet.id)) {
+                    this.selectedOfflineEventSets.push(eventSet.id);
+                }
+            });
+        },
+
+        deselectAllOfflineEventSets() {
+            if (this.offlineEventSetsSearch) {
+                const filteredIds = this.filteredOfflineEventSets.map(e => e.id);
+                this.selectedOfflineEventSets = this.selectedOfflineEventSets.filter(id => !filteredIds.includes(id));
+            } else {
+                this.selectedOfflineEventSets = [];
             }
         },
 
