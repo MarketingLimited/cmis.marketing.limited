@@ -523,4 +523,22 @@ return [
     'video_processing_failed' => 'Video processing failed',
     'video_thumbnail_updated' => 'Video thumbnail updated',
 
+    // ============================================================
+    // TikTok API Error Messages
+    // ============================================================
+    'errors' => [
+        'tiktok_unaudited_app' => 'Your TikTok app is not yet approved for public posting. Please add your TikTok account as a Test User in the TikTok Developer Console, or submit your app for audit approval.',
+        'tiktok_url_unverified' => 'TikTok requires domain verification for URL-based uploads. The video is being uploaded directly instead.',
+        'tiktok_token_invalid' => 'Your TikTok connection has expired. Please reconnect your TikTok account in Settings > Platform Connections.',
+        'tiktok_token_expired' => 'Your TikTok connection has expired. Please reconnect your TikTok account in Settings > Platform Connections.',
+        'tiktok_scope_missing' => 'Missing required TikTok permissions. Please reconnect your TikTok account and approve all requested permissions.',
+        'tiktok_rate_limit' => 'TikTok rate limit reached. Please wait a few minutes before posting again.',
+        'tiktok_user_banned' => 'Your TikTok account has been temporarily restricted from posting. Please check your TikTok app for details.',
+        'tiktok_file_too_large' => 'Video file is too large for TikTok. Maximum size is 4GB.',
+        'tiktok_duration_too_long' => 'Video is too long for TikTok. Maximum duration is 10 minutes.',
+        'tiktok_duration_too_short' => 'Video is too short for TikTok. Minimum duration is 3 seconds.',
+        'tiktok_invalid_format' => 'Invalid video format. TikTok requires MP4 or MOV format with H.264 codec.',
+        'tiktok_privacy_error' => 'Unable to set the requested privacy level. Please try a different privacy setting.',
+    ],
+
 ];

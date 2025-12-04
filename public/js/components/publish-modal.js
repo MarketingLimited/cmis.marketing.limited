@@ -713,10 +713,28 @@ function publishModal() {
                 }
 
                 // MP4 + H.264 format validation
-                const nonMp4Videos = globalMedia.filter(m =>
-                    m.type === 'video' && !m.mime_type?.includes('mp4')
-                );
-                if (nonMp4Videos.length > 0) {
+                // Videos are valid if:
+                // 1. processing_status === 'completed' (converted to H.264 by backend)
+                // 2. mime_type contains 'mp4' (original MP4 file)
+                // 3. Still uploading/processing (not ready yet, don't show error)
+                const videos = globalMedia.filter(m => m.type === 'video');
+                const invalidVideos = videos.filter(m => {
+                    // Video is being processed - don't show error yet
+                    if (m.processing_status === 'pending' || m.processing_status === 'processing' || m.uploadStatus === 'uploading') {
+                        return false;
+                    }
+                    // Video was processed successfully - it's H.264 now
+                    if (m.processing_status === 'completed') {
+                        return false;
+                    }
+                    // Original MP4 video - OK for TikTok
+                    if (m.mime_type?.includes('mp4')) {
+                        return false;
+                    }
+                    // Non-MP4 video that wasn't processed - invalid
+                    return true;
+                });
+                if (invalidVideos.length > 0) {
                     errors.push(this.i18n.tiktokMp4H264Required);
                 }
             }
@@ -968,6 +986,7 @@ function publishModal() {
                     const mediaItem = {
                         file: file,
                         type: file.type.startsWith('video') ? 'video' : 'image',
+                        mime_type: file.type, // Store mime type for validation (e.g., 'video/mp4')
                         preview_url: e.target.result,
                         uploadStatus: 'uploading', // 'uploading', 'uploaded', 'failed'
                         url: null,
@@ -996,6 +1015,7 @@ function publishModal() {
                         const mediaItem = {
                             file: file,
                             type: file.type.startsWith('video') ? 'video' : 'image',
+                            mime_type: file.type, // Store mime type for validation (e.g., 'video/mp4')
                             preview_url: e.target.result,
                             uploadStatus: 'uploading',
                             url: null,
