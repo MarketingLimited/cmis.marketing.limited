@@ -134,7 +134,10 @@ class GoogleAssetsService
                 }
 
                 // 3. FALLBACK: If no stored channels, try API (for initial connection)
-                $mineResponse = Http::withToken($accessToken)
+                // Use Brand Account token if available, otherwise use main token
+                $youtubeToken = $connection->account_metadata['youtube_brand_account']['access_token'] ?? $accessToken;
+
+                $mineResponse = Http::withToken($youtubeToken)
                     ->timeout(self::REQUEST_TIMEOUT)
                     ->get('https://www.googleapis.com/youtube/v3/channels', [
                         'part' => 'snippet,statistics,contentDetails,brandingSettings',

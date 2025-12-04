@@ -4964,22 +4964,35 @@ class PlatformConnectionsController extends Controller
         $accountMetadata['youtube_channels'] = $existingYoutubeChannels; // Preserve existing channels
 
         // Store Brand Account info if applicable
+        // Brand Account tokens are stored separately to preserve the main account's token
+        // which has permissions for Analytics, Tag Manager, Ads, etc.
         if ($isBrandAccount) {
             $accountMetadata['youtube_brand_account'] = [
                 'sub' => $newSub,
                 'email' => $userEmail,
                 'connected_at' => now()->toIso8601String(),
+                'access_token' => $accessToken,
+                'refresh_token' => $refreshToken,
+                'token_expires_at' => now()->addSeconds($expiresIn)->toIso8601String(),
             ];
         }
 
-        // Update connection with new tokens and merged scopes
-        $connection->update([
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken ?? $connection->refresh_token,
-            'token_expires_at' => now()->addSeconds($expiresIn),
+        // Update connection - only update main tokens if NOT a Brand Account
+        // Brand Account tokens are stored separately in metadata to avoid
+        // replacing the main token which has permissions for other Google services
+        $updateData = [
             'scopes' => $mergedScopes,
             'account_metadata' => $accountMetadata,
-        ]);
+        ];
+
+        if (!$isBrandAccount) {
+            // Same account - safe to update main tokens
+            $updateData['access_token'] = $accessToken;
+            $updateData['refresh_token'] = $refreshToken ?? $connection->refresh_token;
+            $updateData['token_expires_at'] = now()->addSeconds($expiresIn);
+        }
+
+        $connection->update($updateData);
 
         session()->forget('oauth_state_youtube');
 
