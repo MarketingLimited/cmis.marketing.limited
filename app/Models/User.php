@@ -78,6 +78,18 @@ class User extends Authenticatable
         'current_org_id',
         'email_verified_at',
         'remember_token',
+        // Super Admin fields
+        'is_super_admin',
+        // Suspension fields
+        'is_suspended',
+        'suspended_at',
+        'suspended_by',
+        'suspension_reason',
+        // Block fields
+        'is_blocked',
+        'blocked_at',
+        'blocked_by',
+        'block_reason',
     ];
 
     /**
@@ -99,6 +111,12 @@ class User extends Authenticatable
         return [
             'deleted_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_admin' => 'boolean',
+            'is_suspended' => 'boolean',
+            'suspended_at' => 'datetime',
+            'is_blocked' => 'boolean',
+            'blocked_at' => 'datetime',
+            'email_verified_at' => 'datetime',
         ];
     }
 
@@ -223,5 +241,135 @@ class User extends Authenticatable
 
         // Otherwise, use Laravel's default authorization
         return parent::can($ability, $arguments);
+    }
+
+    // ===== Super Admin Methods =====
+
+    /**
+     * Check if user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return (bool) $this->is_super_admin;
+    }
+
+    /**
+     * Check if user account is restricted (suspended or blocked).
+     */
+    public function isRestricted(): bool
+    {
+        return $this->is_suspended || $this->is_blocked;
+    }
+
+    /**
+     * Suspend the user.
+     */
+    public function suspend(string $reason, ?string $suspendedBy = null): void
+    {
+        $this->update([
+            'is_suspended' => true,
+            'suspended_at' => now(),
+            'suspended_by' => $suspendedBy,
+            'suspension_reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Unsuspend the user.
+     */
+    public function unsuspend(): void
+    {
+        $this->update([
+            'is_suspended' => false,
+            'suspended_at' => null,
+            'suspended_by' => null,
+            'suspension_reason' => null,
+        ]);
+    }
+
+    /**
+     * Block the user (permanent).
+     */
+    public function block(string $reason, ?string $blockedBy = null): void
+    {
+        $this->update([
+            'is_blocked' => true,
+            'blocked_at' => now(),
+            'blocked_by' => $blockedBy,
+            'block_reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Unblock the user.
+     */
+    public function unblock(): void
+    {
+        $this->update([
+            'is_blocked' => false,
+            'blocked_at' => null,
+            'blocked_by' => null,
+            'block_reason' => null,
+        ]);
+    }
+
+    /**
+     * Get the user who suspended this user.
+     */
+    public function suspendedByUser()
+    {
+        return $this->belongsTo(User::class, 'suspended_by', 'user_id');
+    }
+
+    /**
+     * Get the user who blocked this user.
+     */
+    public function blockedByUser()
+    {
+        return $this->belongsTo(User::class, 'blocked_by', 'user_id');
+    }
+
+    // ===== Scopes =====
+
+    /**
+     * Scope to get super admins only.
+     */
+    public function scopeSuperAdmins($query)
+    {
+        return $query->where('is_super_admin', true);
+    }
+
+    /**
+     * Scope to get suspended users.
+     */
+    public function scopeSuspended($query)
+    {
+        return $query->where('is_suspended', true);
+    }
+
+    /**
+     * Scope to get blocked users.
+     */
+    public function scopeBlocked($query)
+    {
+        return $query->where('is_blocked', true);
+    }
+
+    /**
+     * Scope to get active (non-restricted) users.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_suspended', false)->where('is_blocked', false);
+    }
+
+    /**
+     * Scope to get restricted users (suspended or blocked).
+     */
+    public function scopeRestricted($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('is_suspended', true)->orWhere('is_blocked', true);
+        });
     }
 }

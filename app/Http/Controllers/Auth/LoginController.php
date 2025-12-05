@@ -29,11 +29,38 @@ class LoginController extends Controller
 
         if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => __('البيانات المدخلة غير صحيحة.'),
+                'email' => __('auth.failed'),
+            ]);
+        }
+
+        $user = Auth::user();
+
+        // Check if user is blocked
+        if ($user->is_blocked) {
+            Auth::logout();
+            $request->session()->invalidate();
+
+            throw ValidationException::withMessages([
+                'email' => __('super_admin.account_blocked'),
+            ]);
+        }
+
+        // Check if user is suspended
+        if ($user->is_suspended) {
+            Auth::logout();
+            $request->session()->invalidate();
+
+            throw ValidationException::withMessages([
+                'email' => __('super_admin.account_suspended'),
             ]);
         }
 
         $request->session()->regenerate();
+
+        // Redirect super admins to super admin dashboard
+        if ($user->is_super_admin) {
+            return redirect()->intended('/super-admin/dashboard');
+        }
 
         return redirect()->intended('/dashboard');
     }

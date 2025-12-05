@@ -3,6 +3,7 @@
 namespace App\Services\Platform;
 
 use App\Models\Platform\PlatformConnection;
+use App\Repositories\Contracts\PlatformAssetRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
  *
  * Features:
  * - Redis caching with 1-hour TTL
+ * - Database persistence for three-tier caching (Cache → DB → API)
  * - Parallel-friendly design for AJAX loading
  * - Token refresh handling
  *
@@ -31,6 +33,30 @@ class GoogleAssetsService
 {
     private const CACHE_TTL = 3600; // 1 hour
     private const REQUEST_TIMEOUT = 30;
+
+    /**
+     * Platform asset repository for database persistence.
+     */
+    protected ?PlatformAssetRepositoryInterface $repository;
+
+    /**
+     * Organization ID for recording asset access.
+     */
+    protected ?string $orgId = null;
+
+    public function __construct(?PlatformAssetRepositoryInterface $repository = null)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * Set the organization ID for asset access recording.
+     */
+    public function setOrgId(string $orgId): self
+    {
+        $this->orgId = $orgId;
+        return $this;
+    }
 
     /**
      * Get cache key for a specific asset type and connection.
@@ -176,6 +202,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('YouTube channels fetched from API', ['count' => count($channels)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'youtube_channel', $channels);
+
                 return $channels;
             } catch (\Exception $e) {
                 Log::error('Exception fetching YouTube channels', ['error' => $e->getMessage()]);
@@ -412,6 +442,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Google Ads accounts fetched', ['count' => count($accounts)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'ad_account', $accounts);
+
                 return ['accounts' => $accounts, 'error' => null];
             } catch (\Exception $e) {
                 Log::error('Exception fetching Google Ads accounts', ['error' => $e->getMessage()]);
@@ -460,6 +494,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Analytics properties fetched', ['count' => count($properties)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'analytics_property', $properties);
+
                 return $properties;
             } catch (\Exception $e) {
                 Log::error('Exception fetching Analytics properties', ['error' => $e->getMessage()]);
@@ -608,6 +646,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Business Profiles fetched', ['count' => count($profiles)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'business_profile', $profiles);
+
                 return ['profiles' => $profiles, 'error' => null];
             } catch (\Exception $e) {
                 Log::error('Exception fetching Business Profiles', ['error' => $e->getMessage()]);
@@ -679,6 +721,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Tag Manager containers fetched', ['count' => count($containers)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'tag_manager', $containers);
+
                 return $containers;
             } catch (\Exception $e) {
                 Log::error('Exception fetching Tag Manager containers', ['error' => $e->getMessage()]);
@@ -800,6 +846,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Merchant Center accounts fetched via NEW Merchant API', ['count' => count($accounts)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'merchant_center', $accounts);
+
                 return ['accounts' => $accounts, 'error' => null];
             } catch (\Exception $e) {
                 Log::error('Exception fetching Merchant Center accounts', ['error' => $e->getMessage()]);
@@ -844,6 +894,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Search Console sites fetched', ['count' => count($sites)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'search_console', $sites);
+
                 return $sites;
             } catch (\Exception $e) {
                 Log::error('Exception fetching Search Console sites', ['error' => $e->getMessage()]);
@@ -894,6 +948,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Calendars fetched', ['count' => count($calendars)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'calendar', $calendars);
+
                 return $calendars;
             } catch (\Exception $e) {
                 Log::error('Exception fetching Google Calendars', ['error' => $e->getMessage()]);
@@ -958,6 +1016,10 @@ class GoogleAssetsService
                 }
 
                 Log::info('Drive folders fetched', ['count' => count($drives)]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'drive', $drives);
+
                 return $drives;
             } catch (\Exception $e) {
                 Log::error('Exception fetching Google Drive folders', ['error' => $e->getMessage()]);
@@ -1017,5 +1079,129 @@ class GoogleAssetsService
         }
 
         return $status;
+    }
+
+    /**
+     * Persist assets to database for three-tier caching.
+     *
+     * @param string $connectionId Connection UUID
+     * @param string $assetType Asset type (youtube_channel, ad_account, etc.)
+     * @param array $assets Array of asset data
+     */
+    protected function persistAssets(string $connectionId, string $assetType, array $assets): void
+    {
+        if (!$this->repository || empty($assets)) {
+            return;
+        }
+
+        try {
+            $count = $this->repository->bulkUpsert('google', $assetType, $assets, $connectionId);
+
+            // Record org access if org_id is set
+            if ($this->orgId) {
+                foreach ($assets as $assetData) {
+                    $assetId = $this->extractAssetId($assetData, $assetType);
+                    if (!$assetId) {
+                        continue;
+                    }
+
+                    $asset = $this->repository->findOrCreate(
+                        'google',
+                        $assetId,
+                        $assetType,
+                        $assetData
+                    );
+
+                    $this->repository->recordOrgAccess(
+                        $this->orgId,
+                        $asset->asset_id,
+                        $connectionId,
+                        [
+                            'access_types' => $this->inferAccessTypes($assetData),
+                            'permissions' => $assetData['permissions'] ?? [],
+                            'roles' => $assetData['roles'] ?? [],
+                        ]
+                    );
+                }
+            }
+
+            Log::debug("Persisted Google {$assetType} assets to database", [
+                'connection_id' => $connectionId,
+                'count' => $count,
+                'org_id' => $this->orgId,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning("Failed to persist Google {$assetType} assets", [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Extract asset ID from asset data based on asset type.
+     */
+    protected function extractAssetId(array $data, string $assetType): ?string
+    {
+        // Common ID field
+        if (isset($data['id'])) {
+            return (string) $data['id'];
+        }
+
+        // Asset-type specific extractions
+        return match ($assetType) {
+            'youtube_channel' => $data['channelId'] ?? null,
+            'ad_account' => $data['customerId'] ?? $data['account_id'] ?? null,
+            'analytics_property' => $data['property'] ?? null,
+            'business_profile' => $data['name'] ?? null,
+            'tag_manager' => $data['containerId'] ?? null,
+            'merchant_center' => $data['accountId'] ?? null,
+            'search_console' => $data['siteUrl'] ?? null,
+            'calendar' => $data['calendarId'] ?? null,
+            'drive' => $data['driveId'] ?? null,
+            default => null,
+        };
+    }
+
+    /**
+     * Infer access types from asset data.
+     */
+    protected function inferAccessTypes(array $data): array
+    {
+        $types = ['read'];
+
+        // Check permission level (Search Console)
+        if (isset($data['permissionLevel'])) {
+            $level = $data['permissionLevel'];
+            if (in_array($level, ['siteOwner', 'siteFullUser'])) {
+                $types[] = 'write';
+                $types[] = 'admin';
+            }
+        }
+
+        // Check access role (Calendar, Drive)
+        if (isset($data['accessRole'])) {
+            $role = strtolower($data['accessRole']);
+            if ($role === 'owner') {
+                $types = array_merge($types, ['write', 'admin']);
+            } elseif ($role === 'writer') {
+                $types[] = 'write';
+            }
+        }
+
+        // Check status (Ads accounts)
+        if (isset($data['status'])) {
+            $status = $data['status'];
+            if ($status === 'ENABLED') {
+                $types[] = 'write';
+            }
+        }
+
+        // Check for primary calendar
+        if (isset($data['primary']) && $data['primary']) {
+            $types[] = 'admin';
+        }
+
+        return array_unique($types);
     }
 }

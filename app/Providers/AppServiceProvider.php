@@ -134,6 +134,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\TriggerRepositoryInterface::class,
             \App\Repositories\CMIS\TriggerRepository::class
         );
+
+        // Platform Asset Repository (Three-tier caching for platform assets)
+        $this->app->bind(
+            \App\Repositories\Contracts\PlatformAssetRepositoryInterface::class,
+            \App\Repositories\Platform\PlatformAssetRepository::class
+        );
     }
 
     /**

@@ -21,6 +21,11 @@ use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\UnifiedInboxController;
 use App\Http\Controllers\UnifiedCommentsController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\Backup\BackupController;
+use App\Http\Controllers\Backup\RestoreController;
+use App\Http\Controllers\Backup\BackupScheduleController;
+use App\Http\Controllers\Backup\BackupSettingsController;
+use App\Http\Controllers\Backup\BackupAuditController;
 use App\Http\Controllers\Api\MetaAssetsApiController;
 use App\Http\Controllers\Api\GoogleAssetsApiController;
 use App\Http\Controllers\Api\TikTokAssetsApiController;
@@ -925,6 +930,91 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{account}/sync', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'sync'])->name('sync');
                 Route::post('/{connection}/import', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'import'])->name('import');
             });
+        });
+
+        // ==================== Organization Backup & Restore ====================
+        Route::prefix('backup')->name('backup.')->middleware(['app.enabled:org-backup-restore', 'backup.permission'])->group(function () {
+            // Dashboard & List
+            Route::get('/', [BackupController::class, 'index'])->name('index');
+
+            // Create backup
+            Route::get('/create', [BackupController::class, 'create'])->name('create')
+                ->middleware('backup.permission:backup.create');
+            Route::post('/', [BackupController::class, 'store'])->name('store')
+                ->middleware('backup.permission:backup.create');
+
+            // View & Download
+            Route::get('/{backup}', [BackupController::class, 'show'])->name('show');
+            Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download')
+                ->middleware('backup.permission:backup.download');
+            Route::get('/{backup}/progress', [BackupController::class, 'progress'])->name('progress');
+
+            // Delete
+            Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy')
+                ->middleware('backup.permission:backup.create');
+
+            // ==================== Restore Routes ====================
+            Route::prefix('restore')->name('restore.')->group(function () {
+                // Restore list (available backups)
+                Route::get('/', [RestoreController::class, 'index'])->name('index');
+
+                // External backup upload
+                Route::get('/upload', [RestoreController::class, 'upload'])->name('upload')
+                    ->middleware('backup.permission:backup.upload');
+                Route::post('/upload', [RestoreController::class, 'storeUpload'])->name('upload.store')
+                    ->middleware('backup.permission:backup.upload');
+
+                // Restore wizard steps (from existing backup)
+                Route::get('/{backup}/analyze', [RestoreController::class, 'analyze'])->name('analyze')
+                    ->middleware('backup.permission:backup.restore');
+                Route::get('/{backup}/select', [RestoreController::class, 'select'])->name('select')
+                    ->middleware('backup.permission:backup.restore');
+                Route::post('/{backup}/select', [RestoreController::class, 'storeSelect'])->name('select.store')
+                    ->middleware('backup.permission:backup.restore');
+
+                // Restore instance routes (after selection creates a restore record)
+                Route::get('/{restore}/conflicts', [RestoreController::class, 'conflicts'])->name('conflicts')
+                    ->middleware('backup.permission:backup.restore');
+                Route::post('/{restore}/conflicts', [RestoreController::class, 'storeConflicts'])->name('conflicts.store')
+                    ->middleware('backup.permission:backup.restore');
+                Route::get('/{restore}/confirm', [RestoreController::class, 'confirm'])->name('confirm')
+                    ->middleware('backup.permission:backup.restore');
+                Route::post('/{restore}/process', [RestoreController::class, 'process'])->name('process')
+                    ->middleware('backup.permission:backup.restore');
+                Route::get('/{restore}/progress', [RestoreController::class, 'progress'])->name('progress')
+                    ->middleware('backup.permission:backup.restore');
+                Route::get('/{restore}/progress/status', [RestoreController::class, 'progressStatus'])->name('progress.status')
+                    ->middleware('backup.permission:backup.restore');
+                Route::get('/{restore}/complete', [RestoreController::class, 'complete'])->name('complete')
+                    ->middleware('backup.permission:backup.restore');
+
+                // Rollback
+                Route::post('/{restore}/rollback', [RestoreController::class, 'rollback'])->name('rollback')
+                    ->middleware('backup.permission:backup.restore_full');
+            });
+
+            // ==================== Schedule Management ====================
+            Route::prefix('schedule')->name('schedule.')->middleware('backup.permission:backup.schedule')->group(function () {
+                Route::get('/', [BackupScheduleController::class, 'index'])->name('index');
+                Route::get('/create', [BackupScheduleController::class, 'create'])->name('create');
+                Route::post('/', [BackupScheduleController::class, 'store'])->name('store');
+                Route::get('/{schedule}', [BackupScheduleController::class, 'show'])->name('show');
+                Route::get('/{schedule}/edit', [BackupScheduleController::class, 'edit'])->name('edit');
+                Route::put('/{schedule}', [BackupScheduleController::class, 'update'])->name('update');
+                Route::delete('/{schedule}', [BackupScheduleController::class, 'destroy'])->name('destroy');
+                Route::post('/{schedule}/toggle', [BackupScheduleController::class, 'toggle'])->name('toggle');
+                Route::post('/{schedule}/run-now', [BackupScheduleController::class, 'runNow'])->name('run-now');
+            });
+
+            // ==================== Settings ====================
+            Route::get('/settings', [BackupSettingsController::class, 'index'])->name('settings');
+            Route::put('/settings', [BackupSettingsController::class, 'update'])->name('settings.update');
+
+            // ==================== Audit Logs ====================
+            Route::get('/logs', [BackupAuditController::class, 'index'])->name('logs')
+                ->middleware('backup.permission:backup.view_logs');
+            Route::get('/logs/{log}', [BackupAuditController::class, 'show'])->name('logs.show')
+                ->middleware('backup.permission:backup.view_logs');
         });
 
     }); // End of Organization-Specific Routes

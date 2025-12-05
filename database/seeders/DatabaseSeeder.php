@@ -43,11 +43,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             OrgsSeeder::class,
             PermissionsSeeder::class,
+            BackupPermissionsSeeder::class, // Backup & Restore permissions
             RolesSeeder::class,
             UsersSeeder::class,
             PlatformConnectionsSeeder::class,
             MarketingDotLimitedSeeder::class,
             ProfileGroupSeeder::class,
+            BackupAppSeeder::class, // Backup & Restore marketplace app
         ]);
 
         $this->command->newLine();

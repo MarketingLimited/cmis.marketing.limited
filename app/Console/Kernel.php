@@ -18,6 +18,9 @@ use App\Jobs\Social\RefreshExpiredTokensJob;
 use App\Jobs\Social\SyncPlatformAnalyticsJob;
 use App\Jobs\FetchMetaAssetsJob;
 use App\Jobs\AuditProfileConnectionSyncJob;
+use App\Jobs\Platform\SyncPlatformAssetsJob;
+use App\Jobs\Platform\VerifyAssetAccessJob;
+use App\Jobs\Platform\CleanupStaleAssetsJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -288,6 +291,51 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Profile-connection sync audit failed');
+            });
+
+        // ==========================================
+        // 🗃️ Platform Assets Database Persistence (NEW)
+        // ==========================================
+
+        // Sync platform assets to database every 6 hours
+        // Three-tier caching: Cache (15min) → Database (6hr) → API
+        $schedule->job(new SyncPlatformAssetsJob(), 'asset-sync')
+            ->everySixHours()
+            ->withoutOverlapping(120)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Platform assets synced to database');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to sync platform assets');
+            });
+
+        // Verify org asset access records daily at 4 AM
+        // Checks connection validity, asset existence, cleans orphans
+        $schedule->job(new VerifyAssetAccessJob(), 'maintenance')
+            ->dailyAt('04:00')
+            ->withoutOverlapping(60)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Asset access verification completed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Asset access verification failed');
+            });
+
+        // Cleanup stale assets weekly on Sundays at 5 AM
+        // Marks inactive, hard-deletes old records, optimizes tables
+        $schedule->job(new CleanupStaleAssetsJob(), 'maintenance')
+            ->weekly()
+            ->sundays()
+            ->at('05:00')
+            ->withoutOverlapping(60)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Stale assets cleanup completed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Stale assets cleanup failed');
             });
 
         // ==========================================

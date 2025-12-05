@@ -56,6 +56,9 @@ return new class extends Migration
             END \$\$;
         ");
 
+        // Add default UUID generator for app_id
+        DB::statement("ALTER TABLE cmis.marketplace_apps ALTER COLUMN app_id SET DEFAULT gen_random_uuid()");
+
         // Enable public RLS (read-only for all, system-managed)
         $this->enablePublicRLS('cmis.marketplace_apps');
     }

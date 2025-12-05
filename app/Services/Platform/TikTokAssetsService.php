@@ -3,6 +3,7 @@
 namespace App\Services\Platform;
 
 use App\Models\Platform\PlatformConnection;
+use App\Repositories\Contracts\PlatformAssetRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Log;
  *
  * Features:
  * - Redis caching with 1-hour TTL
+ * - Database persistence for three-tier caching (Cache → DB → API)
  * - Parallel-friendly design for AJAX loading
  * - Token handling for TikTok Business API
  *
@@ -26,6 +28,30 @@ class TikTokAssetsService
     private const CACHE_TTL = 3600; // 1 hour
     private const REQUEST_TIMEOUT = 30;
     private const API_BASE_URL = 'https://business-api.tiktok.com/open_api/v1.3';
+
+    /**
+     * Platform asset repository for database persistence.
+     */
+    protected ?PlatformAssetRepositoryInterface $repository;
+
+    /**
+     * Organization ID for recording asset access.
+     */
+    protected ?string $orgId = null;
+
+    public function __construct(?PlatformAssetRepositoryInterface $repository = null)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * Set the organization ID for asset access recording.
+     */
+    public function setOrgId(string $orgId): self
+    {
+        $this->orgId = $orgId;
+        return $this;
+    }
 
     /**
      * Get cache key for a specific asset type and connection.
@@ -108,6 +134,12 @@ class TikTokAssetsService
                 ->toArray();
 
             Log::info('TikTok accounts fetched', ['count' => count($accounts)]);
+
+            // Persist to database for three-tier caching
+            // Note: For org-based accounts, we use the first connection_id as sync source
+            $firstConnectionId = $accounts[0]['id'] ?? null;
+            $this->persistAssets($firstConnectionId, 'tiktok_account', $accounts);
+
             return $accounts;
         });
     }
@@ -142,19 +174,24 @@ class TikTokAssetsService
             if ($data === null) {
                 // Fallback to showing just the IDs
                 Log::warning('Falling back to ID-based advertiser list');
-                return array_map(function ($id) {
+                $fallbackAdvertisers = array_map(function ($id) {
                     return [
                         'advertiser_id' => $id,
                         'advertiser_name' => 'Ad Account ' . $id,
                         'status' => 'unknown',
                     ];
                 }, $advertiserIds);
+
+                // Persist fallback advertisers
+                $this->persistAssets($connectionId, 'advertiser', $fallbackAdvertisers);
+
+                return $fallbackAdvertisers;
             }
 
             $advertisers = $data['list'] ?? [];
             Log::info('TikTok advertisers fetched', ['count' => count($advertisers)]);
 
-            return array_map(function ($advertiser) {
+            $formattedAdvertisers = array_map(function ($advertiser) {
                 return [
                     'advertiser_id' => $advertiser['advertiser_id'] ?? '',
                     'advertiser_name' => $advertiser['advertiser_name'] ?? $advertiser['name'] ?? 'Unknown',
@@ -163,6 +200,11 @@ class TikTokAssetsService
                     'timezone' => $advertiser['timezone'] ?? null,
                 ];
             }, $advertisers);
+
+            // Persist to database for three-tier caching
+            $this->persistAssets($connectionId, 'advertiser', $formattedAdvertisers);
+
+            return $formattedAdvertisers;
         });
     }
 
@@ -208,6 +250,10 @@ class TikTokAssetsService
             }
 
             Log::info('TikTok pixels fetched', ['count' => count($allPixels)]);
+
+            // Persist to database for three-tier caching
+            $this->persistAssets($connectionId, 'pixel', $allPixels);
+
             return $allPixels;
         });
     }
@@ -254,6 +300,10 @@ class TikTokAssetsService
             }
 
             Log::info('TikTok catalogs fetched', ['count' => count($allCatalogs)]);
+
+            // Persist to database for three-tier caching
+            $this->persistAssets($connectionId, 'catalog', $allCatalogs);
+
             return $allCatalogs;
         });
     }
@@ -329,5 +379,97 @@ class TikTokAssetsService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Persist assets to database for three-tier caching.
+     *
+     * @param string|null $connectionId Connection UUID (null for org-based accounts)
+     * @param string $assetType Asset type (advertiser, pixel, catalog, tiktok_account)
+     * @param array $assets Array of asset data
+     */
+    protected function persistAssets(?string $connectionId, string $assetType, array $assets): void
+    {
+        if (!$this->repository || empty($assets)) {
+            return;
+        }
+
+        try {
+            $count = $this->repository->bulkUpsert('tiktok', $assetType, $assets, $connectionId);
+
+            // Record org access if org_id is set
+            if ($this->orgId && $connectionId) {
+                foreach ($assets as $assetData) {
+                    $assetId = $this->extractAssetId($assetData, $assetType);
+                    if (!$assetId) {
+                        continue;
+                    }
+
+                    $asset = $this->repository->findOrCreate(
+                        'tiktok',
+                        $assetId,
+                        $assetType,
+                        $assetData
+                    );
+
+                    $this->repository->recordOrgAccess(
+                        $this->orgId,
+                        $asset->asset_id,
+                        $connectionId,
+                        [
+                            'access_types' => $this->inferAccessTypes($assetData),
+                            'permissions' => [],
+                            'roles' => [],
+                        ]
+                    );
+                }
+            }
+
+            Log::debug("Persisted TikTok {$assetType} assets to database", [
+                'connection_id' => $connectionId,
+                'count' => $count,
+                'org_id' => $this->orgId,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning("Failed to persist TikTok {$assetType} assets", [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Extract asset ID from asset data based on asset type.
+     */
+    protected function extractAssetId(array $data, string $assetType): ?string
+    {
+        return match ($assetType) {
+            'tiktok_account' => $data['id'] ?? $data['account_id'] ?? null,
+            'advertiser' => $data['advertiser_id'] ?? null,
+            'pixel' => $data['pixel_id'] ?? $data['id'] ?? null,
+            'catalog' => $data['catalog_id'] ?? $data['id'] ?? null,
+            default => $data['id'] ?? null,
+        };
+    }
+
+    /**
+     * Infer access types from asset data.
+     */
+    protected function inferAccessTypes(array $data): array
+    {
+        $types = ['read'];
+
+        // Check status
+        $status = strtolower($data['status'] ?? 'unknown');
+        if (in_array($status, ['active', 'enabled'])) {
+            $types[] = 'write';
+        }
+
+        // Advertisers with enabled status have write access
+        if (isset($data['advertiser_id']) && $status === 'active') {
+            $types[] = 'admin';
+        }
+
+        return array_unique($types);
     }
 }

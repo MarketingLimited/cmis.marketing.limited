@@ -2,6 +2,7 @@
 
 namespace App\Services\Platform;
 
+use App\Repositories\Contracts\PlatformAssetRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +12,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Features:
  * - Cursor-based pagination to fetch unlimited assets
- * - Redis caching with 1-hour TTL
+ * - Three-tier caching: Memory Cache (15min) → Database (6hr) → Platform API
+ * - Database persistence for cross-org asset sharing
  * - Parallel-friendly design for AJAX loading
  *
  * @see https://developers.facebook.com/docs/graph-api/using-graph-api/#paging
@@ -29,6 +31,138 @@ class MetaAssetsService
     private const DELAY_BETWEEN_REQUESTS_MS = 100; // 100ms delay between API calls
     private const BATCH_SIZE = 50;                    // Meta allows up to 50 requests per batch
     private const DELAY_BETWEEN_BATCHES_MS = 500;     // 500ms delay between batch requests
+
+    /**
+     * Repository for database persistence (optional - for three-tier caching)
+     */
+    protected ?PlatformAssetRepositoryInterface $repository = null;
+
+    /**
+     * Organization ID for access tracking (set per-request)
+     */
+    protected ?string $orgId = null;
+
+    /**
+     * Constructor with optional repository injection for database persistence
+     */
+    public function __construct(?PlatformAssetRepositoryInterface $repository = null)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * Set organization ID for access tracking
+     */
+    public function setOrgId(?string $orgId): self
+    {
+        $this->orgId = $orgId;
+        return $this;
+    }
+
+    /**
+     * Persist assets to database (if repository is configured)
+     *
+     * @param string $connectionId Connection UUID
+     * @param string $assetType Asset type (page, instagram, ad_account, etc.)
+     * @param array $assets Array of asset data
+     * @return void
+     */
+    protected function persistAssets(string $connectionId, string $assetType, array $assets): void
+    {
+        if (!$this->repository || empty($assets)) {
+            return;
+        }
+
+        try {
+            $count = $this->repository->bulkUpsert('meta', $assetType, $assets, $connectionId);
+
+            // Record org access if org_id is set
+            if ($this->orgId) {
+                foreach ($assets as $assetData) {
+                    $asset = $this->repository->findOrCreate(
+                        'meta',
+                        $this->extractAssetId($assetData, $assetType),
+                        $assetType,
+                        $assetData
+                    );
+
+                    $this->repository->recordOrgAccess(
+                        $this->orgId,
+                        $asset->asset_id,
+                        $connectionId,
+                        [
+                            'access_types' => $this->inferAccessTypes($assetData),
+                            'permissions' => $assetData['permitted_tasks'] ?? [],
+                            'roles' => $assetData['roles'] ?? [],
+                        ]
+                    );
+                }
+            }
+
+            Log::debug('Meta assets persisted to database', [
+                'asset_type' => $assetType,
+                'count' => $count,
+                'connection_id' => $connectionId,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to persist Meta assets to database', [
+                'asset_type' => $assetType,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Extract asset ID from asset data
+     */
+    protected function extractAssetId(array $data, string $assetType): string
+    {
+        return match($assetType) {
+            'page' => $data['id'] ?? '',
+            'instagram' => $data['id'] ?? '',
+            'threads' => $data['id'] ?? '',
+            'ad_account' => $data['id'] ?? $data['account_id'] ?? '',
+            'pixel' => $data['id'] ?? '',
+            'catalog' => $data['id'] ?? '',
+            'whatsapp' => $data['id'] ?? '',
+            'business' => $data['id'] ?? '',
+            'custom_conversion' => $data['id'] ?? '',
+            'offline_event_set' => $data['id'] ?? '',
+            default => $data['id'] ?? '',
+        };
+    }
+
+    /**
+     * Infer access types from Meta asset data
+     */
+    protected function inferAccessTypes(array $data): array
+    {
+        $types = ['read'];
+
+        if (isset($data['permitted_tasks'])) {
+            $tasks = $data['permitted_tasks'];
+            if (in_array('MANAGE', $tasks) || in_array('ADVERTISE', $tasks)) {
+                $types[] = 'write';
+            }
+            if (in_array('MANAGE', $tasks)) {
+                $types[] = 'admin';
+            }
+            if (in_array('CREATE_CONTENT', $tasks) || in_array('MODERATE', $tasks)) {
+                $types[] = 'publish';
+            }
+            if (in_array('ANALYZE', $tasks)) {
+                $types[] = 'analyze';
+            }
+        }
+
+        // Check ownership source
+        $source = $data['source'] ?? null;
+        if ($source === 'owned') {
+            $types = array_merge($types, ['write', 'admin', 'publish', 'analyze']);
+        }
+
+        return array_unique($types);
+    }
 
     /**
      * Core pagination helper - fetches ALL pages from Meta API.
@@ -236,6 +370,9 @@ class MetaAssetsService
             'total_unique' => count($allPages),
         ]);
 
+        // Persist to database for three-tier caching
+        $this->persistAssets($connectionId, 'page', $allPages);
+
         return $allPages;
     }
 
@@ -335,6 +472,9 @@ class MetaAssetsService
                 'total_unique' => count($allInstagram),
             ]);
 
+            // Persist to database for three-tier caching
+            $this->persistAssets($connectionId, 'instagram', $allInstagram);
+
             return $allInstagram;
         });
     }
@@ -416,6 +556,10 @@ class MetaAssetsService
             }
 
             Log::info('Threads accounts fetched', ['count' => count($threadsAccounts)]);
+
+            // Persist to database for three-tier caching
+            $this->persistAssets($connectionId, 'threads', $threadsAccounts);
+
             return $threadsAccounts;
         });
     }
@@ -586,6 +730,11 @@ class MetaAssetsService
                     'client_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'client')),
                     'personal_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'personal')),
                 ]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'ad_account', $adAccounts);
+                $this->persistAssets($connectionId, 'pixel', $pixels);
+                $this->persistAssets($connectionId, 'custom_conversion', $customConversions);
 
                 return [
                     'ad_accounts' => $adAccounts,
@@ -999,6 +1148,12 @@ class MetaAssetsService
                     'business_instagram' => count($businessInstagram),
                     'used_fallback' => $usedFallback,
                 ]);
+
+                // Persist to database for three-tier caching
+                $this->persistAssets($connectionId, 'business', $businesses);
+                $this->persistAssets($connectionId, 'catalog', $catalogs);
+                $this->persistAssets($connectionId, 'whatsapp', $whatsappAccounts);
+                $this->persistAssets($connectionId, 'offline_event_set', $offlineEventSets);
 
                 return [
                     'businesses' => $businesses,

@@ -30,6 +30,15 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api'])
                 ->prefix('api')
                 ->group(base_path('routes/api-ai-quota.php'));
+
+            // Super Admin Dashboard Routes (2025-12-05)
+            Route::middleware(['web'])
+                ->group(base_path('routes/super-admin.php'));
+
+            // Backup & Restore API Routes (2025-12-05)
+            Route::middleware(['api'])
+                ->prefix('api')
+                ->group(base_path('routes/api-backup.php'));
         }
     )
     ->withSchedule(function (Schedule $schedule): void {
@@ -85,6 +94,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Apps Marketplace
             'app.enabled' => \App\Http\Middleware\CheckAppEnabled::class,
+
+            // Backup & Restore
+            'backup.permission' => \App\Http\Middleware\CheckBackupPermission::class,
+
+            // Super Admin (Platform Owner Access)
+            'super.admin' => \App\Http\Middleware\SuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
