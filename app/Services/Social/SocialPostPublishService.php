@@ -1111,14 +1111,91 @@ class SocialPostPublishService
             $description = $content;
             $privacyStatus = $metadata['privacy_status'] ?? 'public';
 
-            // Get target channel from post (account_id) or selected channels in settings
+            // Get target channel from post (account_id) or determine from brand account
             $selectedChannels = $connection->account_metadata['selected_assets']['youtube_channel'] ?? [];
-            $targetChannelId = $postMetadata->account_id ?? ($selectedChannels[0] ?? null);
+            $youtubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
+            $brandAccountData = $connection->account_metadata['youtube_brand_account'] ?? null;
+
+            // Priority for target channel:
+            // 1. Post's account_id (explicitly selected channel for this post)
+            // 2. If brand account exists, use the channel it's authorized for
+            // 3. First selected channel as fallback
+            $targetChannelId = $postMetadata->account_id;
+            $accessToken = null;
+            $useBrandToken = false;
+
+            // If no explicit channel and brand account exists, check which channel it's authorized for
+            if (!$targetChannelId && $brandAccountData && !empty($brandAccountData['access_token'])) {
+                // Query YouTube API to find which channel this brand token is authorized for
+                $tempToken = $brandAccountData['access_token'];
+
+                // First check if token is expired and refresh if needed
+                $brandTokenExpiresAt = isset($brandAccountData['token_expires_at'])
+                    ? \Carbon\Carbon::parse($brandAccountData['token_expires_at'])
+                    : null;
+
+                if ($brandTokenExpiresAt && $brandTokenExpiresAt->isPast()) {
+                    Log::info('Refreshing expired brand account token to determine authorized channel');
+                    $config = config('social-platforms.google');
+                    $refreshResponse = Http::asForm()->post($config['token_url'], [
+                        'client_id' => $config['client_id'],
+                        'client_secret' => $config['client_secret'],
+                        'refresh_token' => $brandAccountData['refresh_token'],
+                        'grant_type' => 'refresh_token',
+                    ]);
+
+                    if ($refreshResponse->successful()) {
+                        $tokenData = $refreshResponse->json();
+                        $brandAccountData['access_token'] = $tokenData['access_token'];
+                        $brandAccountData['token_expires_at'] = now('Europe/Berlin')
+                            ->addSeconds($tokenData['expires_in'] ?? 3600)
+                            ->toIso8601String();
+
+                        $accountMetadata = $connection->account_metadata;
+                        $accountMetadata['youtube_brand_account'] = $brandAccountData;
+                        $connection->update(['account_metadata' => $accountMetadata]);
+
+                        $tempToken = $brandAccountData['access_token'];
+                        Log::info('Brand account token refreshed successfully');
+                    }
+                }
+
+                // Check which channel the brand token is authorized for
+                $brandChannelResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $tempToken,
+                ])->get('https://www.googleapis.com/youtube/v3/channels', [
+                    'part' => 'snippet',
+                    'mine' => 'true',
+                ]);
+
+                if ($brandChannelResponse->successful()) {
+                    $brandChannels = $brandChannelResponse->json('items', []);
+                    if (!empty($brandChannels)) {
+                        $brandAuthorizedChannelId = $brandChannels[0]['id'] ?? null;
+                        $brandAuthorizedChannelName = $brandChannels[0]['snippet']['title'] ?? 'Unknown';
+
+                        // Check if this channel is in the selected channels list
+                        if ($brandAuthorizedChannelId && in_array($brandAuthorizedChannelId, $selectedChannels)) {
+                            $targetChannelId = $brandAuthorizedChannelId;
+                            $accessToken = $tempToken;
+                            $useBrandToken = true;
+                            Log::info('Auto-selected brand account channel for upload', [
+                                'channel_id' => $brandAuthorizedChannelId,
+                                'channel_name' => $brandAuthorizedChannelName,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Fallback to first selected channel if no target determined
+            if (!$targetChannelId) {
+                $targetChannelId = $selectedChannels[0] ?? null;
+            }
 
             // Find target channel info from stored channels
             $targetChannelInfo = null;
             $targetChannelName = 'Unknown';
-            $youtubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
             foreach ($youtubeChannels as $ch) {
                 if ($ch['id'] === $targetChannelId) {
                     $targetChannelInfo = $ch;
@@ -1127,13 +1204,10 @@ class SocialPostPublishService
                 }
             }
 
-            // Determine which token to use based on channel type
-            // Brand channels use the brand account token, personal channels use main token
-            $brandAccountData = $connection->account_metadata['youtube_brand_account'] ?? null;
+            // Determine which token to use based on channel type (if not already determined)
             $isBrandChannel = ($targetChannelInfo['type'] ?? '') === 'brand';
-            $accessToken = null;
 
-            if ($isBrandChannel && $brandAccountData) {
+            if (!$accessToken && $isBrandChannel && $brandAccountData) {
                 // Use brand account token for brand channels
                 $brandTokenExpiresAt = isset($brandAccountData['token_expires_at'])
                     ? \Carbon\Carbon::parse($brandAccountData['token_expires_at'])
