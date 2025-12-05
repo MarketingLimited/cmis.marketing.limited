@@ -230,11 +230,19 @@ Access the feature toggle admin dashboard at: `http://localhost/admin/features`
 - Access: Full feature flag management
 
 #### System Admin Account
-**Super Admin:**
+**Super Admin (Platform Owner):**
 - Email: `admin@cmis.test`
 - Password: `password`
 - Role: Super Administrator
 - Access: All system features and organizations
+- **Dashboard URL:** `/super-admin/dashboard`
+
+> **Super Admin Features:**
+> - Organization management (suspend, block, restore)
+> - User management with impersonation
+> - Plans & Subscriptions CRUD
+> - API Analytics monitoring
+> - System health & logs
 
 #### Test Users (Various Roles)
 
@@ -262,6 +270,7 @@ Access the feature toggle admin dashboard at: `http://localhost/admin/features`
 > **Security:** Change these credentials in production environments!
 
 #### Quick Access URLs
+- **Super Admin Dashboard:** `http://localhost/super-admin/dashboard` *(Platform management)*
 - **Admin Dashboard:** `http://localhost/admin`
 - **Feature Toggle Dashboard:** `http://localhost/admin/features`
 - **API Documentation:** `http://localhost/api/documentation`

@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             BackupPermissionsSeeder::class, // Backup & Restore permissions
             RolesSeeder::class,
             UsersSeeder::class,
+            SuperAdminSeeder::class, // Set admin user as super admin
             PlatformConnectionsSeeder::class,
             MarketingDotLimitedSeeder::class,
             ProfileGroupSeeder::class,

@@ -322,10 +322,13 @@ return new class extends Migration
 
         // Add foreign key for encryption_key_id in organization_backups after encryption_keys table exists
         if (Schema::hasTable('cmis.organization_backups') && Schema::hasTable('cmis.backup_encryption_keys')) {
-            // Check if foreign key already exists
+            // Check if foreign key already exists (Laravel adds 'cmis_' prefix to schema-qualified tables)
             $fkExists = DB::select("
                 SELECT 1 FROM information_schema.table_constraints
-                WHERE constraint_name = 'organization_backups_encryption_key_id_foreign'
+                WHERE constraint_name IN (
+                    'organization_backups_encryption_key_id_foreign',
+                    'cmis_organization_backups_encryption_key_id_foreign'
+                )
                 AND table_schema = 'cmis'
                 AND table_name = 'organization_backups'
             ");
@@ -344,7 +347,10 @@ return new class extends Migration
         if (Schema::hasTable('cmis.backup_schedules') && Schema::hasTable('cmis.backup_encryption_keys')) {
             $fkExists = DB::select("
                 SELECT 1 FROM information_schema.table_constraints
-                WHERE constraint_name = 'backup_schedules_encryption_key_id_foreign'
+                WHERE constraint_name IN (
+                    'backup_schedules_encryption_key_id_foreign',
+                    'cmis_backup_schedules_encryption_key_id_foreign'
+                )
                 AND table_schema = 'cmis'
                 AND table_name = 'backup_schedules'
             ");
@@ -363,7 +369,10 @@ return new class extends Migration
         if (Schema::hasTable('cmis.backup_settings') && Schema::hasTable('cmis.backup_encryption_keys')) {
             $fkExists = DB::select("
                 SELECT 1 FROM information_schema.table_constraints
-                WHERE constraint_name = 'backup_settings_default_encryption_key_id_foreign'
+                WHERE constraint_name IN (
+                    'backup_settings_default_encryption_key_id_foreign',
+                    'cmis_backup_settings_default_encryption_key_id_foreign'
+                )
                 AND table_schema = 'cmis'
                 AND table_name = 'backup_settings'
             ");
