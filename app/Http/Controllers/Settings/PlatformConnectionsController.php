@@ -3839,6 +3839,7 @@ class PlatformConnectionsController extends Controller
         }
 
         // Login Kit v2 uses application/x-www-form-urlencoded
+        $tokenStartTime = microtime(true);
         $response = Http::asForm()->post($config['token_url'], [
             'client_key' => $config['client_key'],
             'client_secret' => $config['client_secret'],
@@ -3846,6 +3847,19 @@ class PlatformConnectionsController extends Controller
             'grant_type' => 'authorization_code',
             'redirect_uri' => $config['redirect_uri'],
         ]);
+        $tokenDurationMs = (int) ((microtime(true) - $tokenStartTime) * 1000);
+
+        // Log API call for analytics
+        $this->logPlatformApiCall(
+            $orgId,
+            'tiktok',
+            $config['token_url'],
+            'POST',
+            $response->successful(),
+            $response->status(),
+            $tokenDurationMs,
+            $response->successful() ? null : 'Token exchange failed'
+        );
 
         if (!$response->successful()) {
             Log::error('TikTok Account token exchange failed', [
@@ -3871,11 +3885,25 @@ class PlatformConnectionsController extends Controller
         }
 
         // Get user info using the access token
+        $userInfoStartTime = microtime(true);
         $userResponse = Http::withHeaders([
             'Authorization' => 'Bearer ' . $tokenData['access_token'],
         ])->get('https://open.tiktokapis.com/v2/user/info/', [
             'fields' => 'open_id,union_id,display_name,avatar_url',
         ]);
+        $userInfoDurationMs = (int) ((microtime(true) - $userInfoStartTime) * 1000);
+
+        // Log API call for analytics
+        $this->logPlatformApiCall(
+            $orgId,
+            'tiktok',
+            'https://open.tiktokapis.com/v2/user/info/',
+            'GET',
+            $userResponse->successful(),
+            $userResponse->status(),
+            $userInfoDurationMs,
+            $userResponse->successful() ? null : 'User info fetch failed'
+        );
 
         $accountName = __('settings.tiktok_account');
         $accountId = 'tiktok_' . Str::random(10);
@@ -4231,11 +4259,25 @@ class PlatformConnectionsController extends Controller
 
         // Exchange auth code for access token
         // TikTok Business API uses JSON body, not form-encoded
+        $tokenStartTime = microtime(true);
         $response = Http::post($config['token_url'], [
             'app_id' => $config['app_id'],
             'secret' => $config['app_secret'],
             'auth_code' => $authCode,
         ]);
+        $tokenDurationMs = (int) ((microtime(true) - $tokenStartTime) * 1000);
+
+        // Log API call for analytics
+        $this->logPlatformApiCall(
+            $orgId,
+            'tiktok',
+            $config['token_url'],
+            'POST',
+            $response->successful(),
+            $response->status(),
+            $tokenDurationMs,
+            $response->successful() ? null : 'TikTok Ads token exchange failed'
+        );
 
         if (!$response->successful()) {
             Log::error('TikTok Ads token exchange failed', [
@@ -4524,11 +4566,25 @@ class PlatformConnectionsController extends Controller
 
         // Exchange auth code for access token
         // TikTok Business API uses JSON body, not form-encoded
+        $tokenStartTime = microtime(true);
         $response = Http::post($config['token_url'], [
             'app_id' => $config['app_id'],
             'secret' => $config['app_secret'],
             'auth_code' => $authCode,
         ]);
+        $tokenDurationMs = (int) ((microtime(true) - $tokenStartTime) * 1000);
+
+        // Log API call for analytics
+        $this->logPlatformApiCall(
+            $orgId,
+            'tiktok',
+            $config['token_url'],
+            'POST',
+            $response->successful(),
+            $response->status(),
+            $tokenDurationMs,
+            $response->successful() ? null : 'TikTok Business token exchange failed'
+        );
 
         if (!$response->successful()) {
             Log::error('TikTok Business token exchange failed', [

@@ -13,6 +13,7 @@ class TikTokOAuthClient extends OAuth2Client
 {
     protected string $authorizationUrl = 'https://business-api.tiktok.com/portal/auth';
     protected string $tokenUrl = 'https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/';
+    protected string $platform = 'tiktok';
 
     protected array $scopes = [
         'user.info.basic',
