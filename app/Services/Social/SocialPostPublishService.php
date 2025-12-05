@@ -1122,6 +1122,71 @@ class SocialPostPublishService
             $description = $content;
             $privacyStatus = $metadata['privacy_status'] ?? 'public';
 
+            // Get target channel from post (account_id) or connection settings
+            $targetChannelId = $postMetadata->account_id
+                ?? ($connection->account_metadata['selected_youtube_channel'] ?? null);
+
+            // Verify which YouTube channel is currently authorized
+            $channelResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $accessToken,
+            ])->get('https://www.googleapis.com/youtube/v3/channels', [
+                'part' => 'snippet',
+                'mine' => 'true',
+            ]);
+
+            $authorizedChannel = null;
+            $authorizedChannelTitle = 'Unknown';
+            if ($channelResponse->successful()) {
+                $channels = $channelResponse->json('items', []);
+                if (!empty($channels)) {
+                    $authorizedChannel = $channels[0]['id'] ?? null;
+                    $authorizedChannelTitle = $channels[0]['snippet']['title'] ?? 'Unknown';
+                }
+            }
+
+            // Log channel info for debugging
+            Log::info('YouTube channel check', [
+                'post_id' => $postId,
+                'target_channel' => $targetChannelId,
+                'authorized_channel' => $authorizedChannel,
+                'authorized_channel_title' => $authorizedChannelTitle,
+            ]);
+
+            // CRITICAL: Validate channel authorization
+            if ($targetChannelId && $authorizedChannel && $targetChannelId !== $authorizedChannel) {
+                // Target channel doesn't match authorized channel - ERROR
+                $targetChannelName = 'Unknown';
+                $youtubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
+                foreach ($youtubeChannels as $ch) {
+                    if ($ch['id'] === $targetChannelId) {
+                        $targetChannelName = $ch['title'] ?? 'Unknown';
+                        break;
+                    }
+                }
+
+                Log::warning('YouTube channel mismatch - blocking upload', [
+                    'post_id' => $postId,
+                    'target_channel_id' => $targetChannelId,
+                    'target_channel_name' => $targetChannelName,
+                    'authorized_channel_id' => $authorizedChannel,
+                    'authorized_channel_name' => $authorizedChannelTitle,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => "YouTube channel mismatch! Post targets '{$targetChannelName}' but OAuth is authorized for '{$authorizedChannelTitle}'. Please re-authorize YouTube with the correct Brand Account.",
+                ];
+            }
+
+            // WARNING: No target channel selected - will upload to authorized channel
+            if (!$targetChannelId && $authorizedChannel) {
+                Log::warning('YouTube: No target channel selected, uploading to default authorized channel', [
+                    'post_id' => $postId,
+                    'authorized_channel_id' => $authorizedChannel,
+                    'authorized_channel_name' => $authorizedChannelTitle,
+                ]);
+            }
+
             // Step 1: Initialize resumable upload
             $fileSize = filesize($videoPath);
             $initResponse = Http::timeout(30)
@@ -1190,13 +1255,17 @@ class SocialPostPublishService
                 'post_id' => $postId,
                 'video_id' => $videoId,
                 'url' => $videoUrl,
+                'channel_id' => $authorizedChannel,
+                'channel_name' => $authorizedChannelTitle,
             ]);
 
             return [
                 'success' => true,
                 'post_id' => $videoId,
                 'permalink' => $videoUrl,
-                'message' => 'Published to YouTube successfully',
+                'channel_id' => $authorizedChannel,
+                'channel_name' => $authorizedChannelTitle,
+                'message' => "Published to YouTube channel '{$authorizedChannelTitle}' successfully",
             ];
 
         } catch (\Exception $e) {
