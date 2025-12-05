@@ -1,5 +1,9 @@
 @extends('super-admin.layouts.app')
 
+@php
+    $isRtl = app()->getLocale() === 'ar';
+@endphp
+
 @section('title', __('super_admin.dashboard'))
 
 @section('breadcrumb')
