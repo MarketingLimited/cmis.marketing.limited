@@ -27,6 +27,8 @@ class MetaAssetsService
     private const REQUEST_TIMEOUT = 30;
     private const MAX_BUSINESSES = 200; // Limit businesses to prevent API exhaustion (increased for large accounts)
     private const DELAY_BETWEEN_REQUESTS_MS = 100; // 100ms delay between API calls
+    private const BATCH_SIZE = 50;                    // Meta allows up to 50 requests per batch
+    private const DELAY_BETWEEN_BATCHES_MS = 500;     // 500ms delay between batch requests
 
     /**
      * Core pagination helper - fetches ALL pages from Meta API.
@@ -625,9 +627,116 @@ class MetaAssetsService
     }
 
     /**
-     * Fallback method to get businesses from ad accounts.
+     * Query multiple businesses in a single batch request using Meta's Batch API.
+     * Reduces N sequential API calls to 1 batch call (max 50 per batch).
+     *
+     * @see https://developers.facebook.com/docs/graph-api/making-multiple-requests
+     *
+     * @param array $businessIds Array of business IDs to query
+     * @param string $accessToken The Meta API access token
+     * @return array Array of business data (successful responses only)
+     */
+    private function batchQueryBusinesses(array $businessIds, string $accessToken): array
+    {
+        if (empty($businessIds)) {
+            return [];
+        }
+
+        // Build the fields string (same as direct query)
+        $fields = implode(',', [
+            'id',
+            'name',
+            'verification_status',
+            'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
+            'client_product_catalogs.limit(100){id,name,product_count,vertical}',
+            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+        ]);
+
+        // Build batch request array
+        $batchRequests = [];
+        foreach ($businessIds as $businessId) {
+            $batchRequests[] = [
+                'method' => 'GET',
+                'relative_url' => $businessId . '?' . http_build_query(['fields' => $fields]),
+            ];
+        }
+
+        try {
+            // Make batch request using POST with form data
+            $response = Http::timeout(self::REQUEST_TIMEOUT * 2) // Double timeout for batch
+                ->asForm()
+                ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                    'access_token' => $accessToken,
+                    'include_headers' => 'false',
+                    'batch' => json_encode($batchRequests),
+                ]);
+
+            if (!$response->successful()) {
+                $error = $response->json('error', []);
+                Log::warning('Meta Batch API request failed', [
+                    'status' => $response->status(),
+                    'error_code' => $error['code'] ?? null,
+                    'error_message' => $error['message'] ?? 'Unknown error',
+                    'batch_size' => count($businessIds),
+                ]);
+                return [];
+            }
+
+            // Parse batch response
+            $batchResponses = $response->json();
+            $businesses = [];
+            $successCount = 0;
+            $errorCount = 0;
+
+            foreach ($batchResponses as $index => $batchResponse) {
+                $businessId = $businessIds[$index] ?? 'unknown';
+
+                // Check if individual request succeeded
+                if (($batchResponse['code'] ?? 0) === 200) {
+                    $body = json_decode($batchResponse['body'] ?? '{}', true);
+                    if (!empty($body['id'])) {
+                        $businesses[] = $body;
+                        $successCount++;
+                    }
+                } else {
+                    // Individual request failed within batch
+                    $errorBody = json_decode($batchResponse['body'] ?? '{}', true);
+                    $errorCode = $errorBody['error']['code'] ?? $batchResponse['code'] ?? 0;
+
+                    Log::debug('Individual business query failed in batch', [
+                        'business_id' => $businessId,
+                        'code' => $batchResponse['code'] ?? 0,
+                        'error_code' => $errorCode,
+                    ]);
+
+                    $errorCount++;
+                }
+            }
+
+            Log::debug('Batch query completed', [
+                'requested' => count($businessIds),
+                'success' => $successCount,
+                'errors' => $errorCount,
+            ]);
+
+            return $businesses;
+
+        } catch (\Exception $e) {
+            Log::error('Exception in batchQueryBusinesses', [
+                'error' => $e->getMessage(),
+                'batch_size' => count($businessIds),
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Fallback method to get businesses from ad accounts using Batch API.
      * Used when /me/businesses returns empty (common for System User tokens).
-     * Extracts unique business IDs from ad accounts and queries each business directly.
+     * Extracts unique business IDs from ad accounts and queries in batches of 50.
+     *
+     * Optimization: Uses Meta's Batch API to query 50 businesses per request,
+     * reducing 200 sequential calls to 4 batch calls (98% reduction).
      *
      * @param string $accessToken The Meta API access token
      * @param string $connectionId The connection ID for cache lookup
@@ -658,77 +767,58 @@ class MetaAssetsService
             return [];
         }
 
-        // Limit to prevent API exhaustion
+        // Limit to prevent API exhaustion and convert to array
         $businessIds = array_slice(array_keys($businessIds), 0, self::MAX_BUSINESSES);
 
-        Log::info('Extracted business IDs from ad accounts for System User fallback', [
+        Log::info('Using Batch API for System User business fallback', [
             'unique_businesses' => count($businessIds),
             'total_ad_accounts' => count($adAccounts),
+            'expected_batches' => ceil(count($businessIds) / self::BATCH_SIZE),
         ]);
 
-        // Query each business directly for its assets
-        $businesses = [];
-        $queryCount = 0;
+        // Split into batches and query using Batch API
+        $allBusinesses = [];
+        $batchChunks = array_chunk($businessIds, self::BATCH_SIZE);
+        $batchNumber = 0;
 
-        foreach ($businessIds as $businessId) {
-            // Rate limiting between requests
-            if ($queryCount > 0) {
-                usleep(self::DELAY_BETWEEN_REQUESTS_MS * 1000);
+        foreach ($batchChunks as $chunk) {
+            // Rate limiting between batches (not between individual requests)
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
             }
 
-            try {
-                // Note: When querying Business node directly, not all fields are available
-                // offline_conversion_data_sets requires different access path
-                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
-                    self::BASE_URL . '/' . self::API_VERSION . '/' . $businessId,
-                    [
-                        'access_token' => $accessToken,
-                        'fields' => implode(',', [
-                            'id',
-                            'name',
-                            'verification_status',
-                            'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
-                            'client_product_catalogs.limit(100){id,name,product_count,vertical}',
-                            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
-                        ]),
-                    ]
-                );
+            Log::debug('Processing business batch', [
+                'batch' => $batchNumber + 1,
+                'of' => count($batchChunks),
+                'size' => count($chunk),
+            ]);
 
-                if ($response->successful()) {
-                    $businesses[] = $response->json();
-                    Log::debug('Fetched business via direct query (System User fallback)', [
-                        'business_id' => $businessId,
-                    ]);
-                } else {
-                    $error = $response->json('error', []);
-                    Log::warning('Failed to fetch business directly in fallback', [
-                        'business_id' => $businessId,
-                        'error_code' => $error['code'] ?? null,
-                        'error_message' => $error['message'] ?? 'Unknown error',
-                    ]);
+            $batchResults = $this->batchQueryBusinesses($chunk, $accessToken);
+            $allBusinesses = array_merge($allBusinesses, $batchResults);
 
-                    // Stop on rate limit
-                    if (($error['code'] ?? 0) === 4 || ($error['code'] ?? 0) === 17) {
-                        Log::warning('Rate limit hit during System User fallback, stopping with partial results');
-                        break;
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::warning('Exception fetching business in fallback', [
-                    'business_id' => $businessId,
-                    'error' => $e->getMessage(),
+            $batchNumber++;
+
+            // If a batch returned empty (possible rate limit), stop processing
+            if (empty($batchResults) && !empty($chunk)) {
+                Log::warning('Batch returned no results, stopping further batch processing', [
+                    'batch' => $batchNumber,
+                    'businesses_collected' => count($allBusinesses),
                 ]);
+                break;
             }
-
-            $queryCount++;
         }
 
-        Log::info('System User business fallback completed', [
-            'businesses_fetched' => count($businesses),
-            'api_calls' => $queryCount,
+        $efficiency = count($businessIds) > 0
+            ? round((1 - ($batchNumber / count($businessIds))) * 100, 1) . '% reduction'
+            : 'N/A';
+
+        Log::info('System User business fallback completed with Batch API', [
+            'businesses_fetched' => count($allBusinesses),
+            'api_calls' => $batchNumber,
+            'efficiency' => $efficiency,
         ]);
 
-        return $businesses;
+        return $allBusinesses;
     }
 
     /**
