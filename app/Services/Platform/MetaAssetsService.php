@@ -22,7 +22,7 @@ class MetaAssetsService
     private const API_VERSION = 'v21.0';
     private const BASE_URL = 'https://graph.facebook.com';
     private const THREADS_BASE_URL = 'https://graph.threads.net';
-    private const MAX_PAGES = 3; // Safety limit: 3 pages x 100 items = 300 max (reduced from 50 to prevent rate limiting)
+    private const MAX_PAGES = 50; // Safety limit: 50 pages x 100 items = 5000 max (increased to fetch ALL assets)
     private const ITEMS_PER_PAGE = 100;
     private const REQUEST_TIMEOUT = 30;
     private const MAX_BUSINESSES = 10; // Limit businesses to prevent API exhaustion
@@ -104,22 +104,23 @@ class MetaAssetsService
     }
 
     /**
-     * Fetch ALL user assets in ONE API call (pages + instagram).
+     * Fetch ALL user assets with pagination (pages + instagram).
      * Uses field expansion to get Instagram details embedded in the pages response.
+     * Follows paging.next cursor to get ALL pages.
      */
     private function getAllUserAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_user_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching ALL user assets from Meta API (single request with field expansion)');
+            Log::info('Fetching ALL user assets from Meta API (with pagination and field expansion)');
 
             try {
-                // ONE API call to get pages with embedded Instagram accounts
-                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                // Fetch ALL pages with embedded Instagram accounts using pagination
+                $rawPages = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/accounts',
+                    $accessToken,
                     [
-                        'access_token' => $accessToken,
                         'fields' => implode(',', [
                             'id',
                             'name',
@@ -128,18 +129,8 @@ class MetaAssetsService
                             'access_token',
                             'instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}',
                         ]),
-                        'limit' => 100,
                     ]
                 );
-
-                if (!$response->successful()) {
-                    Log::warning('Failed to fetch user assets', [
-                        'error' => $response->json('error', []),
-                    ]);
-                    return ['pages' => [], 'instagram' => []];
-                }
-
-                $rawPages = $response->json('data', []);
 
                 // Parse pages and extract Instagram accounts
                 $pages = [];
@@ -175,10 +166,9 @@ class MetaAssetsService
                     }
                 }
 
-                Log::info('ALL user assets fetched in single API call', [
+                Log::info('ALL user assets fetched with pagination', [
                     'pages' => count($pages),
                     'instagram_accounts' => count($instagramAccounts),
-                    'api_calls' => 1,
                 ]);
 
                 return [
@@ -300,22 +290,22 @@ class MetaAssetsService
     }
 
     /**
-     * Fetch ALL ad account assets in ONE API call (ad accounts + pixels + custom conversions).
-     * Uses field expansion to get nested data in a single request.
+     * Fetch ALL ad account assets with pagination (ad accounts + pixels + custom conversions).
+     * Uses field expansion to get nested data and pagination to get ALL accounts.
      */
     private function getAllAdAccountAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_adaccount_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching ALL ad account assets from Meta API (single request with field expansion)');
+            Log::info('Fetching ALL ad account assets from Meta API (with pagination and field expansion)');
 
             try {
-                // ONE API call to get ad accounts with embedded pixels and custom conversions
-                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                // Fetch ALL ad accounts with embedded pixels and custom conversions using pagination
+                $rawAccounts = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
+                    $accessToken,
                     [
-                        'access_token' => $accessToken,
                         'fields' => implode(',', [
                             'id',
                             'name',
@@ -335,21 +325,11 @@ class MetaAssetsService
                             'capabilities',
                             'is_prepay_account',
                             'min_daily_budget',
-                            'adspixels.limit(50){id,name,creation_time,last_fired_time}',
-                            'customconversions.limit(50){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
+                            'adspixels.limit(100){id,name,creation_time,last_fired_time}',
+                            'customconversions.limit(100){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
                         ]),
-                        'limit' => 100,
                     ]
                 );
-
-                if (!$response->successful()) {
-                    Log::warning('Failed to fetch ad account assets', [
-                        'error' => $response->json('error', []),
-                    ]);
-                    return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
-                }
-
-                $rawAccounts = $response->json('data', []);
 
                 // Parse ad accounts and extract pixels + custom conversions
                 $adAccounts = [];
@@ -422,11 +402,10 @@ class MetaAssetsService
                     }
                 }
 
-                Log::info('ALL ad account assets fetched in single API call', [
+                Log::info('ALL ad account assets fetched with pagination', [
                     'ad_accounts' => count($adAccounts),
                     'pixels' => count($pixels),
                     'custom_conversions' => count($customConversions),
-                    'api_calls' => 1,
                 ]);
 
                 return [
@@ -494,7 +473,7 @@ class MetaAssetsService
     }
 
     /**
-     * Fetch ALL business assets in ONE API call (businesses + catalogs + whatsapp).
+     * Fetch ALL business assets with pagination (businesses + catalogs + whatsapp).
      * This is the core method that minimizes API calls by using field expansion.
      * All business-related data is fetched together and cached.
      */
@@ -503,14 +482,14 @@ class MetaAssetsService
         $cacheKey = $this->getCacheKey($connectionId, 'all_business_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching ALL business assets from Meta API (single request with full field expansion)');
+            Log::info('Fetching ALL business assets from Meta API (with pagination and field expansion)');
 
             try {
-                // ONE API call to get everything: businesses + catalogs + whatsapp
-                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                // Fetch ALL businesses with embedded catalogs, whatsapp, offline events using pagination
+                $rawBusinesses = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
+                    $accessToken,
                     [
-                        'access_token' => $accessToken,
                         'fields' => implode(',', [
                             'id',
                             'name',
@@ -520,18 +499,8 @@ class MetaAssetsService
                             'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
                             'offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}',
                         ]),
-                        'limit' => 100,
                     ]
                 );
-
-                if (!$response->successful()) {
-                    Log::warning('Failed to fetch business assets', [
-                        'error' => $response->json('error', []),
-                    ]);
-                    return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => []];
-                }
-
-                $rawBusinesses = $response->json('data', []);
 
                 // Parse and organize all data
                 $businesses = [];
@@ -624,12 +593,11 @@ class MetaAssetsService
                     }
                 }
 
-                Log::info('ALL business assets fetched in single API call', [
+                Log::info('ALL business assets fetched with pagination', [
                     'businesses' => count($businesses),
                     'catalogs' => count($catalogs),
                     'whatsapp_accounts' => count($whatsappAccounts),
                     'offline_event_sets' => count($offlineEventSets),
-                    'api_calls' => 1,
                 ]);
 
                 return [
