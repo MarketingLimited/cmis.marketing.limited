@@ -157,44 +157,61 @@ class PlatformConnectionsController extends Controller
         // Count active ad accounts
         $activeAdAccounts = array_filter($adAccounts, fn($acc) => $acc['can_create_ads'] ?? false);
 
-        // Create or update the connection
-        $connection = PlatformConnection::updateOrCreate(
-            [
+        // Create or update the connection (including restoring soft-deleted records)
+        $accountId = $tokenInfo['user_id'] ?? $request->input('ad_account_id') ?? 'system_user_' . Str::random(8);
+
+        // First check for soft-deleted record and restore it if exists
+        $connection = PlatformConnection::withTrashed()
+            ->where('org_id', $orgId)
+            ->where('platform', 'meta')
+            ->where('account_id', $accountId)
+            ->first();
+
+        $connectionData = [
+            'account_name' => $request->input('account_name'),
+            'status' => $hasRequiredPermissions ? 'active' : 'warning',
+            'access_token' => $accessToken,
+            'token_expires_at' => $tokenInfo['expires_at'],
+            'scopes' => $tokenInfo['scopes'] ?? [],
+            'account_metadata' => [
+                'token_type' => $tokenInfo['token_type'] ?? 'system_user',
+                'is_system_user' => $tokenInfo['is_system_user'] ?? false,
+                'is_never_expires' => $tokenInfo['is_never_expires'] ?? false,
+                'app_id' => $tokenInfo['app_id'] ?? null,
+                'user_id' => $tokenInfo['user_id'] ?? null,
+                'user_name' => $tokenInfo['user_name'] ?? null,
+                'application' => $tokenInfo['application'] ?? null,
+                'data_access_expires_at' => $tokenInfo['data_access_expires_at']?->toIso8601String(),
+                'issued_at' => $tokenInfo['issued_at']?->toIso8601String(),
+                'ad_accounts' => $adAccounts,
+                'ad_accounts_count' => count($adAccounts),
+                'active_ad_accounts_count' => count($activeAdAccounts),
+                'business_info' => $tokenInfo['business_info'] ?? null,
+                'granular_scopes' => $tokenInfo['granular_scopes'] ?? [],
+                'missing_required_permissions' => $tokenInfo['missing_required_permissions'] ?? [],
+                'missing_recommended_permissions' => $tokenInfo['missing_recommended_permissions'] ?? [],
+                'warnings' => $warnings,
+                'is_valid' => true,
+                'validated_at' => now()->toIso8601String(),
+            ],
+            'auto_sync' => true,
+            'sync_frequency_minutes' => 15,
+        ];
+
+        if ($connection) {
+            // Restore if soft-deleted, then update
+            if ($connection->trashed()) {
+                $connection->restore();
+            }
+            $connection->update($connectionData);
+        } else {
+            // Create new record
+            $connection = PlatformConnection::create(array_merge([
                 'org_id' => $orgId,
                 'platform' => 'meta',
-                'account_id' => $tokenInfo['user_id'] ?? $request->input('ad_account_id') ?? 'system_user_' . Str::random(8),
-            ],
-            [
-                'account_name' => $request->input('account_name'),
-                'status' => $hasRequiredPermissions ? 'active' : 'warning',
-                'access_token' => $accessToken,
-                'token_expires_at' => $tokenInfo['expires_at'],
-                'scopes' => $tokenInfo['scopes'] ?? [],
-                'account_metadata' => [
-                    'token_type' => $tokenInfo['token_type'] ?? 'system_user',
-                    'is_system_user' => $tokenInfo['is_system_user'] ?? false,
-                    'is_never_expires' => $tokenInfo['is_never_expires'] ?? false,
-                    'app_id' => $tokenInfo['app_id'] ?? null,
-                    'user_id' => $tokenInfo['user_id'] ?? null,
-                    'user_name' => $tokenInfo['user_name'] ?? null,
-                    'application' => $tokenInfo['application'] ?? null,
-                    'data_access_expires_at' => $tokenInfo['data_access_expires_at']?->toIso8601String(),
-                    'issued_at' => $tokenInfo['issued_at']?->toIso8601String(),
-                    'ad_accounts' => $adAccounts,
-                    'ad_accounts_count' => count($adAccounts),
-                    'active_ad_accounts_count' => count($activeAdAccounts),
-                    'business_info' => $tokenInfo['business_info'] ?? null,
-                    'granular_scopes' => $tokenInfo['granular_scopes'] ?? [],
-                    'missing_required_permissions' => $tokenInfo['missing_required_permissions'] ?? [],
-                    'missing_recommended_permissions' => $tokenInfo['missing_recommended_permissions'] ?? [],
-                    'warnings' => $warnings,
-                    'is_valid' => true,
-                    'validated_at' => now()->toIso8601String(),
-                ],
-                'auto_sync' => true,
-                'sync_frequency_minutes' => 15,
-            ]
-        );
+                'account_id' => $accountId,
+            ], $connectionData));
+        }
 
         // Build success message
         $successMessage = 'Meta system user token saved successfully. Found ' . count($adAccounts) . ' ad account(s)';
