@@ -325,19 +325,20 @@ return [
     ],
 
     'tiktok_ads' => [
-        'name' => 'TikTok Ads',
+        'name' => 'TikTok Business',
         'enabled' => true,
         'oauth_version' => '2.0',
         'app_id' => env('TIKTOK_ADS_APP_ID'),
         'app_secret' => env('TIKTOK_ADS_APP_SECRET', env('TIKTOK_ADS_SECRET')),
-        'redirect_uri' => env('TIKTOK_ADS_REDIRECT_URI', env('APP_URL') . '/integrations/tiktok-ads/callback'),
+        'redirect_uri' => env('TIKTOK_ADS_REDIRECT_URI', env('APP_URL') . '/integrations/tiktok-business/callback'),
         'api_version' => env('TIKTOK_ADS_API_VERSION', 'v1.3'),
         'rate_limit' => env('TIKTOK_ADS_RATE_LIMIT', 100),
         'base_url' => 'https://business-api.tiktok.com/open_api/v1.3',
         'authorize_url' => 'https://business-api.tiktok.com/portal/auth',
         'token_url' => 'https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/',
         'advertiser_url' => 'https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/',
-        // Scopes are granted via TikTok Developer Portal app approval, not via OAuth request
+        // Note: TikTok Marketing API (Business API) does NOT use OAuth scopes in the authorization URL.
+        // Permissions are configured at the app level in TikTok Developer Portal.
         'features' => [
             'campaigns' => true,
             'ad_groups' => true,
@@ -346,6 +347,10 @@ return [
             'catalogs' => true,
             'audiences' => true,
             'reporting' => true,
+            'creative_management' => true,
+            'lead_management' => true,
+            'spark_ads' => true,
+            'automated_rules' => true,
         ],
         'notes' => [
             'token_expiry' => 'Access tokens do not expire unless revoked',

@@ -2282,21 +2282,15 @@ function publishModal() {
                         'Video may take 5-10 minutes to process on Instagram'
                     );
                 }
+                // YouTube video processing info - only show if fields are complete
                 if (this.selectedProfiles.some(p => p.platform === 'youtube')) {
-                    this.addPlatformWarning(
-                        'YouTube Video',
-                        'Please fill all required fields (Title, Description, Category)'
-                    );
-                }
-            }
-
-            // Check for missing required fields
-            if (this.selectedProfiles.some(p => p.platform === 'youtube')) {
-                if (!this.content.platforms.youtube?.video_title) {
-                    this.addPlatformWarning(
-                        'YouTube Required Field',
-                        'Video Title is required for YouTube uploads'
-                    );
+                    const ytContent = this.content.platforms.youtube;
+                    if (ytContent?.video_title?.trim()) {
+                        this.addPlatformWarning(
+                            'YouTube Video',
+                            'Video may take time to process on YouTube after upload'
+                        );
+                    }
                 }
             }
         },
