@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Social;
 
+use App\Jobs\Social\CheckTikTokPublishStatusJob;
 use App\Models\Social\SocialPost;
 use App\Services\Social\Publishers\PublisherFactory;
 use Illuminate\Bus\Queueable;
@@ -118,23 +119,53 @@ class PublishSocialPostJob implements ShouldQueue
             $elapsed = round((microtime(true) - $startTime) * 1000);
 
             if ($result['success']) {
-                $post->update([
-                    'status' => 'published',
-                    'published_at' => now(),
-                    'post_external_id' => $result['post_id'] ?? null,
-                    'permalink' => $result['permalink'] ?? null,
-                    'metadata' => array_merge($post->metadata ?? [], [
-                        'publish_duration_ms' => $elapsed,
-                        'published_via' => 'queue',
-                    ]),
-                ]);
+                // TikTok processes videos asynchronously - don't mark as published yet
+                if ($this->platform === 'tiktok' && !empty($result['post_id'])) {
+                    $post->update([
+                        'status' => 'processing', // TikTok is still processing
+                        'post_external_id' => $result['post_id'],
+                        'permalink' => $result['permalink'] ?? null,
+                        'metadata' => array_merge($post->metadata ?? [], [
+                            'publish_duration_ms' => $elapsed,
+                            'published_via' => 'queue',
+                            'tiktok_publish_id' => $result['post_id'],
+                            'tiktok_status_pending' => true,
+                        ]),
+                    ]);
 
-                Log::info('PublishSocialPostJob: Published successfully', [
-                    'post_id' => $this->postId,
-                    'platform' => $this->platform,
-                    'duration_ms' => $elapsed,
-                    'external_id' => $result['post_id'] ?? null,
-                ]);
+                    // Dispatch job to check TikTok status after processing
+                    CheckTikTokPublishStatusJob::dispatch(
+                        $this->postId,
+                        $this->orgId,
+                        $result['post_id'] // This is the publish_id from TikTok
+                    );
+
+                    Log::info('PublishSocialPostJob: TikTok upload complete, status check scheduled', [
+                        'post_id' => $this->postId,
+                        'platform' => $this->platform,
+                        'duration_ms' => $elapsed,
+                        'tiktok_publish_id' => $result['post_id'],
+                    ]);
+                } else {
+                    // Other platforms - mark as published immediately
+                    $post->update([
+                        'status' => 'published',
+                        'published_at' => now(),
+                        'post_external_id' => $result['post_id'] ?? null,
+                        'permalink' => $result['permalink'] ?? null,
+                        'metadata' => array_merge($post->metadata ?? [], [
+                            'publish_duration_ms' => $elapsed,
+                            'published_via' => 'queue',
+                        ]),
+                    ]);
+
+                    Log::info('PublishSocialPostJob: Published successfully', [
+                        'post_id' => $this->postId,
+                        'platform' => $this->platform,
+                        'duration_ms' => $elapsed,
+                        'external_id' => $result['post_id'] ?? null,
+                    ]);
+                }
             } else {
                 $this->markFailed($post, $result['message'] ?? 'Unknown error', $elapsed);
             }

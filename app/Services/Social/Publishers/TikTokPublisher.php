@@ -125,10 +125,51 @@ class TikTokPublisher extends AbstractPublisher
                 return $this->failure('Video file not found on server. Path: ' . ($videoPath ?? 'null'));
             }
 
+            // Validate video specs and auto-process if needed
+            $validation = $this->validateVideoSpecs($videoPath);
+
+            // If video doesn't meet requirements but can be fixed, process it
+            if (!$validation['valid'] && $validation['can_fix'] ?? false) {
+                $this->logInfo('Video needs processing for TikTok, auto-processing', [
+                    'original_path' => $videoPath,
+                    'issue' => $validation['error'],
+                ]);
+
+                try {
+                    $videoProcessingService = app(\App\Services\Media\VideoProcessingService::class);
+                    $orgId = $this->connection->org_id;
+                    $processed = $videoProcessingService->processVideoForPlatform($videoPath, $orgId, 'tiktok');
+
+                    // Use the processed video path
+                    $videoPath = $processed['processed_path']
+                        ? \Illuminate\Support\Facades\Storage::disk('public')->path($processed['processed_path'])
+                        : $videoPath;
+
+                    $this->logInfo('Video processed successfully for TikTok', [
+                        'processed_path' => $videoPath,
+                        'original_size' => $processed['original_size'] ?? 'unknown',
+                        'final_size' => "{$processed['width']}x{$processed['height']}",
+                    ]);
+
+                    // Re-validate after processing
+                    $validation = $this->validateVideoSpecs($videoPath);
+                } catch (\Exception $e) {
+                    $this->logError('Failed to auto-process video for TikTok', [
+                        'error' => $e->getMessage(),
+                    ]);
+                    return $this->failure('Video does not meet TikTok requirements and auto-processing failed: ' . $validation['error']);
+                }
+            }
+
+            if (!$validation['valid']) {
+                return $this->failure($validation['error']);
+            }
+
             $this->logInfo('Publishing video to TikTok via FILE_UPLOAD', [
                 'video_path' => $videoPath,
                 'file_size' => filesize($videoPath),
                 'content_preview' => substr($content, 0, 100),
+                'video_specs' => $validation['specs'],
             ]);
 
             // Get privacy level from options or use default
@@ -443,5 +484,138 @@ class TikTokPublisher extends AbstractPublisher
                 'exception' => get_class($e),
             ];
         }
+    }
+
+    /**
+     * Validate video specifications before upload.
+     *
+     * TikTok Requirements:
+     * - Resolution: Minimum 540x960 (9:16 recommended)
+     * - Duration: 3 seconds to 10 minutes
+     * - File size: Max 4GB
+     * - Format: MP4 or MOV with H.264 codec
+     * - Frame rate: 24-60 FPS
+     *
+     * @param string $videoPath Path to the video file
+     * @return array ['valid' => bool, 'error' => string|null, 'specs' => array]
+     */
+    protected function validateVideoSpecs(string $videoPath): array
+    {
+        $specs = [];
+
+        // Check file size first (max 4GB)
+        $fileSize = filesize($videoPath);
+        $maxSize = 4 * 1024 * 1024 * 1024; // 4GB
+        $specs['file_size'] = $fileSize;
+        $specs['file_size_mb'] = round($fileSize / 1024 / 1024, 2);
+
+        if ($fileSize > $maxSize) {
+            return [
+                'valid' => false,
+                'error' => 'Video file is too large for TikTok. Maximum size is 4GB. Your file is ' . round($fileSize / 1024 / 1024, 2) . 'MB.',
+                'specs' => $specs,
+            ];
+        }
+
+        // Use ffprobe to get video specs
+        $ffprobePath = 'ffprobe';
+        $cmd = "{$ffprobePath} -v quiet -print_format json -show_format -show_streams " . escapeshellarg($videoPath) . " 2>/dev/null";
+        $output = shell_exec($cmd);
+
+        if (!$output) {
+            $this->logWarning('Could not analyze video with ffprobe, skipping validation', [
+                'video_path' => $videoPath,
+            ]);
+            return [
+                'valid' => true,
+                'error' => null,
+                'specs' => $specs,
+                'warning' => 'Could not analyze video specs - proceeding with upload',
+            ];
+        }
+
+        $probeData = json_decode($output, true);
+
+        if (!$probeData || empty($probeData['streams'])) {
+            return [
+                'valid' => true,
+                'error' => null,
+                'specs' => $specs,
+                'warning' => 'Could not parse video specs - proceeding with upload',
+            ];
+        }
+
+        // Find video stream
+        $videoStream = null;
+        foreach ($probeData['streams'] as $stream) {
+            if ($stream['codec_type'] === 'video') {
+                $videoStream = $stream;
+                break;
+            }
+        }
+
+        if (!$videoStream) {
+            return [
+                'valid' => false,
+                'error' => 'No video stream found in file. Please ensure the file is a valid video.',
+                'specs' => $specs,
+            ];
+        }
+
+        // Extract specs
+        $width = $videoStream['width'] ?? 0;
+        $height = $videoStream['height'] ?? 0;
+        $codec = $videoStream['codec_name'] ?? 'unknown';
+        $duration = (float) ($probeData['format']['duration'] ?? 0);
+
+        $specs['width'] = $width;
+        $specs['height'] = $height;
+        $specs['codec'] = $codec;
+        $specs['duration'] = $duration;
+
+        // Validate resolution (minimum 540x960 for TikTok)
+        // TikTok requires either width >= 540 OR height >= 540
+        $minDimension = min($width, $height);
+        if ($minDimension < 540) {
+            return [
+                'valid' => false,
+                'can_fix' => true, // Can be fixed by upscaling
+                'error' => "Video resolution ({$width}x{$height}) is too small for TikTok. Minimum dimension should be 540 pixels.",
+                'specs' => $specs,
+            ];
+        }
+
+        // Validate duration (3 seconds to 10 minutes)
+        if ($duration < 3) {
+            return [
+                'valid' => false,
+                'error' => "Video duration ({$duration}s) is too short for TikTok. Minimum duration is 3 seconds.",
+                'specs' => $specs,
+            ];
+        }
+
+        if ($duration > 600) { // 10 minutes
+            return [
+                'valid' => false,
+                'error' => "Video duration (" . round($duration / 60, 1) . " minutes) exceeds TikTok's 10 minute limit.",
+                'specs' => $specs,
+            ];
+        }
+
+        // Validate codec (H.264 recommended)
+        $validCodecs = ['h264', 'hevc', 'h265'];
+        if (!in_array(strtolower($codec), $validCodecs)) {
+            $this->logWarning('Video codec may not be optimal for TikTok', [
+                'codec' => $codec,
+                'recommended' => 'h264',
+            ]);
+            // Don't fail, just warn - TikTok might still accept it
+        }
+
+        return [
+            'valid' => true,
+            'error' => null,
+            'specs' => $specs,
+        ];
     }
 }
