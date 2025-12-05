@@ -93,7 +93,7 @@ class Subscription extends BaseModel
     /**
      * Check if subscription is on trial.
      */
-    public function onTrial(): bool
+    public function isOnTrial(): bool
     {
         return $this->status === self::STATUS_TRIAL
             && $this->trial_ends_at
@@ -122,7 +122,7 @@ class Subscription extends BaseModel
      */
     public function isValid(): bool
     {
-        return $this->isActive() || $this->onTrial();
+        return $this->isActive() || $this->isOnTrial();
     }
 
     /**
