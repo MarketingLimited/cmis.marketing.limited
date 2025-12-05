@@ -324,7 +324,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Ads accounts from API');
 
             try {
@@ -465,7 +465,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Analytics properties from API');
 
             try {
@@ -571,7 +571,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Business Profiles from API');
 
             try {
@@ -669,7 +669,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Tag Manager containers from API');
 
             try {
@@ -751,7 +751,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Merchant Center accounts from NEW Merchant API');
 
             try {
@@ -869,7 +869,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Search Console sites from API');
 
             try {
@@ -917,7 +917,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Calendars from API');
 
             try {
@@ -971,7 +971,7 @@ class GoogleAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
             Log::info('Fetching Google Drive folders from API');
 
             try {
