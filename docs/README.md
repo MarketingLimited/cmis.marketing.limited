@@ -95,6 +95,16 @@ Understand CMIS architecture and design:
 
 - **[Campaign Management](features/campaigns/)** - Campaign features
 
+### Super Admin Dashboard
+**Location:** [`docs/features/super-admin-dashboard.md`](features/super-admin-dashboard.md)
+
+- **[Super Admin Dashboard](features/super-admin-dashboard.md)** - Comprehensive platform management dashboard
+  - Organization management (suspend, block, restore, bulk actions)
+  - User management with impersonation
+  - Plans & Subscriptions CRUD
+  - API Analytics and monitoring
+  - System health and logs
+
 ---
 
 ## API Documentation
