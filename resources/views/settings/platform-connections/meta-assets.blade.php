@@ -100,9 +100,17 @@
                                 </p>
                             </div>
                         </div>
-                        <button type="button" x-show="errors.businesses" @click="loadBusinesses()" class="text-sm text-indigo-600 hover:text-indigo-800">
-                            <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" x-show="errors.businesses" @click="loadBusinesses()" class="text-sm text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
+                            </button>
+                            <button type="button" @click="refreshBusinesses()" :disabled="refreshing.businesses || loading.businesses"
+                                    class="text-sm text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.businesses }"></i>
+                                <span x-show="!refreshing.businesses">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.businesses">{{ __('Refreshing...') }}</span>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Loading Skeleton --}}
@@ -197,6 +205,12 @@
                         <div class="flex items-center gap-2">
                             <button type="button" x-show="errors.pages" @click="loadPages()" class="text-sm text-blue-600 hover:text-blue-800">
                                 <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
+                            </button>
+                            <button type="button" @click="refreshPages()" :disabled="refreshing.pages || loading.pages"
+                                    class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.pages }"></i>
+                                <span x-show="!refreshing.pages">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.pages">{{ __('Refreshing...') }}</span>
                             </button>
                             <button type="button" @click="showManualPage = !showManualPage" class="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
                                 <i class="fas fa-plus"></i>{{ __('Add manually') }}
@@ -317,6 +331,12 @@
                             <button type="button" x-show="errors.instagram" @click="loadInstagramAccounts()" class="text-sm text-pink-600 hover:text-pink-800">
                                 <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
                             </button>
+                            <button type="button" @click="refreshInstagram()" :disabled="refreshing.instagram || loading.instagram"
+                                    class="text-sm text-pink-600 hover:text-pink-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.instagram }"></i>
+                                <span x-show="!refreshing.instagram">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.instagram">{{ __('Refreshing...') }}</span>
+                            </button>
                             <button type="button" @click="showManualInstagram = !showManualInstagram" class="text-sm text-pink-600 hover:text-pink-800">
                                 <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
                             </button>
@@ -432,9 +452,17 @@
                                 </p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualThreads = !showManualThreads" class="text-sm text-gray-600 hover:text-gray-800">
-                            <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="refreshThreads()" :disabled="refreshing.threads || loading.threads"
+                                    class="text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.threads }"></i>
+                                <span x-show="!refreshing.threads">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.threads">{{ __('Refreshing...') }}</span>
+                            </button>
+                            <button type="button" @click="showManualThreads = !showManualThreads" class="text-sm text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -555,6 +583,12 @@
                             <button type="button" x-show="errors.adAccounts" @click="loadAdAccounts()" class="text-sm text-green-600 hover:text-green-800">
                                 <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
                             </button>
+                            <button type="button" @click="refreshAdAccounts()" :disabled="refreshing.adAccounts || loading.adAccounts"
+                                    class="text-sm text-green-600 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.adAccounts }"></i>
+                                <span x-show="!refreshing.adAccounts">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.adAccounts">{{ __('Refreshing...') }}</span>
+                            </button>
                             <button type="button" @click="showManualAdAccount = !showManualAdAccount" class="text-sm text-green-600 hover:text-green-800">
                                 <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
                             </button>
@@ -666,9 +700,17 @@
                                 </p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualPixel = !showManualPixel" class="text-sm text-purple-600 hover:text-purple-800">
-                            <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="refreshPixels()" :disabled="refreshing.pixels || loading.pixels"
+                                    class="text-sm text-purple-600 hover:text-purple-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.pixels }"></i>
+                                <span x-show="!refreshing.pixels">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.pixels">{{ __('Refreshing...') }}</span>
+                            </button>
+                            <button type="button" @click="showManualPixel = !showManualPixel" class="text-sm text-purple-600 hover:text-purple-800">
+                                <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Loading Skeleton --}}
@@ -761,9 +803,17 @@
                                 </p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualCatalog = !showManualCatalog" class="text-sm text-orange-600 hover:text-orange-800">
-                            <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="refreshCatalogs()" :disabled="refreshing.catalogs || loading.catalogs"
+                                    class="text-sm text-orange-600 hover:text-orange-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.catalogs }"></i>
+                                <span x-show="!refreshing.catalogs">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.catalogs">{{ __('Refreshing...') }}</span>
+                            </button>
+                            <button type="button" @click="showManualCatalog = !showManualCatalog" class="text-sm text-orange-600 hover:text-orange-800">
+                                <i class="fas fa-plus me-1"></i>{{ __('Add manually') }}
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Loading Skeleton --}}
@@ -859,9 +909,17 @@
                                 </p>
                             </div>
                         </div>
-                        <button type="button" @click="showManualWhatsapp = !showManualWhatsapp" class="text-sm text-green-600 hover:text-green-800">
-                            <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Add manually') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="refreshWhatsapp()" :disabled="refreshing.whatsapp || loading.whatsapp"
+                                    class="text-sm text-green-600 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.whatsapp }"></i>
+                                <span x-show="!refreshing.whatsapp">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.whatsapp">{{ __('Refreshing...') }}</span>
+                            </button>
+                            <button type="button" @click="showManualWhatsapp = !showManualWhatsapp" class="text-sm text-green-600 hover:text-green-800">
+                                <i class="fas fa-plus {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Add manually') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -970,6 +1028,17 @@
                                 </p>
                             </div>
                         </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" x-show="errors.customConversions" @click="loadCustomConversions()" class="text-sm text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
+                            </button>
+                            <button type="button" @click="refreshCustomConversions()" :disabled="refreshing.customConversions || loading.customConversions"
+                                    class="text-sm text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.customConversions }"></i>
+                                <span x-show="!refreshing.customConversions">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.customConversions">{{ __('Refreshing...') }}</span>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Loading Skeleton --}}
@@ -1049,6 +1118,17 @@
                                     <span x-show="errors.offlineEventSets" class="text-red-600">{{ __('Failed to load') }}</span>
                                 </p>
                             </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" x-show="errors.offlineEventSets" @click="loadOfflineEventSets()" class="text-sm text-rose-600 hover:text-rose-800">
+                                <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
+                            </button>
+                            <button type="button" @click="refreshOfflineEventSets()" :disabled="refreshing.offlineEventSets || loading.offlineEventSets"
+                                    class="text-sm text-rose-600 hover:text-rose-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1">
+                                <i class="fas fa-sync-alt" :class="{ 'animate-spin': refreshing.offlineEventSets }"></i>
+                                <span x-show="!refreshing.offlineEventSets">{{ __('Refresh') }}</span>
+                                <span x-show="refreshing.offlineEventSets">{{ __('Refreshing...') }}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1221,6 +1301,20 @@ function metaAssetsPage() {
             whatsapp: null,
             customConversions: null,
             offlineEventSets: null,
+        },
+
+        // Individual refresh states (for per-section refresh buttons)
+        refreshing: {
+            businesses: false,
+            pages: false,
+            instagram: false,
+            threads: false,
+            adAccounts: false,
+            pixels: false,
+            catalogs: false,
+            whatsapp: false,
+            customConversions: false,
+            offlineEventSets: false,
         },
 
         // Asset data (loaded via AJAX)
@@ -1438,12 +1532,14 @@ function metaAssetsPage() {
         },
 
         // Load Pages
-        async loadPages() {
+        async loadPages(forceRefresh = false) {
             this.loading.pages = true;
             this.errors.pages = null;
+            if (forceRefresh) this.refreshing.pages = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/pages`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/pages?refresh=true` : `${this.apiBaseUrl}/pages`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1458,16 +1554,24 @@ function metaAssetsPage() {
                 console.error('Failed to load pages:', error);
             } finally {
                 this.loading.pages = false;
+                this.refreshing.pages = false;
             }
         },
 
+        // Refresh Pages (force cache refresh)
+        async refreshPages() {
+            await this.loadPages(true);
+        },
+
         // Load Business Managers
-        async loadBusinesses() {
+        async loadBusinesses(forceRefresh = false) {
             this.loading.businesses = true;
             this.errors.businesses = null;
+            if (forceRefresh) this.refreshing.businesses = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/businesses`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/businesses?refresh=true` : `${this.apiBaseUrl}/businesses`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1480,16 +1584,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Business Managers:', error);
             } finally {
                 this.loading.businesses = false;
+                this.refreshing.businesses = false;
             }
         },
 
+        // Refresh Business Managers (force cache refresh)
+        async refreshBusinesses() {
+            await this.loadBusinesses(true);
+        },
+
         // Load Instagram
-        async loadInstagramAccounts() {
+        async loadInstagramAccounts(forceRefresh = false) {
             this.loading.instagram = true;
             this.errors.instagram = null;
+            if (forceRefresh) this.refreshing.instagram = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/instagram`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/instagram?refresh=true` : `${this.apiBaseUrl}/instagram`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1504,16 +1616,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Instagram:', error);
             } finally {
                 this.loading.instagram = false;
+                this.refreshing.instagram = false;
             }
         },
 
+        // Refresh Instagram (force cache refresh)
+        async refreshInstagram() {
+            await this.loadInstagramAccounts(true);
+        },
+
         // Load Threads
-        async loadThreadsAccounts() {
+        async loadThreadsAccounts(forceRefresh = false) {
             this.loading.threads = true;
             this.errors.threads = null;
+            if (forceRefresh) this.refreshing.threads = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/threads`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/threads?refresh=true` : `${this.apiBaseUrl}/threads`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1525,16 +1645,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Threads:', error);
             } finally {
                 this.loading.threads = false;
+                this.refreshing.threads = false;
             }
         },
 
+        // Refresh Threads (force cache refresh)
+        async refreshThreads() {
+            await this.loadThreadsAccounts(true);
+        },
+
         // Load Ad Accounts
-        async loadAdAccounts() {
+        async loadAdAccounts(forceRefresh = false) {
             this.loading.adAccounts = true;
             this.errors.adAccounts = null;
+            if (forceRefresh) this.refreshing.adAccounts = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/ad-accounts`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/ad-accounts?refresh=true` : `${this.apiBaseUrl}/ad-accounts`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1549,16 +1677,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Ad Accounts:', error);
             } finally {
                 this.loading.adAccounts = false;
+                this.refreshing.adAccounts = false;
             }
         },
 
+        // Refresh Ad Accounts (force cache refresh)
+        async refreshAdAccounts() {
+            await this.loadAdAccounts(true);
+        },
+
         // Load Pixels
-        async loadPixels() {
+        async loadPixels(forceRefresh = false) {
             this.loading.pixels = true;
             this.errors.pixels = null;
+            if (forceRefresh) this.refreshing.pixels = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/pixels`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/pixels?refresh=true` : `${this.apiBaseUrl}/pixels`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1571,16 +1707,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Pixels:', error);
             } finally {
                 this.loading.pixels = false;
+                this.refreshing.pixels = false;
             }
         },
 
+        // Refresh Pixels (force cache refresh)
+        async refreshPixels() {
+            await this.loadPixels(true);
+        },
+
         // Load Catalogs
-        async loadCatalogs() {
+        async loadCatalogs(forceRefresh = false) {
             this.loading.catalogs = true;
             this.errors.catalogs = null;
+            if (forceRefresh) this.refreshing.catalogs = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/catalogs`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/catalogs?refresh=true` : `${this.apiBaseUrl}/catalogs`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1593,16 +1737,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Catalogs:', error);
             } finally {
                 this.loading.catalogs = false;
+                this.refreshing.catalogs = false;
             }
         },
 
+        // Refresh Catalogs (force cache refresh)
+        async refreshCatalogs() {
+            await this.loadCatalogs(true);
+        },
+
         // Load WhatsApp
-        async loadWhatsappAccounts() {
+        async loadWhatsappAccounts(forceRefresh = false) {
             this.loading.whatsapp = true;
             this.errors.whatsapp = null;
+            if (forceRefresh) this.refreshing.whatsapp = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/whatsapp`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/whatsapp?refresh=true` : `${this.apiBaseUrl}/whatsapp`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1615,16 +1767,24 @@ function metaAssetsPage() {
                 console.error('Failed to load WhatsApp:', error);
             } finally {
                 this.loading.whatsapp = false;
+                this.refreshing.whatsapp = false;
             }
         },
 
+        // Refresh WhatsApp (force cache refresh)
+        async refreshWhatsapp() {
+            await this.loadWhatsappAccounts(true);
+        },
+
         // Load Custom Conversions
-        async loadCustomConversions() {
+        async loadCustomConversions(forceRefresh = false) {
             this.loading.customConversions = true;
             this.errors.customConversions = null;
+            if (forceRefresh) this.refreshing.customConversions = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/custom-conversions`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/custom-conversions?refresh=true` : `${this.apiBaseUrl}/custom-conversions`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1637,16 +1797,24 @@ function metaAssetsPage() {
                 console.error('Failed to load Custom Conversions:', error);
             } finally {
                 this.loading.customConversions = false;
+                this.refreshing.customConversions = false;
             }
         },
 
+        // Refresh Custom Conversions (force cache refresh)
+        async refreshCustomConversions() {
+            await this.loadCustomConversions(true);
+        },
+
         // Load Offline Event Sets
-        async loadOfflineEventSets() {
+        async loadOfflineEventSets(forceRefresh = false) {
             this.loading.offlineEventSets = true;
             this.errors.offlineEventSets = null;
+            if (forceRefresh) this.refreshing.offlineEventSets = true;
 
             try {
-                const response = await fetch(`${this.apiBaseUrl}/offline-event-sets`, {
+                const url = forceRefresh ? `${this.apiBaseUrl}/offline-event-sets?refresh=true` : `${this.apiBaseUrl}/offline-event-sets`;
+                const response = await fetch(url, {
                     credentials: 'same-origin',
                 });
                 const data = await response.json();
@@ -1659,7 +1827,13 @@ function metaAssetsPage() {
                 console.error('Failed to load Offline Event Sets:', error);
             } finally {
                 this.loading.offlineEventSets = false;
+                this.refreshing.offlineEventSets = false;
             }
+        },
+
+        // Refresh Offline Event Sets (force cache refresh)
+        async refreshOfflineEventSets() {
+            await this.loadOfflineEventSets(true);
         },
 
         // Bulk selection methods
