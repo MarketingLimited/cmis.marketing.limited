@@ -48,7 +48,8 @@ return new class extends Migration
                     is_default BOOLEAN DEFAULT false,
                     sort_order INTEGER DEFAULT 0,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    deleted_at TIMESTAMP WITH TIME ZONE
                 )
             ");
 
