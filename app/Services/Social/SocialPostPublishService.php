@@ -900,7 +900,7 @@ class SocialPostPublishService
             'tiktok' => 'tiktok',
             'twitter', 'x' => 'twitter',
             'linkedin' => 'linkedin',
-            'youtube' => 'youtube',
+            'youtube' => 'google', // YouTube uses Google OAuth connection
             default => $platform,
         };
     }
@@ -926,6 +926,12 @@ class SocialPostPublishService
                 $connection
             ),
             'tiktok' => $this->publishToTikTok(
+                $postId,
+                $content,
+                $mediaUrls,
+                $connection
+            ),
+            'youtube' => $this->publishToYouTube(
                 $postId,
                 $content,
                 $mediaUrls,
@@ -1021,6 +1027,178 @@ class SocialPostPublishService
             return [
                 'success' => false,
                 'message' => 'TikTok publishing failed: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Publish content to YouTube
+     *
+     * Uses YouTube Data API v3 for video uploads.
+     * Requires: Google OAuth connection with YouTube scopes.
+     */
+    public function publishToYouTube(
+        string $postId,
+        string $content,
+        array $mediaUrls,
+        PlatformConnection $connection
+    ): array {
+        try {
+            Log::info('Publishing to YouTube', [
+                'post_id' => $postId,
+                'has_media' => !empty($mediaUrls),
+                'media_count' => count($mediaUrls),
+            ]);
+
+            // YouTube requires video content
+            if (empty($mediaUrls)) {
+                return [
+                    'success' => false,
+                    'message' => 'YouTube requires a video. Please add a video to your post.',
+                ];
+            }
+
+            // Find video media
+            $videoMedia = null;
+            foreach ($mediaUrls as $media) {
+                if (($media['type'] ?? 'image') === 'video') {
+                    $videoMedia = $media;
+                    break;
+                }
+            }
+
+            if (!$videoMedia) {
+                return [
+                    'success' => false,
+                    'message' => 'YouTube requires a video. No video found in media attachments.',
+                ];
+            }
+
+            // Check if Google connection has YouTube scopes
+            $scopes = $connection->scopes ?? [];
+            $hasYouTubeScope = false;
+            foreach ($scopes as $scope) {
+                if (str_contains($scope, 'youtube')) {
+                    $hasYouTubeScope = true;
+                    break;
+                }
+            }
+
+            if (!$hasYouTubeScope) {
+                return [
+                    'success' => false,
+                    'message' => 'YouTube authorization is required. Please go to Settings > Platform Connections > Google Assets and connect your YouTube channel.',
+                ];
+            }
+
+            // Get local file path from URL
+            $videoPath = $this->getLocalFilePath($videoMedia);
+            if (!$videoPath || !file_exists($videoPath)) {
+                return [
+                    'success' => false,
+                    'message' => 'Video file not found on server. Please re-upload the video.',
+                ];
+            }
+
+            $accessToken = $connection->access_token;
+
+            // Get post metadata for title
+            $postMetadata = DB::table('cmis.social_posts')
+                ->where('id', $postId)
+                ->first();
+
+            $metadata = $postMetadata->metadata ? json_decode($postMetadata->metadata, true) : [];
+            $title = $metadata['title'] ?? substr($content, 0, 100) ?: 'Video from CMIS';
+            $description = $content;
+            $privacyStatus = $metadata['privacy_status'] ?? 'public';
+
+            // Step 1: Initialize resumable upload
+            $fileSize = filesize($videoPath);
+            $initResponse = Http::timeout(30)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                    'X-Upload-Content-Type' => 'video/*',
+                    'X-Upload-Content-Length' => $fileSize,
+                ])
+                ->post('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', [
+                    'snippet' => [
+                        'title' => $title,
+                        'description' => $description,
+                        'categoryId' => '22', // People & Blogs
+                    ],
+                    'status' => [
+                        'privacyStatus' => $privacyStatus,
+                        'selfDeclaredMadeForKids' => false,
+                    ],
+                ]);
+
+            if (!$initResponse->successful()) {
+                $error = $initResponse->json('error.message', 'Failed to initialize YouTube upload');
+                Log::error('YouTube upload init failed', [
+                    'status' => $initResponse->status(),
+                    'error' => $error,
+                    'response' => $initResponse->json(),
+                ]);
+                return ['success' => false, 'message' => $error];
+            }
+
+            $uploadUrl = $initResponse->header('Location');
+            if (!$uploadUrl) {
+                return ['success' => false, 'message' => 'No upload URL returned from YouTube'];
+            }
+
+            // Step 2: Upload video file
+            Log::info('YouTube uploading video file', [
+                'file_size' => $fileSize,
+                'upload_url' => $uploadUrl,
+            ]);
+
+            $videoContent = file_get_contents($videoPath);
+            $uploadResponse = Http::timeout(600) // 10 minutes for large videos
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'video/*',
+                    'Content-Length' => strlen($videoContent),
+                ])
+                ->withBody($videoContent, 'video/*')
+                ->put($uploadUrl);
+
+            if (!$uploadResponse->successful()) {
+                $error = $uploadResponse->json('error.message', 'Video upload failed');
+                Log::error('YouTube video upload failed', [
+                    'status' => $uploadResponse->status(),
+                    'error' => $error,
+                ]);
+                return ['success' => false, 'message' => $error];
+            }
+
+            $videoId = $uploadResponse->json('id');
+            $videoUrl = "https://www.youtube.com/watch?v={$videoId}";
+
+            Log::info('YouTube publish successful', [
+                'post_id' => $postId,
+                'video_id' => $videoId,
+                'url' => $videoUrl,
+            ]);
+
+            return [
+                'success' => true,
+                'post_id' => $videoId,
+                'permalink' => $videoUrl,
+                'message' => 'Published to YouTube successfully',
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('YouTube publishing exception', [
+                'post_id' => $postId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'YouTube publishing failed: ' . $e->getMessage(),
             ];
         }
     }
