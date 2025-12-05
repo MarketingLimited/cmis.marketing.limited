@@ -107,10 +107,13 @@ class SuperAdminUserController extends Controller
             ->withCount('orgs')
             ->findOrFail($userId);
 
+        // Deduplicate orgs (user may have multiple roles in same org)
+        $user->setRelation('orgs', $user->orgs->unique('org_id')->values());
+
         // Get user's activity stats
         // Note: platform_api_calls tracks by org_id, not user_id
         // So we count API calls across all organizations the user belongs to
-        $userOrgIds = $user->orgs->pluck('org_id')->toArray();
+        $userOrgIds = $user->orgs->pluck('org_id')->unique()->toArray();
         $activityStats = [
             'api_calls_total' => $userOrgIds ? DB::table('cmis.platform_api_calls')
                 ->whereIn('org_id', $userOrgIds)
