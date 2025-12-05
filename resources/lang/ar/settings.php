@@ -1211,6 +1211,7 @@ return [
     'asset_type_search_console' => 'Search Console',
     'asset_type_calendar' => 'التقويم',
     'asset_type_drive' => 'Drive',
+    'asset_type_tiktok_account' => 'حساب TikTok',
 
     // Common Action Labels
     'edit_label' => 'تعديل',
@@ -1279,6 +1280,7 @@ return [
     'tiktok_business_center' => 'مركز أعمال تيك توك',
     'tiktok_business_connected_successfully' => 'تم ربط TikTok Business بنجاح. الآن اختر أصولك.',
     'select_tiktok_business_assets' => 'اختر أصول TikTok Business',
+    'select_tiktok_assets' => 'اختر أصول TikTok',
     'tiktok_business_assets' => 'أصول TikTok Business',
     'configure_tiktok_business_assets' => 'تكوين أصول TikTok Business',
     'select_business_assets_desc' => 'اختر الحسابات الإعلانية والبكسلات والكتالوجات التي تريد إدارتها من هذه المنظمة.',

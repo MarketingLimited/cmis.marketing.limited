@@ -925,6 +925,7 @@ return [
     'asset_type_search_console' => 'Search Console',
     'asset_type_calendar' => 'Calendar',
     'asset_type_drive' => 'Drive',
+    'asset_type_tiktok_account' => 'TikTok Account',
 
     // Common Action Labels
     'edit_label' => 'Edit',
@@ -993,6 +994,7 @@ return [
     'tiktok_business_center' => 'TikTok Business Center',
     'tiktok_business_connected_successfully' => 'TikTok Business connected successfully. Now select your assets.',
     'select_tiktok_business_assets' => 'Select TikTok Business Assets',
+    'select_tiktok_assets' => 'Select TikTok Assets',
     'tiktok_business_assets' => 'TikTok Business Assets',
     'configure_tiktok_business_assets' => 'Configure TikTok Business Assets',
     'select_business_assets_desc' => 'Select the ad accounts, pixels, and catalogs you want to manage from this organization.',
