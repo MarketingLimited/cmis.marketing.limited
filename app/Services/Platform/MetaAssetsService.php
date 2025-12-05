@@ -104,125 +104,118 @@ class MetaAssetsService
     }
 
     /**
-     * Get Facebook Pages (unlimited, with pagination).
+     * Fetch ALL user assets in ONE API call (pages + instagram).
+     * Uses field expansion to get Instagram details embedded in the pages response.
      */
-    public function getPages(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    private function getAllUserAssets(string $accessToken, string $connectionId): array
     {
-        $cacheKey = $this->getCacheKey($connectionId, 'pages');
-
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
+        $cacheKey = $this->getCacheKey($connectionId, 'all_user_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching Facebook Pages from Meta API (with pagination)');
+            Log::info('Fetching ALL user assets from Meta API (single request with field expansion)');
 
-            $rawPages = $this->fetchAllPages(
-                self::BASE_URL . '/' . self::API_VERSION . '/me/accounts',
-                $accessToken,
-                [
-                    'fields' => 'id,name,category,picture{url},access_token,instagram_business_account',
-                ]
-            );
+            try {
+                // ONE API call to get pages with embedded Instagram accounts
+                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                    self::BASE_URL . '/' . self::API_VERSION . '/me/accounts',
+                    [
+                        'access_token' => $accessToken,
+                        'fields' => implode(',', [
+                            'id',
+                            'name',
+                            'category',
+                            'picture{url}',
+                            'access_token',
+                            'instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}',
+                        ]),
+                        'limit' => 100,
+                    ]
+                );
 
-            $pages = array_map(function ($page) {
+                if (!$response->successful()) {
+                    Log::warning('Failed to fetch user assets', [
+                        'error' => $response->json('error', []),
+                    ]);
+                    return ['pages' => [], 'instagram' => []];
+                }
+
+                $rawPages = $response->json('data', []);
+
+                // Parse pages and extract Instagram accounts
+                $pages = [];
+                $instagramAccounts = [];
+
+                foreach ($rawPages as $page) {
+                    // Store page info
+                    $pages[] = [
+                        'id' => $page['id'],
+                        'name' => $page['name'] ?? 'Unknown Page',
+                        'category' => $page['category'] ?? null,
+                        'picture' => $page['picture']['data']['url'] ?? null,
+                        'has_instagram' => isset($page['instagram_business_account']),
+                        'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                    ];
+
+                    // Extract Instagram account if present
+                    if (isset($page['instagram_business_account'])) {
+                        $ig = $page['instagram_business_account'];
+                        $existingIds = array_column($instagramAccounts, 'id');
+                        if (!in_array($ig['id'], $existingIds)) {
+                            $instagramAccounts[] = [
+                                'id' => $ig['id'],
+                                'username' => $ig['username'] ?? null,
+                                'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                'followers_count' => $ig['followers_count'] ?? 0,
+                                'media_count' => $ig['media_count'] ?? 0,
+                                'connected_page_id' => $page['id'],
+                                'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                            ];
+                        }
+                    }
+                }
+
+                Log::info('ALL user assets fetched in single API call', [
+                    'pages' => count($pages),
+                    'instagram_accounts' => count($instagramAccounts),
+                    'api_calls' => 1,
+                ]);
+
                 return [
-                    'id' => $page['id'],
-                    'name' => $page['name'] ?? 'Unknown Page',
-                    'category' => $page['category'] ?? null,
-                    'picture' => $page['picture']['data']['url'] ?? null,
-                    'has_instagram' => isset($page['instagram_business_account']),
-                    'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                    'pages' => $pages,
+                    'instagram' => $instagramAccounts,
                 ];
-            }, $rawPages);
-
-            Log::info('Facebook Pages fetched', ['count' => count($pages)]);
-            return $pages;
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch user assets', ['error' => $e->getMessage()]);
+                return ['pages' => [], 'instagram' => []];
+            }
         });
     }
 
     /**
-     * Get Instagram Business accounts (unlimited, with pagination).
+     * Get Facebook Pages (uses shared cache from getAllUserAssets - 0 extra API calls).
+     */
+    public function getPages(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_user_assets'));
+        }
+
+        $allAssets = $this->getAllUserAssets($accessToken, $connectionId);
+        return $allAssets['pages'] ?? [];
+    }
+
+    /**
+     * Get Instagram Business accounts (uses shared cache from getAllUserAssets - 0 extra API calls).
      */
     public function getInstagramAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
-        $cacheKey = $this->getCacheKey($connectionId, 'instagram');
-
         if ($forceRefresh) {
-            Cache::forget($cacheKey);
+            Cache::forget($this->getCacheKey($connectionId, 'all_user_assets'));
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Instagram accounts from Meta API');
-
-            $instagramAccounts = [];
-
-            // First get pages with Instagram
-            $pages = $this->getPages($connectionId, $accessToken, false);
-
-            // Fetch Instagram details for each page with connected IG
-            foreach ($pages as $page) {
-                if (!empty($page['instagram_id'])) {
-                    try {
-                        $response = Http::timeout(15)->get(
-                            self::BASE_URL . '/' . self::API_VERSION . '/' . $page['instagram_id'],
-                            [
-                                'access_token' => $accessToken,
-                                'fields' => 'id,username,name,profile_picture_url,followers_count,media_count',
-                            ]
-                        );
-
-                        if ($response->successful()) {
-                            $igData = $response->json();
-                            $instagramAccounts[] = [
-                                'id' => $igData['id'],
-                                'username' => $igData['username'] ?? null,
-                                'name' => $igData['name'] ?? $igData['username'] ?? 'Unknown',
-                                'profile_picture' => $igData['profile_picture_url'] ?? null,
-                                'followers_count' => $igData['followers_count'] ?? 0,
-                                'media_count' => $igData['media_count'] ?? 0,
-                                'connected_page_id' => $page['id'],
-                                'connected_page_name' => $page['name'],
-                            ];
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Failed to fetch Instagram account details', [
-                            'instagram_id' => $page['instagram_id'],
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-            }
-
-            // Also fetch direct Instagram accounts via pagination
-            $directAccounts = $this->fetchAllPages(
-                self::BASE_URL . '/' . self::API_VERSION . '/me/instagram_accounts',
-                $accessToken,
-                [
-                    'fields' => 'id,username,name,profile_picture_url,followers_count',
-                ]
-            );
-
-            foreach ($directAccounts as $igAccount) {
-                // Avoid duplicates
-                $existingIds = array_column($instagramAccounts, 'id');
-                if (!in_array($igAccount['id'], $existingIds)) {
-                    $instagramAccounts[] = [
-                        'id' => $igAccount['id'],
-                        'username' => $igAccount['username'] ?? null,
-                        'name' => $igAccount['name'] ?? $igAccount['username'] ?? 'Unknown',
-                        'profile_picture' => $igAccount['profile_picture_url'] ?? null,
-                        'followers_count' => $igAccount['followers_count'] ?? 0,
-                        'media_count' => 0,
-                        'connected_page_id' => null,
-                        'connected_page_name' => null,
-                    ];
-                }
-            }
-
-            Log::info('Instagram accounts fetched', ['count' => count($instagramAccounts)]);
-            return $instagramAccounts;
-        });
+        $allAssets = $this->getAllUserAssets($accessToken, $connectionId);
+        return $allAssets['instagram'] ?? [];
     }
 
     /**
@@ -307,120 +300,171 @@ class MetaAssetsService
     }
 
     /**
-     * Get Meta Ad Accounts (unlimited, with pagination).
+     * Fetch ALL ad account assets in ONE API call (ad accounts + pixels + custom conversions).
+     * Uses field expansion to get nested data in a single request.
      */
-    public function getAdAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    private function getAllAdAccountAssets(string $accessToken, string $connectionId): array
     {
-        $cacheKey = $this->getCacheKey($connectionId, 'ad_accounts');
-
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
+        $cacheKey = $this->getCacheKey($connectionId, 'all_adaccount_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching Ad Accounts from Meta API (with pagination)');
+            Log::info('Fetching ALL ad account assets from Meta API (single request with field expansion)');
 
-            $fields = implode(',', [
-                'id', 'name', 'account_id', 'account_status', 'disable_reason',
-                'currency', 'timezone_name', 'timezone_id', 'business_name', 'business',
-                'spend_cap', 'amount_spent', 'balance', 'owner', 'funding_source',
-                'funding_source_details', 'created_time', 'capabilities',
-                'is_prepay_account', 'min_campaign_group_spend_cap', 'min_daily_budget',
-            ]);
+            try {
+                // ONE API call to get ad accounts with embedded pixels and custom conversions
+                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                    self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
+                    [
+                        'access_token' => $accessToken,
+                        'fields' => implode(',', [
+                            'id',
+                            'name',
+                            'account_id',
+                            'account_status',
+                            'disable_reason',
+                            'currency',
+                            'timezone_name',
+                            'timezone_id',
+                            'business_name',
+                            'business',
+                            'spend_cap',
+                            'amount_spent',
+                            'balance',
+                            'funding_source_details',
+                            'created_time',
+                            'capabilities',
+                            'is_prepay_account',
+                            'min_daily_budget',
+                            'adspixels.limit(50){id,name,creation_time,last_fired_time}',
+                            'customconversions.limit(50){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
+                        ]),
+                        'limit' => 100,
+                    ]
+                );
 
-            $rawAccounts = $this->fetchAllPages(
-                self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
-                $accessToken,
-                ['fields' => $fields]
-            );
+                if (!$response->successful()) {
+                    Log::warning('Failed to fetch ad account assets', [
+                        'error' => $response->json('error', []),
+                    ]);
+                    return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
+                }
 
-            $accounts = array_map(function ($account) {
-                $statusCode = $account['account_status'] ?? 0;
-                $disableReason = $account['disable_reason'] ?? null;
+                $rawAccounts = $response->json('data', []);
 
-                return [
-                    'id' => $account['id'],
-                    'account_id' => $account['account_id'] ?? str_replace('act_', '', $account['id']),
-                    'name' => $account['name'] ?? 'Unknown',
-                    'business_name' => $account['business_name'] ?? null,
-                    'business_id' => $account['business']['id'] ?? null,
-                    'currency' => $account['currency'] ?? 'USD',
-                    'timezone' => $account['timezone_name'] ?? 'UTC',
-                    'timezone_id' => $account['timezone_id'] ?? null,
-                    'status' => $this->getAccountStatusLabel($statusCode),
-                    'status_code' => $statusCode,
-                    'disable_reason' => $disableReason ? $this->getDisableReasonLabel($disableReason) : null,
-                    'spend_cap' => $account['spend_cap'] ?? null,
-                    'amount_spent' => $account['amount_spent'] ?? '0',
-                    'balance' => $account['balance'] ?? '0',
-                    'is_prepay' => $account['is_prepay_account'] ?? false,
-                    'min_daily_budget' => $account['min_daily_budget'] ?? null,
-                    'capabilities' => $account['capabilities'] ?? [],
-                    'funding_source' => $account['funding_source_details']['display_string'] ?? null,
-                    'created_at' => $account['created_time'] ?? null,
-                    'can_create_ads' => $statusCode === 1,
-                ];
-            }, $rawAccounts);
+                // Parse ad accounts and extract pixels + custom conversions
+                $adAccounts = [];
+                $pixels = [];
+                $customConversions = [];
 
-            Log::info('Ad Accounts fetched', ['count' => count($accounts)]);
-            return $accounts;
-        });
-    }
+                foreach ($rawAccounts as $account) {
+                    $statusCode = $account['account_status'] ?? 0;
+                    $disableReason = $account['disable_reason'] ?? null;
+                    $accountId = $account['id'];
+                    $accountName = $account['name'] ?? 'Unknown';
 
-    /**
-     * Get Meta Pixels (fetches from all ad accounts with pagination).
-     */
-    public function getPixels(string $connectionId, string $accessToken, bool $forceRefresh = false): array
-    {
-        $cacheKey = $this->getCacheKey($connectionId, 'pixels');
+                    // Store ad account info
+                    $adAccounts[] = [
+                        'id' => $accountId,
+                        'account_id' => $account['account_id'] ?? str_replace('act_', '', $accountId),
+                        'name' => $accountName,
+                        'business_name' => $account['business_name'] ?? null,
+                        'business_id' => $account['business']['id'] ?? null,
+                        'currency' => $account['currency'] ?? 'USD',
+                        'timezone' => $account['timezone_name'] ?? 'UTC',
+                        'timezone_id' => $account['timezone_id'] ?? null,
+                        'status' => $this->getAccountStatusLabel($statusCode),
+                        'status_code' => $statusCode,
+                        'disable_reason' => $disableReason ? $this->getDisableReasonLabel($disableReason) : null,
+                        'spend_cap' => $account['spend_cap'] ?? null,
+                        'amount_spent' => $account['amount_spent'] ?? '0',
+                        'balance' => $account['balance'] ?? '0',
+                        'is_prepay' => $account['is_prepay_account'] ?? false,
+                        'min_daily_budget' => $account['min_daily_budget'] ?? null,
+                        'capabilities' => $account['capabilities'] ?? [],
+                        'funding_source' => $account['funding_source_details']['display_string'] ?? null,
+                        'created_at' => $account['created_time'] ?? null,
+                        'can_create_ads' => $statusCode === 1,
+                    ];
 
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Meta Pixels from all Ad Accounts');
-
-            $pixels = [];
-            $adAccounts = $this->getAdAccounts($connectionId, $accessToken, false);
-
-            foreach ($adAccounts as $account) {
-                $accountId = $account['id'] ?? null;
-                if (!$accountId) continue;
-
-                $formattedAccountId = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
-
-                try {
-                    $pixelData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$formattedAccountId}/adspixels",
-                        $accessToken,
-                        ['fields' => 'id,name,creation_time,last_fired_time']
-                    );
-
-                    foreach ($pixelData as $pixel) {
+                    // Extract pixels
+                    foreach ($account['adspixels']['data'] ?? [] as $pixel) {
                         $existingIds = array_column($pixels, 'id');
                         if (!in_array($pixel['id'], $existingIds)) {
                             $pixels[] = [
                                 'id' => $pixel['id'],
                                 'name' => $pixel['name'] ?? 'Unnamed Pixel',
-                                'ad_account_id' => $account['id'],
-                                'ad_account_name' => $account['name'] ?? 'Unknown',
+                                'ad_account_id' => $accountId,
+                                'ad_account_name' => $accountName,
                                 'creation_time' => $pixel['creation_time'] ?? null,
                                 'last_fired_time' => $pixel['last_fired_time'] ?? null,
                             ];
                         }
                     }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch pixels for ad account', [
-                        'account_id' => $formattedAccountId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
 
-            Log::info('Meta Pixels fetched', ['count' => count($pixels)]);
-            return $pixels;
+                    // Extract custom conversions
+                    foreach ($account['customconversions']['data'] ?? [] as $conversion) {
+                        $existingIds = array_column($customConversions, 'id');
+                        if (!in_array($conversion['id'], $existingIds)) {
+                            $customConversions[] = [
+                                'id' => $conversion['id'],
+                                'name' => $conversion['name'] ?? 'Unnamed Conversion',
+                                'description' => $conversion['description'] ?? null,
+                                'custom_event_type' => $conversion['custom_event_type'] ?? null,
+                                'rule' => $conversion['rule'] ?? null,
+                                'pixel_id' => $conversion['pixel']['id'] ?? null,
+                                'ad_account_id' => $accountId,
+                                'ad_account_name' => $accountName,
+                                'creation_time' => $conversion['creation_time'] ?? null,
+                                'last_fired_time' => $conversion['last_fired_time'] ?? null,
+                                'is_archived' => $conversion['is_archived'] ?? false,
+                            ];
+                        }
+                    }
+                }
+
+                Log::info('ALL ad account assets fetched in single API call', [
+                    'ad_accounts' => count($adAccounts),
+                    'pixels' => count($pixels),
+                    'custom_conversions' => count($customConversions),
+                    'api_calls' => 1,
+                ]);
+
+                return [
+                    'ad_accounts' => $adAccounts,
+                    'pixels' => $pixels,
+                    'custom_conversions' => $customConversions,
+                ];
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch ad account assets', ['error' => $e->getMessage()]);
+                return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
+            }
         });
+    }
+
+    /**
+     * Get Meta Ad Accounts (uses shared cache from getAllAdAccountAssets - 0 extra API calls).
+     */
+    public function getAdAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_adaccount_assets'));
+        }
+
+        $allAssets = $this->getAllAdAccountAssets($accessToken, $connectionId);
+        return $allAssets['ad_accounts'] ?? [];
+    }
+
+    /**
+     * Get Meta Pixels (uses shared cache from getAllAdAccountAssets - 0 extra API calls).
+     */
+    public function getPixels(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_adaccount_assets'));
+        }
+
+        $allAssets = $this->getAllAdAccountAssets($accessToken, $connectionId);
+        return $allAssets['pixels'] ?? [];
     }
 
     /**
@@ -474,6 +518,7 @@ class MetaAssetsService
                             'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
                             'client_product_catalogs.limit(100){id,name,product_count,vertical}',
                             'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+                            'offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}',
                         ]),
                         'limit' => 100,
                     ]
@@ -483,7 +528,7 @@ class MetaAssetsService
                     Log::warning('Failed to fetch business assets', [
                         'error' => $response->json('error', []),
                     ]);
-                    return ['businesses' => [], 'catalogs' => [], 'whatsapp' => []];
+                    return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => []];
                 }
 
                 $rawBusinesses = $response->json('data', []);
@@ -492,6 +537,7 @@ class MetaAssetsService
                 $businesses = [];
                 $catalogs = [];
                 $whatsappAccounts = [];
+                $offlineEventSets = [];
 
                 foreach ($rawBusinesses as $business) {
                     $businessId = $business['id'] ?? null;
@@ -557,127 +603,9 @@ class MetaAssetsService
                             }
                         }
                     }
-                }
 
-                Log::info('ALL business assets fetched in single API call', [
-                    'businesses' => count($businesses),
-                    'catalogs' => count($catalogs),
-                    'whatsapp_accounts' => count($whatsappAccounts),
-                    'api_calls' => 1,
-                ]);
-
-                return [
-                    'businesses' => $businesses,
-                    'catalogs' => $catalogs,
-                    'whatsapp' => $whatsappAccounts,
-                ];
-            } catch (\Exception $e) {
-                Log::error('Failed to fetch business assets', ['error' => $e->getMessage()]);
-                return ['businesses' => [], 'catalogs' => [], 'whatsapp' => []];
-            }
-        });
-    }
-
-    /**
-     * Get businesses (uses shared cache from getAllBusinessAssets).
-     */
-    private function getBusinesses(string $accessToken, string $connectionId): array
-    {
-        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
-        return $allAssets['businesses'] ?? [];
-    }
-
-    /**
-     * Get Custom Conversions (from all ad accounts with pagination).
-     */
-    public function getCustomConversions(string $connectionId, string $accessToken, bool $forceRefresh = false): array
-    {
-        $cacheKey = $this->getCacheKey($connectionId, 'custom_conversions');
-
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Custom Conversions from Meta API');
-
-            $customConversions = [];
-            $adAccounts = $this->getAdAccounts($connectionId, $accessToken, false);
-
-            foreach ($adAccounts as $account) {
-                $accountId = $account['id'] ?? null;
-                if (!$accountId) continue;
-
-                $formattedAccountId = str_starts_with($accountId, 'act_') ? $accountId : 'act_' . $accountId;
-
-                try {
-                    $conversionData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$formattedAccountId}/customconversions",
-                        $accessToken,
-                        ['fields' => 'id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived']
-                    );
-
-                    foreach ($conversionData as $conversion) {
-                        $existingIds = array_column($customConversions, 'id');
-                        if (!in_array($conversion['id'], $existingIds)) {
-                            $customConversions[] = [
-                                'id' => $conversion['id'],
-                                'name' => $conversion['name'] ?? 'Unnamed Conversion',
-                                'description' => $conversion['description'] ?? null,
-                                'custom_event_type' => $conversion['custom_event_type'] ?? null,
-                                'rule' => $conversion['rule'] ?? null,
-                                'pixel_id' => $conversion['pixel']['id'] ?? null,
-                                'ad_account_id' => $account['id'],
-                                'ad_account_name' => $account['name'] ?? 'Unknown',
-                                'creation_time' => $conversion['creation_time'] ?? null,
-                                'last_fired_time' => $conversion['last_fired_time'] ?? null,
-                                'is_archived' => $conversion['is_archived'] ?? false,
-                            ];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch custom conversions for ad account', [
-                        'account_id' => $formattedAccountId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-
-            Log::info('Custom Conversions fetched', ['count' => count($customConversions)]);
-            return $customConversions;
-        });
-    }
-
-    /**
-     * Get Offline Event Sets (from all businesses).
-     */
-    public function getOfflineEventSets(string $connectionId, string $accessToken, bool $forceRefresh = false): array
-    {
-        $cacheKey = $this->getCacheKey($connectionId, 'offline_event_sets');
-
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Offline Event Sets from Meta API');
-
-            $offlineEventSets = [];
-            $businesses = $this->getBusinesses($accessToken, $connectionId);
-
-            foreach ($businesses as $business) {
-                $businessId = $business['id'] ?? null;
-                $businessName = $business['name'] ?? 'Unknown Business';
-                if (!$businessId) continue;
-
-                try {
-                    $eventSetData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/offline_conversion_data_sets",
-                        $accessToken,
-                        ['fields' => 'id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin']
-                    );
-
-                    foreach ($eventSetData as $eventSet) {
+                    // Extract Offline Event Sets
+                    foreach ($business['offline_conversion_data_sets']['data'] ?? [] as $eventSet) {
                         $existingIds = array_column($offlineEventSets, 'id');
                         if (!in_array($eventSet['id'], $existingIds)) {
                             $offlineEventSets[] = [
@@ -694,17 +622,62 @@ class MetaAssetsService
                             ];
                         }
                     }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch offline event sets for business', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
                 }
-            }
 
-            Log::info('Offline Event Sets fetched', ['count' => count($offlineEventSets)]);
-            return $offlineEventSets;
+                Log::info('ALL business assets fetched in single API call', [
+                    'businesses' => count($businesses),
+                    'catalogs' => count($catalogs),
+                    'whatsapp_accounts' => count($whatsappAccounts),
+                    'offline_event_sets' => count($offlineEventSets),
+                    'api_calls' => 1,
+                ]);
+
+                return [
+                    'businesses' => $businesses,
+                    'catalogs' => $catalogs,
+                    'whatsapp' => $whatsappAccounts,
+                    'offline_event_sets' => $offlineEventSets,
+                ];
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch business assets', ['error' => $e->getMessage()]);
+                return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => []];
+            }
         });
+    }
+
+    /**
+     * Get businesses (uses shared cache from getAllBusinessAssets).
+     */
+    private function getBusinesses(string $accessToken, string $connectionId): array
+    {
+        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        return $allAssets['businesses'] ?? [];
+    }
+
+    /**
+     * Get Custom Conversions (uses shared cache from getAllAdAccountAssets - 0 extra API calls).
+     */
+    public function getCustomConversions(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_adaccount_assets'));
+        }
+
+        $allAssets = $this->getAllAdAccountAssets($accessToken, $connectionId);
+        return $allAssets['custom_conversions'] ?? [];
+    }
+
+    /**
+     * Get Offline Event Sets (uses shared cache from getAllBusinessAssets - 0 extra API calls).
+     */
+    public function getOfflineEventSets(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
+        }
+
+        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        return $allAssets['offline_event_sets'] ?? [];
     }
 
     /**
@@ -712,12 +685,22 @@ class MetaAssetsService
      */
     public function refreshAll(string $connectionId): void
     {
-        $assetTypes = [
+        // Clear the 3 super-query caches (primary optimization)
+        $superCaches = [
+            'all_user_assets',      // Pages + Instagram
+            'all_adaccount_assets', // Ad Accounts + Pixels + Custom Conversions
+            'all_business_assets',  // Businesses + Catalogs + WhatsApp + Offline Event Sets
+        ];
+
+        // Also clear legacy individual caches (for backwards compatibility)
+        $legacyCaches = [
             'pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp', 'businesses',
             'custom_conversions', 'offline_event_sets'
         ];
 
-        foreach ($assetTypes as $type) {
+        $allCaches = array_merge($superCaches, $legacyCaches);
+
+        foreach ($allCaches as $type) {
             Cache::forget($this->getCacheKey($connectionId, $type));
         }
 
@@ -729,13 +712,23 @@ class MetaAssetsService
      */
     public function getCacheStatus(string $connectionId): array
     {
+        // Super-query caches (optimized - 3 API calls total)
+        $superCaches = [
+            'all_user_assets',      // Pages + Instagram (1 API call)
+            'all_adaccount_assets', // Ad Accounts + Pixels + Custom Conversions (1 API call)
+            'all_business_assets',  // Businesses + Catalogs + WhatsApp + Offline Event Sets (1 API call)
+        ];
+
+        // Individual asset type caches (derived from super-caches)
         $assetTypes = [
             'pages', 'instagram', 'threads', 'ad_accounts', 'pixels', 'catalogs', 'whatsapp',
-            'custom_conversions', 'creative_folders', 'domains', 'offline_event_sets', 'apps'
+            'custom_conversions', 'offline_event_sets'
         ];
+
+        $allCacheTypes = array_merge($superCaches, $assetTypes);
         $status = [];
 
-        foreach ($assetTypes as $type) {
+        foreach ($allCacheTypes as $type) {
             $cacheKey = $this->getCacheKey($connectionId, $type);
             $status[$type] = [
                 'cached' => Cache::has($cacheKey),
