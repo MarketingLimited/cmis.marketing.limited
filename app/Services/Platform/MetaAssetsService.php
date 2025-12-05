@@ -424,45 +424,88 @@ class MetaAssetsService
     }
 
     /**
-     * Get Product Catalogs (from all businesses with pagination).
+     * Get Product Catalogs (uses shared cache from getAllBusinessAssets - 0 extra API calls).
      */
     public function getCatalogs(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
-        $cacheKey = $this->getCacheKey($connectionId, 'catalogs');
-
         if ($forceRefresh) {
-            Cache::forget($cacheKey);
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching Product Catalogs from Meta API');
+        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        return $allAssets['catalogs'] ?? [];
+    }
 
-            $catalogs = [];
-            $allBusinesses = $this->getBusinesses($accessToken, $connectionId);
+    /**
+     * Get WhatsApp Business Accounts (uses shared cache from getAllBusinessAssets - 0 extra API calls).
+     */
+    public function getWhatsappAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
+    {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
+        }
 
-            // Limit businesses to prevent API exhaustion
-            $businesses = array_slice($allBusinesses, 0, self::MAX_BUSINESSES);
-            if (count($allBusinesses) > self::MAX_BUSINESSES) {
-                Log::info('Limited businesses for catalog fetch', [
-                    'total' => count($allBusinesses),
-                    'limited_to' => self::MAX_BUSINESSES,
-                ]);
-            }
+        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        return $allAssets['whatsapp'] ?? [];
+    }
 
-            foreach ($businesses as $business) {
-                $businessId = $business['id'] ?? null;
-                $businessName = $business['name'] ?? 'Unknown Business';
-                if (!$businessId) continue;
+    /**
+     * Fetch ALL business assets in ONE API call (businesses + catalogs + whatsapp).
+     * This is the core method that minimizes API calls by using field expansion.
+     * All business-related data is fetched together and cached.
+     */
+    private function getAllBusinessAssets(string $accessToken, string $connectionId): array
+    {
+        $cacheKey = $this->getCacheKey($connectionId, 'all_business_assets');
 
-                // Fetch owned catalogs
-                try {
-                    $ownedCatalogs = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_product_catalogs",
-                        $accessToken,
-                        ['fields' => 'id,name,product_count,vertical']
-                    );
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+            Log::info('Fetching ALL business assets from Meta API (single request with full field expansion)');
 
-                    foreach ($ownedCatalogs as $catalog) {
+            try {
+                // ONE API call to get everything: businesses + catalogs + whatsapp
+                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                    self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
+                    [
+                        'access_token' => $accessToken,
+                        'fields' => implode(',', [
+                            'id',
+                            'name',
+                            'verification_status',
+                            'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
+                            'client_product_catalogs.limit(100){id,name,product_count,vertical}',
+                            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+                        ]),
+                        'limit' => 100,
+                    ]
+                );
+
+                if (!$response->successful()) {
+                    Log::warning('Failed to fetch business assets', [
+                        'error' => $response->json('error', []),
+                    ]);
+                    return ['businesses' => [], 'catalogs' => [], 'whatsapp' => []];
+                }
+
+                $rawBusinesses = $response->json('data', []);
+
+                // Parse and organize all data
+                $businesses = [];
+                $catalogs = [];
+                $whatsappAccounts = [];
+
+                foreach ($rawBusinesses as $business) {
+                    $businessId = $business['id'] ?? null;
+                    $businessName = $business['name'] ?? 'Unknown Business';
+
+                    // Store business info
+                    $businesses[] = [
+                        'id' => $businessId,
+                        'name' => $businessName,
+                        'verification_status' => $business['verification_status'] ?? null,
+                    ];
+
+                    // Extract owned catalogs
+                    foreach ($business['owned_product_catalogs']['data'] ?? [] as $catalog) {
                         $existingIds = array_column($catalogs, 'id');
                         if (!in_array($catalog['id'], $existingIds)) {
                             $catalogs[] = [
@@ -475,22 +518,9 @@ class MetaAssetsService
                             ];
                         }
                     }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch owned catalogs', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
 
-                // Fetch client catalogs (shared with you)
-                try {
-                    $clientCatalogs = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/client_product_catalogs",
-                        $accessToken,
-                        ['fields' => 'id,name,product_count,vertical']
-                    );
-
-                    foreach ($clientCatalogs as $catalog) {
+                    // Extract client catalogs
+                    foreach ($business['client_product_catalogs']['data'] ?? [] as $catalog) {
                         $existingIds = array_column($catalogs, 'id');
                         if (!in_array($catalog['id'], $existingIds)) {
                             $catalogs[] = [
@@ -504,62 +534,13 @@ class MetaAssetsService
                             ];
                         }
                     }
-                } catch (\Exception $e) {
-                    Log::debug('Failed to fetch client catalogs', [
-                        'business_id' => $businessId,
-                    ]);
-                }
-            }
 
-            Log::info('Product Catalogs fetched', ['count' => count($catalogs)]);
-            return $catalogs;
-        });
-    }
-
-    /**
-     * Get WhatsApp Business Accounts (from all businesses with pagination).
-     */
-    public function getWhatsappAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
-    {
-        $cacheKey = $this->getCacheKey($connectionId, 'whatsapp');
-
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
-            Log::info('Fetching WhatsApp Business Accounts from Meta API');
-
-            $whatsappAccounts = [];
-            $allBusinesses = $this->getBusinesses($accessToken, $connectionId);
-
-            // Limit businesses to prevent API exhaustion
-            $businesses = array_slice($allBusinesses, 0, self::MAX_BUSINESSES);
-            if (count($allBusinesses) > self::MAX_BUSINESSES) {
-                Log::info('Limited businesses for WhatsApp fetch', [
-                    'total' => count($allBusinesses),
-                    'limited_to' => self::MAX_BUSINESSES,
-                ]);
-            }
-
-            foreach ($businesses as $business) {
-                $businessId = $business['id'] ?? null;
-                $businessName = $business['name'] ?? 'Unknown Business';
-                if (!$businessId) continue;
-
-                try {
-                    $wabaData = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_whatsapp_business_accounts",
-                        $accessToken,
-                        ['fields' => 'id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}']
-                    );
-
-                    foreach ($wabaData as $waba) {
+                    // Extract WhatsApp accounts
+                    foreach ($business['owned_whatsapp_business_accounts']['data'] ?? [] as $waba) {
                         $wabaId = $waba['id'] ?? null;
                         $wabaName = $waba['name'] ?? 'Unnamed WABA';
-                        $phoneNumbers = $waba['phone_numbers']['data'] ?? [];
 
-                        foreach ($phoneNumbers as $phone) {
+                        foreach ($waba['phone_numbers']['data'] ?? [] as $phone) {
                             $existingIds = array_column($whatsappAccounts, 'id');
                             if (!in_array($phone['id'], $existingIds)) {
                                 $whatsappAccounts[] = [
@@ -576,62 +557,34 @@ class MetaAssetsService
                             }
                         }
                     }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to fetch WhatsApp accounts for business', [
-                        'business_id' => $businessId,
-                        'error' => $e->getMessage(),
-                    ]);
                 }
-            }
 
-            Log::info('WhatsApp accounts fetched', ['count' => count($whatsappAccounts)]);
-            return $whatsappAccounts;
+                Log::info('ALL business assets fetched in single API call', [
+                    'businesses' => count($businesses),
+                    'catalogs' => count($catalogs),
+                    'whatsapp_accounts' => count($whatsappAccounts),
+                    'api_calls' => 1,
+                ]);
+
+                return [
+                    'businesses' => $businesses,
+                    'catalogs' => $catalogs,
+                    'whatsapp' => $whatsappAccounts,
+                ];
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch business assets', ['error' => $e->getMessage()]);
+                return ['businesses' => [], 'catalogs' => [], 'whatsapp' => []];
+            }
         });
     }
 
     /**
-     * Get businesses (tries /me/businesses first, then extracts from ad accounts).
+     * Get businesses (uses shared cache from getAllBusinessAssets).
      */
     private function getBusinesses(string $accessToken, string $connectionId): array
     {
-        $cacheKey = $this->getCacheKey($connectionId, 'businesses');
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
-            Log::info('Fetching businesses from Meta API');
-
-            // Try /me/businesses first
-            $businesses = $this->fetchAllPages(
-                self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
-                $accessToken,
-                ['fields' => 'id,name']
-            );
-
-            if (!empty($businesses)) {
-                Log::info('Businesses fetched from /me/businesses', ['count' => count($businesses)]);
-                return $businesses;
-            }
-
-            // Fallback: Extract from ad accounts
-            Log::info('No businesses from /me/businesses, extracting from ad accounts');
-
-            $adAccounts = $this->getAdAccounts($connectionId, $accessToken, false);
-            $seenBusinessIds = [];
-            $businesses = [];
-
-            foreach ($adAccounts as $account) {
-                $businessId = $account['business_id'] ?? null;
-                if ($businessId && !in_array($businessId, $seenBusinessIds)) {
-                    $businesses[] = [
-                        'id' => $businessId,
-                        'name' => $account['business_name'] ?? 'Unknown Business',
-                    ];
-                    $seenBusinessIds[] = $businessId;
-                }
-            }
-
-            Log::info('Businesses extracted from ad accounts', ['count' => count($businesses)]);
-            return $businesses;
-        });
+        $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        return $allAssets['businesses'] ?? [];
     }
 
     /**
