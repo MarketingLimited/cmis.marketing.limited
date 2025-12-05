@@ -328,7 +328,7 @@ function analyticsManager() {
                     requestsLabels: hourlyStats.map(h => h.hour || ''),
                     requestsData: hourlyStats.map(h => h.total || 0),
                     platformLabels: Object.keys(byPlatform),
-                    platformData: Object.values(byPlatform)
+                    platformData: Object.values(byPlatform).map(p => p.total || 0)
                 });
             } catch (error) {
                 console.error('Error loading analytics:', error);
