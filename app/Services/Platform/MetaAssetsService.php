@@ -25,7 +25,7 @@ class MetaAssetsService
     private const MAX_PAGES = 50; // Safety limit: 50 pages x 100 items = 5000 max (increased to fetch ALL assets)
     private const ITEMS_PER_PAGE = 100;
     private const REQUEST_TIMEOUT = 30;
-    private const MAX_BUSINESSES = 10; // Limit businesses to prevent API exhaustion
+    private const MAX_BUSINESSES = 200; // Limit businesses to prevent API exhaustion (increased for large accounts)
     private const DELAY_BETWEEN_REQUESTS_MS = 100; // 100ms delay between API calls
 
     /**
@@ -732,10 +732,14 @@ class MetaAssetsService
     }
 
     /**
-     * Get businesses (uses shared cache from getAllBusinessAssets).
+     * Get Business Managers (uses shared cache from getAllBusinessAssets - 0 extra API calls).
      */
-    private function getBusinesses(string $accessToken, string $connectionId): array
+    public function getBusinesses(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
+        if ($forceRefresh) {
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
+        }
+
         $allAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
         return $allAssets['businesses'] ?? [];
     }

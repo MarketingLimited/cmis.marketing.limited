@@ -81,6 +81,100 @@
         @csrf
 
         <div class="space-y-6">
+            {{-- ========== Business Managers Section (Read-only, informational) ========== --}}
+            <div class="bg-white shadow sm:rounded-lg overflow-hidden" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-building text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ __('Business Managers') }}</h3>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="loading.businesses" class="inline-flex items-center">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>{{ __('Loading...') }}
+                                    </span>
+                                    <span x-show="!loading.businesses && !errors.businesses" x-text="businesses.length + ' {{ __('business manager(s) available') }}'"></span>
+                                    <span x-show="errors.businesses" class="text-red-600">{{ __('Failed to load') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" x-show="errors.businesses" @click="loadBusinesses()" class="text-sm text-indigo-600 hover:text-indigo-800">
+                            <i class="fas fa-redo me-1"></i>{{ __('Retry') }}
+                        </button>
+                    </div>
+
+                    {{-- Loading Skeleton --}}
+                    <div x-show="loading.businesses" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="i in 4" :key="i">
+                            <div class="animate-pulse flex items-center p-3 border rounded-lg">
+                                <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                <div class="ms-3 flex-1">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Error State --}}
+                    <div x-show="!loading.businesses && errors.businesses" class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
+                        <p class="text-sm text-red-700" x-text="errors.businesses"></p>
+                        <button type="button" @click="loadBusinesses()" class="mt-2 text-sm text-red-600 hover:text-red-800 underline">
+                            {{ __('Retry') }}
+                        </button>
+                    </div>
+
+                    {{-- Empty State --}}
+                    <div x-show="!loading.businesses && !errors.businesses && businesses.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
+                        <i class="fas fa-building text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">{{ __('No Business Managers found') }}</p>
+                    </div>
+
+                    {{-- Business Managers List (Read-only) --}}
+                    <div x-show="!loading.businesses && !errors.businesses && businesses.length > 0">
+                        {{-- Search --}}
+                        <div class="mb-4">
+                            <input type="text" x-model="businessesSearch" @input.debounce.300ms placeholder="{{ __('Search business managers...') }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+
+                        {{-- Business Managers Grid (Read-only display) --}}
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="business in filteredBusinesses" :key="business.id">
+                                    <div class="flex items-center p-3 border rounded-lg bg-gray-50 gap-3">
+                                        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-building text-indigo-600 text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <span class="text-sm font-medium text-gray-900 block truncate" x-text="business.name"></span>
+                                            <span class="text-xs text-gray-500 block">ID: <span x-text="business.id"></span></span>
+                                            <span x-show="business.verification_status"
+                                                  class="text-xs inline-flex items-center gap-1"
+                                                  :class="{
+                                                      'text-green-600': business.verification_status === 'verified',
+                                                      'text-yellow-600': business.verification_status === 'pending',
+                                                      'text-gray-500': business.verification_status !== 'verified' && business.verification_status !== 'pending'
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-check-circle': business.verification_status === 'verified',
+                                                    'fa-clock': business.verification_status === 'pending',
+                                                    'fa-info-circle': business.verification_status !== 'verified' && business.verification_status !== 'pending'
+                                                }"></i>
+                                                <span x-text="business.verification_status"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- ========== Facebook Pages Section ========== --}}
             <div class="bg-white shadow sm:rounded-lg overflow-hidden" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="px-4 py-5 sm:p-6">
@@ -1104,6 +1198,7 @@ function metaAssetsPage() {
         loadingProgress: 0,
 
         loading: {
+            businesses: true,
             pages: true,
             instagram: true,
             threads: true,
@@ -1116,6 +1211,7 @@ function metaAssetsPage() {
         },
 
         errors: {
+            businesses: null,
             pages: null,
             instagram: null,
             threads: null,
@@ -1128,6 +1224,7 @@ function metaAssetsPage() {
         },
 
         // Asset data (loaded via AJAX)
+        businesses: [],
         pages: [],
         instagramAccounts: [],
         threadsAccounts: [],
@@ -1159,6 +1256,7 @@ function metaAssetsPage() {
         showManualWhatsapp: false,
 
         // Search filters
+        businessesSearch: '',
         pagesSearch: '',
         instagramSearch: '',
         threadsSearch: '',
@@ -1170,6 +1268,15 @@ function metaAssetsPage() {
         offlineEventSetsSearch: '',
 
         // Computed properties
+        get filteredBusinesses() {
+            if (!this.businessesSearch) return this.businesses;
+            const search = this.businessesSearch.toLowerCase();
+            return this.businesses.filter(b =>
+                (b.name || '').toLowerCase().includes(search) ||
+                (b.id || '').toLowerCase().includes(search)
+            );
+        },
+
         get filteredPages() {
             if (!this.pagesSearch) return this.pages;
             const search = this.pagesSearch.toLowerCase();
@@ -1268,6 +1375,7 @@ function metaAssetsPage() {
             await Promise.allSettled([
                 this.loadInstagramAccounts(),
                 this.loadPixels(),
+                this.loadBusinesses(),
                 this.loadCatalogs(),
                 this.loadWhatsappAccounts(),
             ]);
@@ -1307,6 +1415,7 @@ function metaAssetsPage() {
                 });
 
                 // Reset and reload
+                this.businesses = [];
                 this.pages = [];
                 this.instagramAccounts = [];
                 this.threadsAccounts = [];
@@ -1349,6 +1458,28 @@ function metaAssetsPage() {
                 console.error('Failed to load pages:', error);
             } finally {
                 this.loading.pages = false;
+            }
+        },
+
+        // Load Business Managers
+        async loadBusinesses() {
+            this.loading.businesses = true;
+            this.errors.businesses = null;
+
+            try {
+                const response = await fetch(`${this.apiBaseUrl}/businesses`, {
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.businesses = data.data || [];
+                }
+            } catch (error) {
+                this.errors.businesses = error.message;
+                console.error('Failed to load Business Managers:', error);
+            } finally {
+                this.loading.businesses = false;
             }
         },
 

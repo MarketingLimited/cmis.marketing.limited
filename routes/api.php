@@ -1559,6 +1559,7 @@ Route::middleware(['auth:sanctum', 'validate.org.access', 'org.context', 'api.ra
             Route::get('/pixels', [MetaAssetsApiController::class, 'getPixels'])->name('pixels');
             Route::get('/catalogs', [MetaAssetsApiController::class, 'getCatalogs'])->name('catalogs');
             Route::get('/whatsapp', [MetaAssetsApiController::class, 'getWhatsappAccounts'])->name('whatsapp');
+            Route::get('/businesses', [MetaAssetsApiController::class, 'getBusinesses'])->name('businesses');
             Route::get('/custom-conversions', [MetaAssetsApiController::class, 'getCustomConversions'])->name('custom-conversions');
             Route::get('/offline-event-sets', [MetaAssetsApiController::class, 'getOfflineEventSets'])->name('offline-event-sets');
             Route::post('/refresh', [MetaAssetsApiController::class, 'refreshAll'])->name('refresh');

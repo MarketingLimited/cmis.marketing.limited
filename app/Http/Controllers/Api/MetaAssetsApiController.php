@@ -271,6 +271,35 @@ class MetaAssetsApiController extends Controller
     }
 
     /**
+     * Get Business Managers.
+     */
+    public function getBusinesses(Request $request, string $org, string $connectionId): JsonResponse
+    {
+        $data = $this->getConnectionWithToken($org, $connectionId);
+
+        if (!$data) {
+            return $this->notFound(__('Connection not found or access token invalid'));
+        }
+
+        try {
+            $forceRefresh = $request->boolean('refresh', false);
+            $businesses = $this->metaAssetsService->getBusinesses(
+                $connectionId,
+                $data['access_token'],
+                $forceRefresh
+            );
+
+            return $this->success($businesses, __('Business Managers loaded successfully'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Business Managers', [
+                'connection_id' => $connectionId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->serverError(__('Failed to load Business Managers'));
+        }
+    }
+
+    /**
      * Get Custom Conversions.
      */
     public function getCustomConversions(Request $request, string $org, string $connectionId): JsonResponse
