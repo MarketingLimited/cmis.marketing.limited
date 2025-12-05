@@ -380,8 +380,8 @@ function systemHealth() {
                 this.services.mail = { status: 'healthy', sent_today: 0, last_sent: '-' };
                 this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-' };
 
-                // Recent errors - not provided by current API
-                this.recentErrors = [];
+                // Recent errors from API
+                this.recentErrors = data.recent_errors || [];
             } catch (error) {
                 console.error('Error loading health data:', error);
                 this.overallStatus = 'critical';

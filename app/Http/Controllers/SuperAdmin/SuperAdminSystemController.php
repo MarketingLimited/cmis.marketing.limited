@@ -36,16 +36,18 @@ class SuperAdminSystemController extends Controller
         ];
 
         $overallStatus = $this->calculateOverallStatus($health);
+        $recentErrors = $this->getRecentErrors(10);
 
         if ($request->expectsJson()) {
             return $this->success([
                 'status' => $overallStatus,
                 'checks' => $health,
+                'recent_errors' => $recentErrors,
                 'timestamp' => now()->toIso8601String(),
             ]);
         }
 
-        return view('super-admin.system.health', compact('health', 'overallStatus'));
+        return view('super-admin.system.health', compact('health', 'overallStatus', 'recentErrors'));
     }
 
     /**
@@ -502,6 +504,84 @@ class SuperAdminSystemController extends Controller
             ");
         } catch (\Exception $e) {
             // pg_stat_statements extension might not be enabled
+            return [];
+        }
+    }
+
+    /**
+     * Get recent errors from Laravel logs.
+     *
+     * @param int $limit Maximum number of errors to return
+     * @return array Recent error entries
+     */
+    protected function getRecentErrors(int $limit = 10): array
+    {
+        $logFile = storage_path('logs/laravel.log');
+
+        if (!file_exists($logFile)) {
+            return [];
+        }
+
+        try {
+            // Read last portion of log file
+            $logs = $this->tailFile($logFile, $limit * 50); // Read more to filter
+
+            // Parse for error/critical/alert/emergency entries
+            $entries = $this->parseLogEntries($logs, null);
+
+            // Filter only errors and above
+            $errorLevels = ['error', 'critical', 'alert', 'emergency'];
+            $errors = array_filter($entries, function ($entry) use ($errorLevels) {
+                return in_array(strtolower($entry['level']), $errorLevels);
+            });
+
+            // Take only the last N errors
+            $errors = array_slice(array_values($errors), -$limit);
+
+            // Format for frontend
+            $formatted = [];
+            $id = 1;
+            foreach ($errors as $error) {
+                // Extract file path from message if present
+                $file = '-';
+                if (preg_match('/in\s+([^\s]+\.php)(?::(\d+))?/', $error['message'], $matches)) {
+                    $file = $matches[1] . (isset($matches[2]) ? ':' . $matches[2] : '');
+                }
+
+                // Clean up message - get first line or truncate
+                $message = $error['message'];
+                $firstLineEnd = strpos($message, "\n");
+                if ($firstLineEnd !== false) {
+                    $message = substr($message, 0, $firstLineEnd);
+                }
+                // Truncate if too long
+                if (strlen($message) > 200) {
+                    $message = substr($message, 0, 200) . '...';
+                }
+
+                // Parse timestamp for display
+                $time = $error['timestamp'];
+                try {
+                    $dateTime = new \DateTime($error['timestamp']);
+                    $time = $dateTime->format('Y-m-d H:i:s');
+                } catch (\Exception $e) {
+                    // Keep original timestamp if parsing fails
+                }
+
+                $formatted[] = [
+                    'id' => $id++,
+                    'message' => trim($message),
+                    'time' => $time,
+                    'file' => $file,
+                    'level' => strtoupper($error['level']),
+                    'environment' => $error['environment'],
+                ];
+            }
+
+            // Return in reverse chronological order (newest first)
+            return array_reverse($formatted);
+        } catch (\Exception $e) {
+            Log::warning('Failed to get recent errors', ['error' => $e->getMessage()]);
             return [];
         }
     }
