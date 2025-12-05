@@ -89,21 +89,27 @@ abstract class AbstractConnector implements ConnectorInterface
         }
 
         $url = $this->baseUrl . '/' . ltrim($endpoint, '/');
+        $startTime = microtime(true);
 
         try {
             $response = Http::withToken($integration->access_token)
                 ->acceptJson()
                 ->{strtolower($method)}($url, $data);
 
+            $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+            $httpStatus = $response->status();
+
             if ($response->failed()) {
+                $this->logApiCall($integration, $method, $endpoint, false, null, $durationMs, $httpStatus);
                 $this->handleApiError($integration, $endpoint, $response);
             }
 
-            $this->logApiCall($integration, $method, $endpoint, true);
+            $this->logApiCall($integration, $method, $endpoint, true, null, $durationMs, $httpStatus);
 
             return $response->json() ?? [];
         } catch (\Exception $e) {
-            $this->logApiCall($integration, $method, $endpoint, false, $e->getMessage());
+            $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+            $this->logApiCall($integration, $method, $endpoint, false, $e->getMessage(), $durationMs, null);
             throw $e;
         }
     }
@@ -159,31 +165,62 @@ abstract class AbstractConnector implements ConnectorInterface
     }
 
     /**
-     * Log API call to database
+     * Log API call to database for analytics tracking
      *
      * @param Integration $integration
      * @param string $method
      * @param string $endpoint
      * @param bool $success
      * @param string|null $errorMessage
+     * @param int|null $durationMs
+     * @param int|null $httpStatus
      */
-    protected function logApiCall(Integration $integration, string $method, string $endpoint, bool $success, ?string $errorMessage = null): void
+    protected function logApiCall(Integration $integration, string $method, string $endpoint, bool $success, ?string $errorMessage = null, ?int $durationMs = null, ?int $httpStatus = null): void
     {
-        DB::table('cmis.sync_logs')->insert([
-            'integration_id' => $integration->integration_id,
-            'org_id' => $integration->org_id,
-            'platform' => $this->platform,
-            'sync_type' => 'api_call',
-            'status' => $success ? 'success' : 'failed',
-            'sync_data' => json_encode([
-                'method' => $method,
+        try {
+            DB::table('cmis.platform_api_calls')->insert([
+                'call_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'org_id' => $integration->org_id,
+                'connection_id' => $integration->integration_id,
+                'platform' => $this->platform,
                 'endpoint' => $endpoint,
-            ]),
-            'error_message' => $errorMessage,
-            'started_at' => now(),
-            'completed_at' => now(),
-            'created_at' => now(),
-        ]);
+                'method' => strtoupper($method),
+                'action_type' => $this->getActionTypeFromEndpoint($endpoint),
+                'http_status' => $httpStatus,
+                'duration_ms' => $durationMs,
+                'success' => $success,
+                'error_message' => $errorMessage,
+                'called_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            // Don't let logging failures break the main flow
+            Log::warning('Failed to log API call', [
+                'error' => $e->getMessage(),
+                'platform' => $this->platform,
+                'endpoint' => $endpoint,
+            ]);
+        }
+    }
+
+    /**
+     * Determine action type from endpoint URL
+     */
+    protected function getActionTypeFromEndpoint(string $endpoint): string
+    {
+        $endpoint = strtolower($endpoint);
+
+        if (str_contains($endpoint, 'campaign')) return 'campaigns';
+        if (str_contains($endpoint, 'adset') || str_contains($endpoint, 'ad_set')) return 'adsets';
+        if (str_contains($endpoint, 'creative')) return 'creatives';
+        if (str_contains($endpoint, 'insight') || str_contains($endpoint, 'report')) return 'insights';
+        if (str_contains($endpoint, 'account')) return 'accounts';
+        if (str_contains($endpoint, 'audience')) return 'audiences';
+        if (str_contains($endpoint, 'analytics')) return 'analytics';
+        if (str_contains($endpoint, 'token') || str_contains($endpoint, 'oauth')) return 'auth';
+
+        return 'other';
     }
 
     /**

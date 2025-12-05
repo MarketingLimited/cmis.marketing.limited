@@ -4,6 +4,8 @@ namespace App\Integrations\Base;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Base OAuth 2.0 Client
@@ -18,6 +20,8 @@ abstract class OAuth2Client
     protected array $scopes = [];
     protected string $authorizationUrl;
     protected string $tokenUrl;
+    protected ?string $orgId = null;
+    protected string $platform = 'unknown';
 
     public function __construct(?array $config = null)
     {
@@ -25,6 +29,69 @@ abstract class OAuth2Client
             $this->clientId = $config['client_id'] ?? '';
             $this->clientSecret = $config['client_secret'] ?? '';
             $this->redirectUri = $config['redirect_uri'] ?? '';
+        }
+    }
+
+    /**
+     * Set org ID for API call logging
+     *
+     * @param string|null $orgId Organization ID
+     * @return self
+     */
+    public function setOrgId(?string $orgId): self
+    {
+        $this->orgId = $orgId;
+        return $this;
+    }
+
+    /**
+     * Log API call to platform_api_calls for analytics tracking
+     *
+     * @param string $endpoint API endpoint
+     * @param string $method HTTP method
+     * @param bool $success Whether call was successful
+     * @param int|null $httpStatus HTTP status code
+     * @param int|null $durationMs Call duration in milliseconds
+     * @param string|null $errorMessage Error message if failed
+     */
+    protected function logApiCall(
+        string $endpoint,
+        string $method,
+        bool $success,
+        ?int $httpStatus = null,
+        ?int $durationMs = null,
+        ?string $errorMessage = null
+    ): void {
+        try {
+            // Get org_id from session or current user if not set
+            $orgId = $this->orgId ?? auth()->user()?->current_org_id ?? null;
+
+            if (!$orgId) {
+                return; // Skip logging if no org context
+            }
+
+            DB::table('cmis.platform_api_calls')->insert([
+                'call_id' => Str::uuid()->toString(),
+                'org_id' => $orgId,
+                'connection_id' => null,
+                'platform' => $this->platform,
+                'endpoint' => $endpoint,
+                'method' => strtoupper($method),
+                'action_type' => 'auth',
+                'http_status' => $httpStatus,
+                'duration_ms' => $durationMs,
+                'success' => $success,
+                'error_message' => $errorMessage,
+                'called_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to log OAuth API call', [
+                'error' => $e->getMessage(),
+                'platform' => $this->platform,
+                'endpoint' => $endpoint,
+            ]);
         }
     }
 
@@ -57,6 +124,8 @@ abstract class OAuth2Client
      */
     public function getAccessToken(string $code): array
     {
+        $startTime = microtime(true);
+
         $response = Http::asForm()->post($this->tokenUrl, [
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
@@ -65,14 +134,30 @@ abstract class OAuth2Client
             'grant_type' => 'authorization_code',
         ]);
 
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $httpStatus = $response->status();
+
         if (!$response->successful()) {
             Log::error('OAuth token exchange failed', [
-                'status' => $response->status(),
+                'status' => $httpStatus,
                 'body' => $response->body(),
             ]);
 
+            // Log the failed API call
+            $this->logApiCall(
+                $this->tokenUrl,
+                'POST',
+                false,
+                $httpStatus,
+                $durationMs,
+                'Token exchange failed: ' . $response->body()
+            );
+
             throw new \Exception('Failed to obtain access token: ' . $response->body());
         }
+
+        // Log the successful API call
+        $this->logApiCall($this->tokenUrl, 'POST', true, $httpStatus, $durationMs);
 
         $data = $response->json();
 
@@ -98,6 +183,8 @@ abstract class OAuth2Client
      */
     public function refreshToken(string $refreshToken): array
     {
+        $startTime = microtime(true);
+
         $response = Http::asForm()->post($this->tokenUrl, [
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
@@ -105,14 +192,30 @@ abstract class OAuth2Client
             'grant_type' => 'refresh_token',
         ]);
 
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $httpStatus = $response->status();
+
         if (!$response->successful()) {
             Log::error('OAuth token refresh failed', [
-                'status' => $response->status(),
+                'status' => $httpStatus,
                 'body' => $response->body(),
             ]);
 
+            // Log the failed API call
+            $this->logApiCall(
+                $this->tokenUrl . ' (refresh)',
+                'POST',
+                false,
+                $httpStatus,
+                $durationMs,
+                'Token refresh failed: ' . $response->body()
+            );
+
             throw new \Exception('Failed to refresh access token: ' . $response->body());
         }
+
+        // Log the successful API call
+        $this->logApiCall($this->tokenUrl . ' (refresh)', 'POST', true, $httpStatus, $durationMs);
 
         $data = $response->json();
 

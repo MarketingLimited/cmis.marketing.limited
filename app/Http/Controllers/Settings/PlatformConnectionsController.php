@@ -3210,12 +3210,15 @@ class PlatformConnectionsController extends Controller
         $config = config('social-platforms.meta');
 
         // Exchange code for access token
+        $startTime = microtime(true);
         $response = Http::get('https://graph.facebook.com/v21.0/oauth/access_token', [
             'client_id' => $config['app_id'],
             'client_secret' => $config['app_secret'],
             'redirect_uri' => $config['redirect_uri'],
             'code' => $request->get('code'),
         ]);
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $this->logPlatformApiCall($orgId, 'meta', 'https://graph.facebook.com/v21.0/oauth/access_token', 'GET', $response->successful(), $response->status(), $durationMs);
 
         if (!$response->successful()) {
             Log::error('Meta OAuth token exchange failed', [
@@ -3229,12 +3232,15 @@ class PlatformConnectionsController extends Controller
         $accessToken = $tokenData['access_token'];
 
         // Exchange for long-lived token
+        $startTime = microtime(true);
         $longLivedResponse = Http::get('https://graph.facebook.com/v21.0/oauth/access_token', [
             'grant_type' => 'fb_exchange_token',
             'client_id' => $config['app_id'],
             'client_secret' => $config['app_secret'],
             'fb_exchange_token' => $accessToken,
         ]);
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $this->logPlatformApiCall($orgId, 'meta', 'https://graph.facebook.com/v21.0/oauth/access_token (long-lived)', 'GET', $longLivedResponse->successful(), $longLivedResponse->status(), $durationMs);
 
         if ($longLivedResponse->successful()) {
             $longLivedData = $longLivedResponse->json();
@@ -3245,7 +3251,10 @@ class PlatformConnectionsController extends Controller
         }
 
         // Validate the token and get user info
+        $startTime = microtime(true);
         $tokenInfo = $this->validateMetaToken($accessToken);
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $this->logPlatformApiCall($orgId, 'meta', 'https://graph.facebook.com/v21.0/debug_token', 'GET', $tokenInfo['valid'], 200, $durationMs);
 
         if (!$tokenInfo['valid']) {
             return redirect()->route('orgs.settings.platform-connections.index', $orgId)
@@ -3253,7 +3262,10 @@ class PlatformConnectionsController extends Controller
         }
 
         // Get ad accounts
+        $startTime = microtime(true);
         $adAccounts = $this->getMetaAdAccounts($accessToken);
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $this->logPlatformApiCall($orgId, 'meta', 'https://graph.facebook.com/v21.0/me/adaccounts', 'GET', !empty($adAccounts), 200, $durationMs);
         $activeAdAccounts = array_filter($adAccounts, fn($acc) => $acc['can_create_ads'] ?? false);
 
         $hasRequiredPermissions = $tokenInfo['has_all_required_permissions'] ?? true;
@@ -5084,6 +5096,7 @@ class PlatformConnectionsController extends Controller
         $config = config('social-platforms.google');
 
         // Exchange code for tokens
+        $startTime = microtime(true);
         $response = Http::asForm()->post($config['token_url'], [
             'code' => $request->get('code'),
             'client_id' => $config['client_id'],
@@ -5091,6 +5104,11 @@ class PlatformConnectionsController extends Controller
             'redirect_uri' => $config['redirect_uri'],
             'grant_type' => 'authorization_code',
         ]);
+        $durationMs = (int) ((microtime(true) - $startTime) * 1000);
+        $httpStatus = $response->status();
+
+        // Log the API call for analytics
+        $this->logPlatformApiCall($orgId, 'google', $config['token_url'], 'POST', $response->successful(), $httpStatus, $durationMs);
 
         if (!$response->successful()) {
             Log::error('Google OAuth token exchange failed', [
@@ -5107,8 +5125,11 @@ class PlatformConnectionsController extends Controller
         $expiresIn = $tokenData['expires_in'] ?? 3600;
         $grantedScopes = explode(' ', $tokenData['scope'] ?? '');
 
-        // Get user info
+        // Get user info (with logging)
+        $startTime = microtime(true);
         $userInfo = $this->getGoogleUserInfo($accessToken);
+        $userInfoDuration = (int) ((microtime(true) - $startTime) * 1000);
+        $this->logPlatformApiCall($orgId, 'google', 'https://www.googleapis.com/oauth2/v2/userinfo', 'GET', !empty($userInfo), 200, $userInfoDuration);
 
         $accountName = $userInfo['name'] ?? $userInfo['email'] ?? 'Google Account';
         $accountId = $userInfo['id'] ?? 'google_' . Str::random(10);
@@ -5950,6 +5971,73 @@ class PlatformConnectionsController extends Controller
                     'platform' => $profile->platform,
                 ]);
             }
+        }
+    }
+
+    /**
+     * Log platform API call to platform_api_calls table for analytics tracking.
+     *
+     * @param string|null $orgId Organization ID
+     * @param string $platform Platform name (google, meta, tiktok, etc.)
+     * @param string $endpoint API endpoint URL
+     * @param string $method HTTP method
+     * @param bool $success Whether the call was successful
+     * @param int|null $httpStatus HTTP status code
+     * @param int|null $durationMs Call duration in milliseconds
+     * @param string|null $errorMessage Error message if failed
+     * @param string|null $connectionId Connection ID if available
+     */
+    protected function logPlatformApiCall(
+        ?string $orgId,
+        string $platform,
+        string $endpoint,
+        string $method,
+        bool $success,
+        ?int $httpStatus = null,
+        ?int $durationMs = null,
+        ?string $errorMessage = null,
+        ?string $connectionId = null
+    ): void {
+        try {
+            if (!$orgId) {
+                return; // Skip logging if no org context
+            }
+
+            // Determine action type from endpoint
+            $actionType = 'other';
+            $endpointLower = strtolower($endpoint);
+            if (str_contains($endpointLower, 'token') || str_contains($endpointLower, 'oauth')) {
+                $actionType = 'auth';
+            } elseif (str_contains($endpointLower, 'userinfo') || str_contains($endpointLower, 'me')) {
+                $actionType = 'accounts';
+            } elseif (str_contains($endpointLower, 'campaign')) {
+                $actionType = 'campaigns';
+            } elseif (str_contains($endpointLower, 'insight') || str_contains($endpointLower, 'report')) {
+                $actionType = 'insights';
+            }
+
+            DB::table('cmis.platform_api_calls')->insert([
+                'call_id' => Str::uuid()->toString(),
+                'org_id' => $orgId,
+                'connection_id' => $connectionId,
+                'platform' => $platform,
+                'endpoint' => $endpoint,
+                'method' => strtoupper($method),
+                'action_type' => $actionType,
+                'http_status' => $httpStatus,
+                'duration_ms' => $durationMs,
+                'success' => $success,
+                'error_message' => $errorMessage,
+                'called_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to log platform API call', [
+                'error' => $e->getMessage(),
+                'platform' => $platform,
+                'endpoint' => $endpoint,
+            ]);
         }
     }
 

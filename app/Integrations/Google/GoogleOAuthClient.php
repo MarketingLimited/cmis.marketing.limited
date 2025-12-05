@@ -13,6 +13,7 @@ class GoogleOAuthClient extends OAuth2Client
 {
     protected string $authorizationUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     protected string $tokenUrl = 'https://oauth2.googleapis.com/token';
+    protected string $platform = 'google';
 
     protected array $scopes = [
         'https://www.googleapis.com/auth/adwords',
