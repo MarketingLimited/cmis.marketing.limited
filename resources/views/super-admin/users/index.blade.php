@@ -152,7 +152,7 @@
                                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white font-semibold text-sm"
                                          x-text="user.name ? user.name.substring(0, 2).toUpperCase() : 'U'"></div>
                                     <div>
-                                        <a :href="'{{ route('super-admin.users.show', '') }}/' + user.user_id"
+                                        <a :href="'{{ url('super-admin/users') }}/' + user.user_id"
                                            class="font-medium text-gray-900 dark:text-white hover:text-red-600 dark:hover:text-red-400"
                                            x-text="user.name"></a>
                                         <p class="text-sm text-gray-500" x-text="user.email"></p>
@@ -160,19 +160,19 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <template x-if="user.organizations && user.organizations.length > 0">
+                                <template x-if="user.orgs && user.orgs.length > 0">
                                     <div class="flex flex-wrap gap-1">
-                                        <template x-for="org in user.organizations.slice(0, 2)" :key="org.org_id">
+                                        <template x-for="(org, idx) in user.orgs.slice(0, 2)" :key="user.user_id + '-' + idx">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                                   x-text="org.name"></span>
                                         </template>
-                                        <template x-if="user.organizations.length > 2">
+                                        <template x-if="user.orgs.length > 2">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500"
-                                                  x-text="'+' + (user.organizations.length - 2)"></span>
+                                                  x-text="'+' + (user.orgs.length - 2)"></span>
                                         </template>
                                     </div>
                                 </template>
-                                <template x-if="!user.organizations || user.organizations.length === 0">
+                                <template x-if="!user.orgs || user.orgs.length === 0">
                                     <span class="text-gray-400 text-sm">{{ __('super_admin.users.no_organization') }}</span>
                                 </template>
                             </td>
@@ -215,7 +215,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ route('super-admin.users.show', '') }}/' + user.user_id"
+                                    <a :href="'{{ url('super-admin/users') }}/' + user.user_id"
                                        class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
                                        title="{{ __('super_admin.actions.view') }}">
                                         <i class="fas fa-eye"></i>
@@ -408,18 +408,30 @@ function usersManager() {
                     }
                 });
 
-                const data = await response.json();
-                this.users = data.users?.data || data.users || [];
-                this.organizations = data.organizations || [];
-
-                if (data.users?.current_page) {
-                    this.pagination = {
-                        current_page: data.users.current_page,
-                        last_page: data.users.last_page,
-                        per_page: data.users.per_page,
-                        total: data.users.total
-                    };
-                }
+                const result = await response.json();
+                // API returns: { success, message, data: [...users...], meta: { pagination } }
+                // Deduplicate orgs for each user (in case of duplicate pivot records)
+                const users = result.data || [];
+                this.users = users.map(user => {
+                    if (user.orgs && user.orgs.length > 0) {
+                        const seen = new Set();
+                        user.orgs = user.orgs.filter(org => {
+                            if (seen.has(org.org_id)) return false;
+                            seen.add(org.org_id);
+                            return true;
+                        });
+                    }
+                    return user;
+                });
+                const meta = result.meta || {};
+                this.pagination = {
+                    current_page: meta.current_page || 1,
+                    last_page: meta.last_page || 1,
+                    per_page: meta.per_page || 20,
+                    total: meta.total || 0,
+                    from: meta.from || 0,
+                    to: meta.to || 0
+                };
             } catch (error) {
                 console.error('Error loading users:', error);
             } finally {
@@ -509,7 +521,7 @@ function usersManager() {
                     });
 
                     if (response.ok) {
-                        window.location.href = '{{ route('dashboard') }}';
+                        window.location.href = '/';
                     }
                 } catch (error) {
                     console.error('Error impersonating user:', error);

@@ -26,6 +26,9 @@ class SuperAdminUserController extends Controller
     public function index(Request $request)
     {
         $query = User::query()
+            ->with(['orgs' => function($q) {
+                $q->select('cmis.orgs.org_id', 'cmis.orgs.name', 'cmis.orgs.status');
+            }])
             ->withCount('orgs');
 
         // Search filter
@@ -76,6 +79,14 @@ class SuperAdminUserController extends Controller
         $users = $query->paginate($request->get('per_page', 20));
 
         if ($request->expectsJson()) {
+            // Deduplicate orgs for each user (user may have multiple roles in same org)
+            $users->getCollection()->transform(function ($user) {
+                if ($user->orgs) {
+                    $user->setRelation('orgs', $user->orgs->unique('org_id')->values());
+                    $user->orgs_count = $user->orgs->count();
+                }
+                return $user;
+            });
             return $this->paginated($users);
         }
 

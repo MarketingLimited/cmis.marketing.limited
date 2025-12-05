@@ -242,6 +242,7 @@ return [
         'yearly' => 'Yearly',
         'no_plan' => 'No Plan',
         'trial_ends' => 'Trial ends',
+        'started_at' => 'Started At',
         'no_subscriptions' => 'No subscriptions found',
         'change_plan' => 'Change Plan',
         'select_plan' => 'Select New Plan',

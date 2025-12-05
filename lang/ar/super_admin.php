@@ -242,6 +242,7 @@ return [
         'yearly' => 'سنوي',
         'no_plan' => 'لا توجد باقة',
         'trial_ends' => 'تنتهي التجربة',
+        'started_at' => 'تاريخ البدء',
         'no_subscriptions' => 'لم يتم العثور على اشتراكات',
         'change_plan' => 'تغيير الباقة',
         'select_plan' => 'اختر باقة جديدة',
