@@ -22,9 +22,11 @@ class MetaAssetsService
     private const API_VERSION = 'v21.0';
     private const BASE_URL = 'https://graph.facebook.com';
     private const THREADS_BASE_URL = 'https://graph.threads.net';
-    private const MAX_PAGES = 50; // Safety limit: 50 pages x 100 items = 5000 max
+    private const MAX_PAGES = 3; // Safety limit: 3 pages x 100 items = 300 max (reduced from 50 to prevent rate limiting)
     private const ITEMS_PER_PAGE = 100;
     private const REQUEST_TIMEOUT = 30;
+    private const MAX_BUSINESSES = 10; // Limit businesses to prevent API exhaustion
+    private const DELAY_BETWEEN_REQUESTS_MS = 100; // 100ms delay between API calls
 
     /**
      * Core pagination helper - fetches ALL pages from Meta API.
@@ -40,13 +42,30 @@ class MetaAssetsService
         $pageCount = 0;
 
         while ($nextUrl && $pageCount < self::MAX_PAGES) {
+            // Add delay between requests to prevent rate limiting
+            if ($pageCount > 0) {
+                usleep(self::DELAY_BETWEEN_REQUESTS_MS * 1000);
+            }
+
             $response = Http::timeout(self::REQUEST_TIMEOUT)->get($nextUrl);
 
             if (!$response->successful()) {
+                $error = $response->json('error', []);
+
+                // Check for rate limit error
+                if (($error['code'] ?? 0) === 4 || ($error['code'] ?? 0) === 17) {
+                    Log::warning('Meta API rate limit hit, stopping pagination', [
+                        'url' => preg_replace('/access_token=[^&]+/', 'access_token=***', $nextUrl),
+                        'page' => $pageCount + 1,
+                        'items_collected' => count($allData),
+                    ]);
+                    break;
+                }
+
                 Log::warning('Meta API pagination failed', [
                     'url' => preg_replace('/access_token=[^&]+/', 'access_token=***', $nextUrl),
                     'page' => $pageCount + 1,
-                    'error' => $response->json('error', []),
+                    'error' => $error,
                 ]);
                 break;
             }
@@ -67,7 +86,7 @@ class MetaAssetsService
         }
 
         if ($pageCount >= self::MAX_PAGES) {
-            Log::warning('Meta API pagination hit safety limit', [
+            Log::info('Meta API pagination reached limit', [
                 'max_pages' => self::MAX_PAGES,
                 'total_items' => count($allData),
             ]);
@@ -419,7 +438,16 @@ class MetaAssetsService
             Log::info('Fetching Product Catalogs from Meta API');
 
             $catalogs = [];
-            $businesses = $this->getBusinesses($accessToken, $connectionId);
+            $allBusinesses = $this->getBusinesses($accessToken, $connectionId);
+
+            // Limit businesses to prevent API exhaustion
+            $businesses = array_slice($allBusinesses, 0, self::MAX_BUSINESSES);
+            if (count($allBusinesses) > self::MAX_BUSINESSES) {
+                Log::info('Limited businesses for catalog fetch', [
+                    'total' => count($allBusinesses),
+                    'limited_to' => self::MAX_BUSINESSES,
+                ]);
+            }
 
             foreach ($businesses as $business) {
                 $businessId = $business['id'] ?? null;
@@ -503,7 +531,16 @@ class MetaAssetsService
             Log::info('Fetching WhatsApp Business Accounts from Meta API');
 
             $whatsappAccounts = [];
-            $businesses = $this->getBusinesses($accessToken, $connectionId);
+            $allBusinesses = $this->getBusinesses($accessToken, $connectionId);
+
+            // Limit businesses to prevent API exhaustion
+            $businesses = array_slice($allBusinesses, 0, self::MAX_BUSINESSES);
+            if (count($allBusinesses) > self::MAX_BUSINESSES) {
+                Log::info('Limited businesses for WhatsApp fetch', [
+                    'total' => count($allBusinesses),
+                    'limited_to' => self::MAX_BUSINESSES,
+                ]);
+            }
 
             foreach ($businesses as $business) {
                 $businessId = $business['id'] ?? null;

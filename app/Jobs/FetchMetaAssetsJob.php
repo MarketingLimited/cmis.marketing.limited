@@ -155,8 +155,9 @@ class FetchMetaAssetsJob implements ShouldQueue
 
         foreach ($assetTypes as $type => $method) {
             try {
-                // Force refresh to ensure fresh data
-                $assets = $service->$method($connectionId, $accessToken, true);
+                // Don't force refresh - use cached data if available to prevent API rate limiting
+                // Cache will naturally expire after 1 hour (CACHE_TTL)
+                $assets = $service->$method($connectionId, $accessToken, false);
                 $results[$type] = count($assets);
             } catch (\Exception $e) {
                 $results[$type] = 'error: ' . $e->getMessage();
