@@ -26,7 +26,10 @@ class SuperAdminOrgController extends Controller
     public function index(Request $request)
     {
         $query = Org::query()
-            ->withCount('users')
+            ->withCount(['users' => function($q) {
+                // Count distinct users (user may have multiple roles in org)
+                $q->select(DB::raw('count(distinct cmis.user_orgs.user_id)'));
+            }])
             ->with(['subscription', 'subscription.plan']);
 
         // Search filter
@@ -76,7 +79,14 @@ class SuperAdminOrgController extends Controller
             'suspendedByUser',
             'blockedByUser',
         ])
-            ->withCount(['users', 'campaigns', 'integrations'])
+            ->withCount([
+                'users' => function($q) {
+                    // Count distinct users (user may have multiple roles in org)
+                    $q->select(DB::raw('count(distinct cmis.user_orgs.user_id)'));
+                },
+                'campaigns',
+                'integrations'
+            ])
             ->findOrFail($orgId);
 
         // Get API usage stats for this org
