@@ -1101,17 +1101,6 @@ class SocialPostPublishService
                 ];
             }
 
-            // Get valid access token (refresh if expired)
-            $googleAssetsService = app(GoogleAssetsService::class);
-            $accessToken = $googleAssetsService->getValidAccessToken($connection);
-
-            if (!$accessToken) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to get valid Google access token. Please reconnect your Google account.',
-                ];
-            }
-
             // Get post metadata for title
             $postMetadata = DB::table('cmis.social_posts')
                 ->where('id', $postId)
@@ -1122,11 +1111,98 @@ class SocialPostPublishService
             $description = $content;
             $privacyStatus = $metadata['privacy_status'] ?? 'public';
 
-            // Get target channel from post (account_id) or connection settings
-            $targetChannelId = $postMetadata->account_id
-                ?? ($connection->account_metadata['selected_youtube_channel'] ?? null);
+            // Get target channel from post (account_id) or selected channels in settings
+            $selectedChannels = $connection->account_metadata['selected_assets']['youtube_channel'] ?? [];
+            $targetChannelId = $postMetadata->account_id ?? ($selectedChannels[0] ?? null);
 
-            // Verify which YouTube channel is currently authorized
+            // Find target channel info from stored channels
+            $targetChannelInfo = null;
+            $targetChannelName = 'Unknown';
+            $youtubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
+            foreach ($youtubeChannels as $ch) {
+                if ($ch['id'] === $targetChannelId) {
+                    $targetChannelInfo = $ch;
+                    $targetChannelName = $ch['title'] ?? 'Unknown';
+                    break;
+                }
+            }
+
+            // Determine which token to use based on channel type
+            // Brand channels use the brand account token, personal channels use main token
+            $brandAccountData = $connection->account_metadata['youtube_brand_account'] ?? null;
+            $isBrandChannel = ($targetChannelInfo['type'] ?? '') === 'brand';
+            $accessToken = null;
+
+            if ($isBrandChannel && $brandAccountData) {
+                // Use brand account token for brand channels
+                $brandTokenExpiresAt = isset($brandAccountData['token_expires_at'])
+                    ? \Carbon\Carbon::parse($brandAccountData['token_expires_at'])
+                    : null;
+
+                // Check if brand account token is expired
+                if ($brandTokenExpiresAt && $brandTokenExpiresAt->isPast()) {
+                    // Refresh brand account token
+                    Log::info('YouTube brand account token expired, refreshing', [
+                        'connection_id' => $connection->connection_id,
+                        'expired_at' => $brandAccountData['token_expires_at'],
+                    ]);
+
+                    $config = config('social-platforms.google');
+                    $refreshResponse = Http::asForm()->post($config['token_url'], [
+                        'client_id' => $config['client_id'],
+                        'client_secret' => $config['client_secret'],
+                        'refresh_token' => $brandAccountData['refresh_token'],
+                        'grant_type' => 'refresh_token',
+                    ]);
+
+                    if ($refreshResponse->successful()) {
+                        $tokenData = $refreshResponse->json();
+                        $brandAccountData['access_token'] = $tokenData['access_token'];
+                        $brandAccountData['token_expires_at'] = now('Europe/Berlin')
+                            ->addSeconds($tokenData['expires_in'] ?? 3600)
+                            ->toIso8601String();
+
+                        // Update stored brand account data
+                        $accountMetadata = $connection->account_metadata;
+                        $accountMetadata['youtube_brand_account'] = $brandAccountData;
+                        $connection->update(['account_metadata' => $accountMetadata]);
+
+                        Log::info('YouTube brand account token refreshed successfully');
+                    } else {
+                        Log::error('Failed to refresh YouTube brand account token', [
+                            'error' => $refreshResponse->body(),
+                        ]);
+                        return [
+                            'success' => false,
+                            'message' => 'Brand account token expired and refresh failed. Please re-authorize YouTube.',
+                        ];
+                    }
+                }
+
+                $accessToken = $brandAccountData['access_token'];
+                Log::info('Using YouTube brand account token for upload', [
+                    'post_id' => $postId,
+                    'target_channel' => $targetChannelName,
+                    'brand_email' => $brandAccountData['email'] ?? 'unknown',
+                ]);
+            } else {
+                // Use main Google connection token for personal channel
+                $googleAssetsService = app(GoogleAssetsService::class);
+                $accessToken = $googleAssetsService->getValidAccessToken($connection);
+                Log::info('Using main Google token for YouTube upload', [
+                    'post_id' => $postId,
+                    'channel_type' => $targetChannelInfo['type'] ?? 'unknown',
+                ]);
+            }
+
+            if (!$accessToken) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to get valid access token. Please reconnect your Google/YouTube account.',
+                ];
+            }
+
+            // Verify which YouTube channel is currently authorized with this token
             $channelResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
             ])->get('https://www.googleapis.com/youtube/v3/channels', [
@@ -1145,25 +1221,18 @@ class SocialPostPublishService
             }
 
             // Log channel info for debugging
-            Log::info('YouTube channel check', [
+            Log::info('YouTube channel verification', [
                 'post_id' => $postId,
-                'target_channel' => $targetChannelId,
-                'authorized_channel' => $authorizedChannel,
+                'target_channel_id' => $targetChannelId,
+                'target_channel_name' => $targetChannelName,
+                'authorized_channel_id' => $authorizedChannel,
                 'authorized_channel_title' => $authorizedChannelTitle,
+                'using_brand_token' => $isBrandChannel && $brandAccountData,
             ]);
 
             // CRITICAL: Validate channel authorization
             if ($targetChannelId && $authorizedChannel && $targetChannelId !== $authorizedChannel) {
                 // Target channel doesn't match authorized channel - ERROR
-                $targetChannelName = 'Unknown';
-                $youtubeChannels = $connection->account_metadata['youtube_channels'] ?? [];
-                foreach ($youtubeChannels as $ch) {
-                    if ($ch['id'] === $targetChannelId) {
-                        $targetChannelName = $ch['title'] ?? 'Unknown';
-                        break;
-                    }
-                }
-
                 Log::warning('YouTube channel mismatch - blocking upload', [
                     'post_id' => $postId,
                     'target_channel_id' => $targetChannelId,
