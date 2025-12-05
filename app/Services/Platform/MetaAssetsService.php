@@ -489,22 +489,37 @@ class MetaAssetsService
             $usedFallback = false;
 
             try {
-                // Fetch ALL businesses with embedded catalogs, whatsapp, offline events using pagination
+                // Base fields that work for both User tokens and System User tokens
+                $baseFields = [
+                    'id',
+                    'name',
+                    'verification_status',
+                    'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
+                    'client_product_catalogs.limit(100){id,name,product_count,vertical}',
+                    'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+                ];
+
+                // Extended fields (only work with System User tokens)
+                $extendedFields = array_merge($baseFields, [
+                    'offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}',
+                ]);
+
+                // First try with all fields (System User tokens)
                 $rawBusinesses = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
                     $accessToken,
-                    [
-                        'fields' => implode(',', [
-                            'id',
-                            'name',
-                            'verification_status',
-                            'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
-                            'client_product_catalogs.limit(100){id,name,product_count,vertical}',
-                            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
-                            'offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}',
-                        ]),
-                    ]
+                    ['fields' => implode(',', $extendedFields)]
                 );
+
+                // If empty (possibly due to field error), retry with base fields only (User tokens)
+                if (empty($rawBusinesses)) {
+                    Log::info('Retrying /me/businesses with base fields only (User token compatibility)');
+                    $rawBusinesses = $this->fetchAllPages(
+                        self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
+                        $accessToken,
+                        ['fields' => implode(',', $baseFields)]
+                    );
+                }
 
                 // Fallback for System User tokens: when /me/businesses returns empty,
                 // extract business IDs from ad accounts and query each business directly
