@@ -783,26 +783,6 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{connection}/test', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'testConnection'])->name('test');
                 Route::delete('/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'destroy'])->name('destroy');
 
-                // ==================== Connection Wizard (Simplified Flow) ====================
-                Route::prefix('wizard')->name('wizard.')->group(function () {
-                    // Dashboard - Simplified platform grid
-                    Route::get('/', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'wizardDashboard'])->name('dashboard');
-
-                    // Wizard flow for specific platform
-                    Route::get('/{platform}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'startWizard'])->name('start');
-                    Route::get('/{platform}/oauth-return/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'wizardOAuthReturn'])->name('oauth-return');
-                    Route::post('/{platform}/manual', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'wizardManualConnect'])->name('manual');
-                    Route::get('/{platform}/assets/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'wizardAssets'])->name('assets');
-                    Route::post('/{platform}/assets/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'saveWizardAssets'])->name('assets.store');
-                    Route::get('/{platform}/success/{connection}', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'wizardSuccess'])->name('success');
-
-                    // API endpoints for wizard
-                    Route::prefix('api')->name('api.')->group(function () {
-                        Route::get('/{platform}/config', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'getWizardPlatformConfig'])->name('config');
-                        Route::get('/{platform}/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'getWizardConnectionAssets'])->name('assets');
-                        Route::get('/stats', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'getWizardStats'])->name('stats');
-                    });
-                });
             });
 
             // ==================== Profile Management (VistaSocial-like) ====================

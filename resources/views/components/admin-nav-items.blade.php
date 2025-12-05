@@ -508,11 +508,6 @@
             <i class="fas fa-plug text-xs w-4"></i>
             <span>{{ __('navigation.platform_connections') }}</span>
         </a>
-        <a href="{{ route('orgs.settings.platform-connections.wizard.dashboard', ['org' => $currentOrg]) }}"
-           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('orgs.settings.platform-connections.wizard.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
-            <i class="fas fa-magic text-xs w-4"></i>
-            <span>{{ __('navigation.connection_wizard') }}</span>
-        </a>
         <a href="{{ route('orgs.settings.profiles.index', ['org' => $currentOrg]) }}"
            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
             <i class="fas fa-id-card text-xs w-4"></i>
