@@ -1207,7 +1207,14 @@ class SocialPostPublishService
             // Determine which token to use based on channel type (if not already determined)
             $isBrandChannel = ($targetChannelInfo['type'] ?? '') === 'brand';
 
-            if (!$accessToken && $isBrandChannel && $brandAccountData) {
+            if ($accessToken) {
+                // Token already set from auto-detect section, use it
+                Log::info('Using auto-detected brand account token for upload', [
+                    'post_id' => $postId,
+                    'target_channel' => $targetChannelName,
+                    'brand_email' => $brandAccountData['email'] ?? 'unknown',
+                ]);
+            } elseif ($isBrandChannel && $brandAccountData) {
                 // Use brand account token for brand channels
                 $brandTokenExpiresAt = isset($brandAccountData['token_expires_at'])
                     ? \Carbon\Carbon::parse($brandAccountData['token_expires_at'])
