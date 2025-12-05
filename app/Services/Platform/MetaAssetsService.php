@@ -223,41 +223,79 @@ class MetaAssetsService
     }
 
     /**
-     * Get Instagram Business accounts (merges from user assets and business assets).
+     * Get Instagram Business accounts (merges from multiple sources).
+     * Sources: user assets, business instagram_accounts edge, and business-owned pages.
      */
     public function getInstagramAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
+        $cacheKey = $this->getCacheKey($connectionId, 'instagram_merged');
+
         if ($forceRefresh) {
+            Cache::forget($cacheKey);
             Cache::forget($this->getCacheKey($connectionId, 'all_user_assets'));
             Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
         }
 
-        // Get Instagram from /me/accounts (via connected pages)
-        $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
-        $userInstagram = $userAssets['instagram'] ?? [];
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
+            // Get Instagram from /me/accounts (via connected pages)
+            $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
+            $userInstagram = $userAssets['instagram'] ?? [];
 
-        // Get Instagram from businesses (via owned_pages and client_pages)
-        $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
-        $businessInstagram = $businessAssets['instagram'] ?? [];
+            // Start with user Instagram
+            $allInstagram = $userInstagram;
+            $existingIds = array_column($allInstagram, 'id');
+            $existingPageIds = array_column($allInstagram, 'connected_page_id');
 
-        // Merge and deduplicate (user Instagram take priority)
-        $allInstagram = $userInstagram;
-        $existingIds = array_column($allInstagram, 'id');
+            // Get business assets (includes instagram_accounts edge and pages)
+            $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+            $businessPages = $businessAssets['pages'] ?? [];
+            $directBusinessInstagram = $businessAssets['instagram'] ?? [];
 
-        foreach ($businessInstagram as $ig) {
-            if (!in_array($ig['id'], $existingIds)) {
-                $allInstagram[] = $ig;
-                $existingIds[] = $ig['id'];
+            // Add direct business Instagram (from instagram_accounts edge)
+            $directCount = 0;
+            foreach ($directBusinessInstagram as $ig) {
+                if (!in_array($ig['id'], $existingIds)) {
+                    $allInstagram[] = $ig;
+                    $existingIds[] = $ig['id'];
+                    $directCount++;
+                }
             }
-        }
 
-        Log::debug('Instagram merged from user and business assets', [
-            'user_instagram' => count($userInstagram),
-            'business_instagram' => count($businessInstagram),
-            'total_unique' => count($allInstagram),
-        ]);
+            // Filter to pages we haven't already queried for Instagram
+            $pagesToQuery = [];
+            foreach ($businessPages as $page) {
+                $pageId = $page['id'] ?? null;
+                if ($pageId && !in_array($pageId, $existingPageIds)) {
+                    $pagesToQuery[] = $page;
+                    $existingPageIds[] = $pageId;
+                }
+            }
 
-        return $allInstagram;
+            // Query Instagram for business pages using batch API
+            $batchInstagramCount = 0;
+            if (!empty($pagesToQuery)) {
+                $batchInstagram = $this->batchQueryPagesInstagram($pagesToQuery, $accessToken);
+
+                // Add to merged list (deduplicate by ID)
+                foreach ($batchInstagram as $ig) {
+                    if (!in_array($ig['id'], $existingIds)) {
+                        $allInstagram[] = $ig;
+                        $existingIds[] = $ig['id'];
+                        $batchInstagramCount++;
+                    }
+                }
+            }
+
+            Log::debug('Instagram merged from all sources', [
+                'user_instagram' => count($userInstagram),
+                'direct_business_instagram' => $directCount,
+                'business_pages_queried' => count($pagesToQuery),
+                'batch_instagram_found' => $batchInstagramCount,
+                'total_unique' => count($allInstagram),
+            ]);
+
+            return $allInstagram;
+        });
     }
 
     /**
@@ -540,7 +578,7 @@ class MetaAssetsService
 
             try {
                 // Base fields that work for both User tokens and System User tokens
-                // NOTE: Pages use lighter fields (no nested instagram) to avoid "too much data" error
+                // NOTE: Pages use lighter fields, instagram_accounts causes "too much data" so batch API handles it
                 $baseFields = [
                     'id',
                     'name',
@@ -750,6 +788,33 @@ class MetaAssetsService
                             }
                         }
                     }
+
+                    // Extract Instagram accounts directly owned by business (if present - only from batch API fallback)
+                    foreach ($business['instagram_accounts']['data'] ?? [] as $ig) {
+                        $existingIgIds = array_column($businessInstagram, 'id');
+                        if (!in_array($ig['id'], $existingIgIds)) {
+                            $businessInstagram[] = [
+                                'id' => $ig['id'],
+                                'username' => $ig['username'] ?? null,
+                                'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                'followers_count' => $ig['followers_count'] ?? 0,
+                                'media_count' => $ig['media_count'] ?? 0,
+                                'connected_page_id' => null,
+                                'connected_page_name' => null,
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                                'source' => 'business_direct',
+                            ];
+                        }
+                    }
+                }
+
+                // If no business Instagram yet and we have businesses (didn't come from batch API),
+                // fetch instagram_accounts using batch API
+                if (empty($businessInstagram) && !empty($businesses) && !$usedFallback) {
+                    Log::info('Fetching Instagram from businesses using batch API');
+                    $businessInstagram = $this->batchQueryBusinessInstagram($businesses, $accessToken);
                 }
 
                 Log::info('ALL business assets fetched' . ($usedFallback ? ' (via System User fallback)' : ' with pagination'), [
@@ -805,6 +870,8 @@ class MetaAssetsService
             // Include pages owned/managed by each business (lighter fields - no nested IG to avoid payload limits)
             'owned_pages.limit(100){id,name,category}',
             'client_pages.limit(100){id,name,category}',
+            // Instagram accounts owned by this business (direct access)
+            'instagram_accounts.limit(100){id,username,name,profile_picture_url,followers_count,media_count}',
         ]);
 
         // Build batch request array
@@ -974,6 +1041,251 @@ class MetaAssetsService
         ]);
 
         return $allBusinesses;
+    }
+
+    /**
+     * Fetch Instagram accounts from pages using Meta's Batch API.
+     * Queries pages' instagram_business_account field in batches of 50.
+     *
+     * @param array $pages Array of pages with 'id', 'name', 'business_id', 'business_name'
+     * @param string $accessToken The Meta API access token
+     * @return array Array of Instagram account data
+     */
+    private function batchQueryPagesInstagram(array $pages, string $accessToken): array
+    {
+        if (empty($pages)) {
+            return [];
+        }
+
+        // Build page IDs list with metadata for later enrichment
+        $pageMetadata = [];
+        foreach ($pages as $page) {
+            $pageId = $page['id'] ?? null;
+            if ($pageId) {
+                $pageMetadata[$pageId] = [
+                    'page_name' => $page['name'] ?? 'Unknown Page',
+                    'business_id' => $page['business_id'] ?? null,
+                    'business_name' => $page['business_name'] ?? null,
+                ];
+            }
+        }
+
+        $pageIds = array_keys($pageMetadata);
+        if (empty($pageIds)) {
+            return [];
+        }
+
+        Log::info('Fetching Instagram from business pages using Batch API', [
+            'total_pages' => count($pageIds),
+            'expected_batches' => ceil(count($pageIds) / self::BATCH_SIZE),
+        ]);
+
+        $allInstagram = [];
+        $batchChunks = array_chunk($pageIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($batchChunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            // Build batch request for this chunk
+            $batchRequests = [];
+            foreach ($chunk as $pageId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $pageId . '?' . http_build_query([
+                        'fields' => 'instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}',
+                    ]),
+                ];
+            }
+
+            try {
+                $response = Http::timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::warning('Batch Instagram query failed', [
+                        'batch' => $batchNumber + 1,
+                        'status' => $response->status(),
+                    ]);
+                    $batchNumber++;
+                    continue;
+                }
+
+                $batchResponses = $response->json();
+                foreach ($batchResponses as $index => $batchResponse) {
+                    $pageId = $chunk[$index] ?? null;
+                    if (!$pageId) continue;
+
+                    if (($batchResponse['code'] ?? 0) === 200) {
+                        $body = json_decode($batchResponse['body'] ?? '{}', true);
+                        $ig = $body['instagram_business_account'] ?? null;
+
+                        if ($ig && !empty($ig['id'])) {
+                            $meta = $pageMetadata[$pageId] ?? [];
+                            $allInstagram[] = [
+                                'id' => $ig['id'],
+                                'username' => $ig['username'] ?? null,
+                                'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                'followers_count' => $ig['followers_count'] ?? 0,
+                                'media_count' => $ig['media_count'] ?? 0,
+                                'connected_page_id' => $pageId,
+                                'connected_page_name' => $meta['page_name'] ?? 'Unknown Page',
+                                'business_id' => $meta['business_id'],
+                                'business_name' => $meta['business_name'],
+                                'source' => 'business_page',
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Exception in batch Instagram query', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch Instagram query completed', [
+            'pages_queried' => count($pageIds),
+            'instagram_found' => count($allInstagram),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return $allInstagram;
+    }
+
+    /**
+     * Fetch Instagram accounts directly from businesses using Meta's Batch API.
+     * Queries the instagram_accounts edge on each business.
+     *
+     * @param array $businesses Array of businesses with 'id' and 'name'
+     * @param string $accessToken The Meta API access token
+     * @return array Array of Instagram account data
+     */
+    private function batchQueryBusinessInstagram(array $businesses, string $accessToken): array
+    {
+        if (empty($businesses)) {
+            return [];
+        }
+
+        // Build business metadata for enrichment
+        $businessMetadata = [];
+        foreach ($businesses as $biz) {
+            $bizId = $biz['id'] ?? null;
+            if ($bizId) {
+                $businessMetadata[$bizId] = [
+                    'name' => $biz['name'] ?? 'Unknown Business',
+                ];
+            }
+        }
+
+        $businessIds = array_keys($businessMetadata);
+        if (empty($businessIds)) {
+            return [];
+        }
+
+        Log::info('Fetching Instagram from businesses using Batch API', [
+            'total_businesses' => count($businessIds),
+            'expected_batches' => ceil(count($businessIds) / self::BATCH_SIZE),
+        ]);
+
+        $allInstagram = [];
+        $batchChunks = array_chunk($businessIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($batchChunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            // Build batch request for this chunk
+            $batchRequests = [];
+            foreach ($chunk as $bizId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $bizId . '?' . http_build_query([
+                        'fields' => 'instagram_accounts.limit(100){id,username,name,profile_picture_url,followers_count,media_count}',
+                    ]),
+                ];
+            }
+
+            try {
+                $response = Http::timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::warning('Batch business Instagram query failed', [
+                        'batch' => $batchNumber + 1,
+                        'status' => $response->status(),
+                    ]);
+                    $batchNumber++;
+                    continue;
+                }
+
+                $batchResponses = $response->json();
+                foreach ($batchResponses as $index => $batchResponse) {
+                    $bizId = $chunk[$index] ?? null;
+                    if (!$bizId) continue;
+
+                    if (($batchResponse['code'] ?? 0) === 200) {
+                        $body = json_decode($batchResponse['body'] ?? '{}', true);
+                        $igAccounts = $body['instagram_accounts']['data'] ?? [];
+                        $meta = $businessMetadata[$bizId] ?? [];
+
+                        foreach ($igAccounts as $ig) {
+                            if (!empty($ig['id'])) {
+                                $existingIds = array_column($allInstagram, 'id');
+                                if (!in_array($ig['id'], $existingIds)) {
+                                    $allInstagram[] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => null,
+                                        'connected_page_name' => null,
+                                        'business_id' => $bizId,
+                                        'business_name' => $meta['name'] ?? 'Unknown Business',
+                                        'source' => 'business_direct',
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Exception in batch business Instagram query', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch business Instagram query completed', [
+            'businesses_queried' => count($businessIds),
+            'instagram_found' => count($allInstagram),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return $allInstagram;
     }
 
     /**
