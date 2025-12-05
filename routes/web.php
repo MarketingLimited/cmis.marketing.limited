@@ -57,6 +57,7 @@ Route::prefix('invitations')->name('invitations.')->group(function () {
 // These routes handle OAuth callbacks from external platforms
 // The org_id is encoded in the 'state' parameter
 Route::prefix('integrations')->name('integrations.')->group(function () {
+    Route::get('/meta/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackMeta'])->name('meta.callback');
     Route::get('/youtube/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackYouTube'])->name('youtube.callback');
     Route::get('/linkedin/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackLinkedIn'])->name('linkedin.callback');
     Route::get('/twitter/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTwitter'])->name('twitter.callback');

@@ -18,7 +18,7 @@ return [
         'oauth_version' => '2.0',
         'app_id' => env('META_APP_ID'),
         'app_secret' => env('META_APP_SECRET'),
-        'redirect_uri' => env('META_REDIRECT_URI'),
+        'redirect_uri' => env('META_REDIRECT_URI', env('APP_URL') . '/integrations/meta/callback'),
         'api_version' => env('META_API_VERSION', 'v21.0'),
         'rate_limit' => env('META_RATE_LIMIT', 200),
         'base_url' => 'https://graph.facebook.com',
