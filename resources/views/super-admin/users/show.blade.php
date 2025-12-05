@@ -104,7 +104,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('super_admin.users.organizations') }}</p>
-                    <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $user->organizations->count() }}</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white">{{ $activityStats['orgs_count'] ?? 0 }}</p>
                 </div>
             </div>
         </div>
@@ -116,7 +116,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('super_admin.users.api_calls_month') }}</p>
-                    <p class="text-xl font-bold text-gray-900 dark:text-white">{{ number_format($apiCallsThisMonth ?? 0) }}</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white">{{ number_format($activityStats['api_calls_total'] ?? 0) }}</p>
                 </div>
             </div>
         </div>
@@ -166,7 +166,7 @@
                         class="py-4 px-6 text-sm font-medium border-b-2 whitespace-nowrap transition">
                     <i class="fas fa-building {{ $isRtl ? 'ml-2' : 'mr-2' }}"></i>
                     {{ __('super_admin.users.tab_organizations') }}
-                    <span class="{{ $isRtl ? 'mr-1' : 'ml-1' }} px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">{{ $user->organizations->count() }}</span>
+                    <span class="{{ $isRtl ? 'mr-1' : 'ml-1' }} px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">{{ $activityStats['orgs_count'] ?? 0 }}</span>
                 </button>
                 <button @click="activeTab = 'sessions'"
                         :class="activeTab === 'sessions' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
@@ -284,7 +284,7 @@
 
             <!-- Organizations Tab -->
             <div x-show="activeTab === 'organizations'" x-transition>
-                @if($user->organizations->count() > 0)
+                @if($user->orgs && $user->orgs->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -307,7 +307,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @foreach($user->organizations as $org)
+                            @foreach($user->orgs as $org)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
@@ -562,7 +562,7 @@ function userDetail() {
                     });
 
                     if (response.ok) {
-                        window.location.href = '{{ route('dashboard') }}';
+                        window.location.href = '/';
                     }
                 } catch (error) {
                     console.error('Error impersonating user:', error);

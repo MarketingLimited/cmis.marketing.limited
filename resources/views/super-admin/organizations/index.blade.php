@@ -1,10 +1,14 @@
 @extends('super-admin.layouts.app')
 
-@section('title', __('super_admin.organizations'))
+@php
+    $isRtl = app()->getLocale() === 'ar';
+@endphp
+
+@section('title', __('super_admin.orgs.title'))
 
 @section('breadcrumb')
 <span class="text-gray-400">/</span>
-<span class="text-gray-700 dark:text-gray-300">{{ __('super_admin.organizations') }}</span>
+<span class="text-gray-700 dark:text-gray-300">{{ __('super_admin.orgs.title') }}</span>
 @endsection
 
 @section('content')
@@ -12,24 +16,24 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('super_admin.organizations') }}</h1>
-            <p class="text-gray-600 dark:text-gray-400">{{ __('super_admin.organizations_subtitle') }}</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('super_admin.orgs.title') }}</h1>
+            <p class="text-gray-600 dark:text-gray-400">{{ __('super_admin.orgs.subtitle') }}</p>
         </div>
 
         <!-- Bulk Actions -->
         <div class="flex items-center gap-2" x-show="selectedOrgs.length > 0">
-            <span class="text-sm text-gray-500" x-text="selectedOrgs.length + ' {{ __('super_admin.selected') }}'"></span>
+            <span class="text-sm text-gray-500" x-text="selectedOrgs.length + ' {{ __('super_admin.orgs.selected') }}'"></span>
             <button @click="bulkAction('suspend')" class="px-3 py-2 bg-yellow-500 text-white text-sm rounded-lg hover:bg-yellow-600 transition">
                 <i class="fas fa-pause {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
-                {{ __('super_admin.suspend') }}
+                {{ __('super_admin.actions.suspend') }}
             </button>
             <button @click="bulkAction('restore')" class="px-3 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition">
                 <i class="fas fa-play {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
-                {{ __('super_admin.restore') }}
+                {{ __('super_admin.actions.restore') }}
             </button>
             <button @click="bulkAction('block')" class="px-3 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition">
                 <i class="fas fa-ban {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>
-                {{ __('super_admin.block') }}
+                {{ __('super_admin.actions.block') }}
             </button>
         </div>
     </div>
@@ -43,7 +47,7 @@
                     <input type="text"
                            x-model="filters.search"
                            @input.debounce.300ms="loadOrganizations()"
-                           placeholder="{{ __('super_admin.search_organizations') }}"
+                           placeholder="{{ __('super_admin.orgs.search_placeholder') }}"
                            class="w-full px-4 py-2 {{ $isRtl ? 'pr-10' : 'pl-10' }} border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white">
                     <i class="fas fa-search absolute {{ $isRtl ? 'right-3' : 'left-3' }} top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
@@ -53,17 +57,17 @@
             <select x-model="filters.status"
                     @change="loadOrganizations()"
                     class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white">
-                <option value="">{{ __('super_admin.all_statuses') }}</option>
-                <option value="active">{{ __('super_admin.status_active') }}</option>
-                <option value="suspended">{{ __('super_admin.status_suspended') }}</option>
-                <option value="blocked">{{ __('super_admin.status_blocked') }}</option>
+                <option value="">{{ __('super_admin.orgs.all_statuses') }}</option>
+                <option value="active">{{ __('super_admin.orgs.status_active') }}</option>
+                <option value="suspended">{{ __('super_admin.orgs.status_suspended') }}</option>
+                <option value="blocked">{{ __('super_admin.orgs.status_blocked') }}</option>
             </select>
 
             <!-- Plan Filter -->
             <select x-model="filters.plan_id"
                     @change="loadOrganizations()"
                     class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white">
-                <option value="">{{ __('super_admin.all_plans') }}</option>
+                <option value="">{{ __('super_admin.orgs.all_plans') }}</option>
                 @foreach($plans ?? [] as $plan)
                 <option value="{{ $plan->plan_id }}">{{ $plan->name }}</option>
                 @endforeach
@@ -80,12 +84,12 @@
                         <th class="px-4 py-3 text-start">
                             <input type="checkbox" x-model="selectAll" @change="toggleSelectAll()" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
                         </th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.organization') }}</th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.plan') }}</th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.users') }}</th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.status') }}</th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.created_at') }}</th>
-                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.actions') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.organization') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.plan') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.users') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.status') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.created') }}</th>
+                        <th class="px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('super_admin.orgs.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -99,7 +103,7 @@
                                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm"
                                          x-text="org.name.substring(0, 2).toUpperCase()"></div>
                                     <div>
-                                        <a :href="'{{ route('super-admin.orgs.show', '') }}/' + org.org_id" class="font-medium text-gray-900 dark:text-white hover:text-red-600" x-text="org.name"></a>
+                                        <a :href="'{{ url('super-admin/organizations') }}/' + org.org_id" class="font-medium text-gray-900 dark:text-white hover:text-red-600" x-text="org.name"></a>
                                         <p class="text-xs text-gray-500" x-text="org.email"></p>
                                     </div>
                                 </div>
@@ -112,7 +116,7 @@
                                           'bg-purple-100 text-purple-800': org.plan?.code === 'professional',
                                           'bg-yellow-100 text-yellow-800': org.plan?.code === 'enterprise'
                                       }"
-                                      x-text="org.plan?.name || '{{ __('super_admin.no_plan') }}'"></span>
+                                      x-text="org.plan?.name || '{{ __('super_admin.subscriptions.no_plan') }}'"></span>
                             </td>
                             <td class="px-4 py-4 text-gray-600 dark:text-gray-400" x-text="org.users_count || 0"></td>
                             <td class="px-4 py-4">
@@ -127,27 +131,27 @@
                             <td class="px-4 py-4 text-gray-600 dark:text-gray-400 text-sm" x-text="org.created_at"></td>
                             <td class="px-4 py-4">
                                 <div class="flex items-center gap-2">
-                                    <a :href="'{{ route('super-admin.orgs.show', '') }}/' + org.org_id"
+                                    <a :href="'{{ url('super-admin/organizations') }}/' + org.org_id"
                                        class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                       title="{{ __('super_admin.view') }}">
+                                       title="{{ __('super_admin.actions.view') }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <button @click="openActionModal(org, 'suspend')"
                                             x-show="org.status !== 'suspended'"
                                             class="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition"
-                                            title="{{ __('super_admin.suspend') }}">
+                                            title="{{ __('super_admin.actions.suspend') }}">
                                         <i class="fas fa-pause"></i>
                                     </button>
                                     <button @click="openActionModal(org, 'block')"
                                             x-show="org.status !== 'blocked'"
                                             class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                            title="{{ __('super_admin.block') }}">
+                                            title="{{ __('super_admin.actions.block') }}">
                                         <i class="fas fa-ban"></i>
                                     </button>
                                     <button @click="restoreOrg(org)"
                                             x-show="org.status !== 'active'"
                                             class="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
-                                            title="{{ __('super_admin.restore') }}">
+                                            title="{{ __('super_admin.actions.restore') }}">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </div>
@@ -167,13 +171,13 @@
         <!-- Empty State -->
         <div x-show="!loading && organizations.length === 0" class="p-8 text-center">
             <i class="fas fa-building text-4xl text-gray-300"></i>
-            <p class="text-gray-500 mt-2">{{ __('super_admin.no_organizations_found') }}</p>
+            <p class="text-gray-500 mt-2">{{ __('super_admin.orgs.no_orgs_found') }}</p>
         </div>
 
         <!-- Pagination -->
         <div x-show="pagination.total > pagination.per_page" class="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-500" x-text="'{{ __('super_admin.showing') }} ' + pagination.from + '-' + pagination.to + ' {{ __('super_admin.of') }} ' + pagination.total"></p>
+                <p class="text-sm text-gray-500" x-text="'{{ __('super_admin.pagination.showing') }} ' + pagination.from + '-' + pagination.to + ' {{ __('super_admin.pagination.of') }} ' + pagination.total"></p>
                 <div class="flex gap-2">
                     <button @click="goToPage(pagination.current_page - 1)"
                             :disabled="pagination.current_page === 1"
@@ -208,11 +212,11 @@
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4" x-text="actionModal.title"></h3>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('super_admin.reason') }}</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('super_admin.orgs.reason') }}</label>
                     <textarea x-model="actionModal.reason"
                               rows="3"
                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
-                              :placeholder="'{{ __('super_admin.enter_reason') }}'"></textarea>
+                              :placeholder="actionModal.action === 'suspend' ? '{{ __('super_admin.orgs.suspend_reason_placeholder') }}' : '{{ __('super_admin.orgs.block_reason_placeholder') }}'"></textarea>
                 </div>
 
                 <div class="flex justify-end gap-3">
@@ -290,15 +294,16 @@ function organizationsManager() {
 
                 if (response.ok) {
                     const result = await response.json();
-                    const data = result.data || result;
-                    this.organizations = data.data || [];
+                    // API returns: { success, message, data: [...items...], meta: { pagination } }
+                    this.organizations = result.data || [];
+                    const meta = result.meta || {};
                     this.pagination = {
-                        current_page: data.current_page || 1,
-                        per_page: data.per_page || 20,
-                        total: data.total || 0,
-                        from: data.from || 0,
-                        to: data.to || 0,
-                        last_page: data.last_page || 1
+                        current_page: meta.current_page || 1,
+                        per_page: meta.per_page || 20,
+                        total: meta.total || 0,
+                        from: meta.from || 0,
+                        to: meta.to || 0,
+                        last_page: meta.last_page || 1
                     };
                 }
             } catch (error) {
@@ -322,8 +327,8 @@ function organizationsManager() {
                 org: org,
                 action: action,
                 reason: '',
-                title: action === 'suspend' ? '{{ __('super_admin.suspend_organization') }}' : '{{ __('super_admin.block_organization') }}',
-                buttonText: action === 'suspend' ? '{{ __('super_admin.suspend') }}' : '{{ __('super_admin.block') }}'
+                title: action === 'suspend' ? '{{ __('super_admin.orgs.suspend_org') }}' : '{{ __('super_admin.orgs.block_org') }}',
+                buttonText: action === 'suspend' ? '{{ __('super_admin.actions.suspend') }}' : '{{ __('super_admin.actions.block') }}'
             };
         },
 
@@ -333,8 +338,8 @@ function organizationsManager() {
             this.processing = true;
             try {
                 const route = this.actionModal.action === 'suspend'
-                    ? `{{ route('super-admin.orgs.suspend', '') }}/${this.actionModal.org.org_id}`
-                    : `{{ route('super-admin.orgs.block', '') }}/${this.actionModal.org.org_id}`;
+                    ? `{{ url('super-admin/organizations') }}/${this.actionModal.org.org_id}/suspend`
+                    : `{{ url('super-admin/organizations') }}/${this.actionModal.org.org_id}/block`;
 
                 const response = await fetch(route, {
                     method: 'POST',
@@ -360,7 +365,7 @@ function organizationsManager() {
         async restoreOrg(org) {
             this.processing = true;
             try {
-                const response = await fetch(`{{ route('super-admin.orgs.restore', '') }}/${org.org_id}`, {
+                const response = await fetch(`{{ url('super-admin/organizations') }}/${org.org_id}/restore`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',

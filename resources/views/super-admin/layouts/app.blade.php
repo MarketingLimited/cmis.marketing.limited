@@ -12,7 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
 
-    <title>@yield('title', __('super_admin.dashboard')) - {{ __('super_admin.title') }}</title>
+    <title>@yield('title', __('super_admin.nav.dashboard')) - {{ __('super_admin.title') }}</title>
 
     <!-- Tailwind CSS CDN -->
     <script>

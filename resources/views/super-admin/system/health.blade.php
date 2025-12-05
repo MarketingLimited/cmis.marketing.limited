@@ -329,12 +329,59 @@ function systemHealth() {
                     }
                 });
 
-                const data = await response.json();
+                const result = await response.json();
+                // API returns: { success, data: { status, checks, timestamp } }
+                const data = result.data || result;
+                const checks = data.checks || {};
 
-                this.overallStatus = data.overallStatus || 'healthy';
+                // Map overall status
+                this.overallStatus = data.status === 'unhealthy' ? 'critical' :
+                                     data.status === 'degraded' ? 'degraded' : 'healthy';
                 this.lastCheck = new Date().toLocaleString();
-                this.services = data.services || this.services;
-                this.recentErrors = data.recentErrors || [];
+
+                // Map database service
+                if (checks.database) {
+                    this.services.database = {
+                        status: checks.database.status === 'unhealthy' ? 'down' : checks.database.status,
+                        connections: checks.database.connection || '-',
+                        response_time: checks.database.response_time_ms || '-'
+                    };
+                }
+
+                // Map cache service
+                if (checks.cache) {
+                    this.services.cache = {
+                        status: checks.cache.status === 'unhealthy' ? 'down' : checks.cache.status,
+                        hit_rate: '-', // Not provided by API
+                        memory_used: checks.cache.driver || '-'
+                    };
+                }
+
+                // Map queue service
+                if (checks.queue) {
+                    this.services.queue = {
+                        status: checks.queue.status === 'unhealthy' ? 'down' : checks.queue.status,
+                        pending: checks.queue.pending_jobs || 0,
+                        failed: checks.queue.failed_jobs || 0
+                    };
+                }
+
+                // Map storage service
+                if (checks.storage) {
+                    this.services.storage = {
+                        status: checks.storage.status === 'unhealthy' ? 'down' : checks.storage.status,
+                        used: '-',
+                        available: '-',
+                        percentage: 0
+                    };
+                }
+
+                // Mail and scheduler are not provided by API, set defaults
+                this.services.mail = { status: 'healthy', sent_today: 0, last_sent: '-' };
+                this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-' };
+
+                // Recent errors - not provided by current API
+                this.recentErrors = [];
             } catch (error) {
                 console.error('Error loading health data:', error);
                 this.overallStatus = 'critical';

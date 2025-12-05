@@ -4,19 +4,19 @@
     $isRtl = app()->getLocale() === 'ar';
 @endphp
 
-@section('title', __('super_admin.dashboard'))
+@section('title', __('super_admin.dashboard.title'))
 
 @section('breadcrumb')
 <span class="text-gray-400">/</span>
-<span class="text-gray-700 dark:text-gray-300">{{ __('super_admin.dashboard') }}</span>
+<span class="text-gray-700 dark:text-gray-300">{{ __('super_admin.dashboard.title') }}</span>
 @endsection
 
 @section('content')
 <div x-data="superAdminDashboard()" x-init="init()">
     <!-- Page Header -->
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('super_admin.dashboard') }}</h1>
-        <p class="text-gray-600 dark:text-gray-400">{{ __('super_admin.dashboard_subtitle') }}</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('super_admin.dashboard.title') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ __('super_admin.dashboard.subtitle') }}</p>
     </div>
 
     <!-- Quick Stats Grid -->
@@ -323,40 +323,83 @@ function superAdminDashboard() {
 
         async loadDashboardData() {
             try {
-                const response = await fetch('{{ route("super-admin.quick-stats") }}', {
+                // Fetch from main dashboard endpoint which returns comprehensive data
+                const response = await fetch('{{ route("super-admin.dashboard") }}', {
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
                 if (response.ok) {
                     const result = await response.json();
+                    // API returns: { success, data: { stats, recent_activity, api_usage } }
                     const data = result.data || result;
 
-                    this.stats = data.stats || this.stats;
-                    this.alerts = data.alerts || [];
-                    this.recentOrganizations = data.recent_organizations || [];
-                    this.recentActivity = data.recent_activity || [];
-                    this.subscriptionsByPlan = data.subscriptions_by_plan || [];
-                    this.systemHealth = data.system_health || {};
+                    // Map stats to expected format
+                    const apiStats = data.stats || {};
+                    this.stats = {
+                        total_organizations: apiStats.total_organizations || 0,
+                        new_organizations_today: 0, // Not provided
+                        total_users: apiStats.total_users || 0,
+                        active_users: apiStats.active_users || 0,
+                        api_calls_today: apiStats.api_calls_today || 0,
+                        error_rate: Math.round(apiStats.api_error_rate || 0),
+                        active_subscriptions: apiStats.active_subscriptions || 0,
+                        trial_subscriptions: apiStats.trial_subscriptions || 0
+                    };
 
-                    // Calculate percentages for plan distribution
-                    const totalSubs = this.subscriptionsByPlan.reduce((sum, p) => sum + p.count, 0);
-                    this.subscriptionsByPlan = this.subscriptionsByPlan.map(p => ({
-                        ...p,
-                        percentage: totalSubs > 0 ? Math.round((p.count / totalSubs) * 100) : 0
+                    // Map recent activity
+                    const recentActivity = data.recent_activity || {};
+                    this.recentOrganizations = (recentActivity.recent_organizations || []).map(org => ({
+                        org_id: org.org_id,
+                        name: org.name,
+                        status: org.status || 'active',
+                        created_at: new Date(org.created_at).toLocaleDateString()
                     }));
 
-                    // Initialize chart
-                    if (data.api_usage_hourly) {
-                        this.initChart(data.api_usage_hourly);
+                    // Map admin actions - use recent suspensions as activity for now
+                    this.recentActivity = [];
+
+                    // System health - fetch from health endpoint
+                    await this.loadSystemHealth();
+
+                    // Subscriptions by plan - not provided by API, leave empty
+                    this.subscriptionsByPlan = [];
+
+                    // Initialize chart with hourly API usage
+                    const apiUsage = data.api_usage || {};
+                    const hourlyStats = apiUsage.hourly_stats || [];
+                    if (hourlyStats.length > 0) {
+                        this.initChart(hourlyStats);
                     }
                 }
             } catch (error) {
                 console.error('Failed to load dashboard data:', error);
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async loadSystemHealth() {
+            try {
+                const response = await fetch('{{ route("super-admin.system.health") }}', {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    const data = result.data || result;
+                    const checks = data.checks || {};
+                    this.systemHealth = {
+                        database: { status: checks.database?.status || 'unknown' },
+                        cache: { status: checks.cache?.status || 'unknown' },
+                        queue: { status: checks.queue?.status || 'unknown' },
+                        storage: { status: checks.storage?.status || 'unknown' }
+                    };
+                }
+            } catch (error) {
+                console.error('Failed to load system health:', error);
             }
         },
 

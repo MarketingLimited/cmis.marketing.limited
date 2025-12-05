@@ -108,15 +108,19 @@ class SuperAdminUserController extends Controller
             ->findOrFail($userId);
 
         // Get user's activity stats
+        // Note: platform_api_calls tracks by org_id, not user_id
+        // So we count API calls across all organizations the user belongs to
+        $userOrgIds = $user->orgs->pluck('org_id')->toArray();
         $activityStats = [
-            'api_calls_total' => DB::table('cmis.platform_api_calls')
-                ->where('user_id', $userId)
-                ->count(),
-            'api_calls_today' => DB::table('cmis.platform_api_calls')
-                ->where('user_id', $userId)
+            'api_calls_total' => $userOrgIds ? DB::table('cmis.platform_api_calls')
+                ->whereIn('org_id', $userOrgIds)
+                ->count() : 0,
+            'api_calls_today' => $userOrgIds ? DB::table('cmis.platform_api_calls')
+                ->whereIn('org_id', $userOrgIds)
                 ->whereDate('called_at', today())
-                ->count(),
+                ->count() : 0,
             'last_login' => $user->last_login_at ?? null,
+            'orgs_count' => count($userOrgIds),
         ];
 
         if ($request->expectsJson()) {

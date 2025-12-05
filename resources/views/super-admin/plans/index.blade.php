@@ -59,9 +59,11 @@
                 @if($plan->price_yearly)
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {{ $plan->currency }} {{ number_format($plan->price_yearly, 2) }}/{{ __('super_admin.plans.year') }}
+                    @if($plan->price_monthly > 0)
                     <span class="text-green-600 dark:text-green-400">
                         ({{ __('super_admin.plans.save') }} {{ round(100 - ($plan->price_yearly / ($plan->price_monthly * 12) * 100)) }}%)
                     </span>
+                    @endif
                 </p>
                 @endif
             </div>

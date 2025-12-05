@@ -143,7 +143,7 @@
                         <template x-for="org in topOrganizations" :key="org.org_id">
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                                 <td class="px-4 py-3">
-                                    <a :href="'{{ route('super-admin.orgs.show', '') }}/' + org.org_id"
+                                    <a :href="'{{ url('super-admin/organizations') }}/' + org.org_id"
                                        class="font-medium text-gray-900 dark:text-white hover:text-red-600"
                                        x-text="org.name"></a>
                                 </td>
@@ -299,18 +299,98 @@ function analyticsManager() {
                     }
                 });
 
-                const data = await response.json();
+                const result = await response.json();
+                // API returns: { success, data: { overview, by_platform, hourly_stats } }
+                const data = result.data || result;
+                const overview = data.overview || {};
 
-                this.stats = data.stats || this.stats;
-                this.topOrganizations = data.topOrganizations || [];
-                this.topEndpoints = data.topEndpoints || [];
-                this.recentErrors = data.recentErrors || [];
+                // Map overview data to stats
+                this.stats = {
+                    totalRequests: overview.total_requests || 0,
+                    requestsChange: 0, // Not provided by API
+                    errorRate: overview.error_rate || 0,
+                    totalErrors: overview.failed_requests || 0,
+                    avgResponseTime: Math.round(overview.avg_response_time || 0),
+                    p95ResponseTime: 0, // Not provided by API
+                    rateLimitHits: 0, // Not provided by API
+                    uniqueOrgsLimited: 0 // Not provided by API
+                };
 
-                this.renderCharts(data.chartData || {});
+                // Load additional data for tables
+                await this.loadTopOrganizations();
+                await this.loadTopEndpoints();
+                await this.loadRecentErrors();
+
+                // Prepare chart data
+                const hourlyStats = data.hourly_stats || [];
+                const byPlatform = data.by_platform || {};
+                this.renderCharts({
+                    requestsLabels: hourlyStats.map(h => h.hour || ''),
+                    requestsData: hourlyStats.map(h => h.total || 0),
+                    platformLabels: Object.keys(byPlatform),
+                    platformData: Object.values(byPlatform)
+                });
             } catch (error) {
                 console.error('Error loading analytics:', error);
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async loadTopOrganizations() {
+            try {
+                const response = await fetch(`{{ route('super-admin.analytics.by-org') }}?range=${this.selectedRange}&limit=10`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const result = await response.json();
+                const orgs = result.data || [];
+                this.topOrganizations = orgs.map(org => ({
+                    org_id: org.org_id,
+                    name: org.name,
+                    requests: org.total_calls || 0,
+                    error_rate: org.failed && org.total_calls ? Math.round((org.failed / org.total_calls) * 100) : 0
+                }));
+            } catch (error) {
+                console.error('Error loading top organizations:', error);
+            }
+        },
+
+        async loadTopEndpoints() {
+            try {
+                const response = await fetch(`{{ route('super-admin.analytics.endpoints') }}?range=${this.selectedRange}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const result = await response.json();
+                const endpoints = result.data || [];
+                this.topEndpoints = endpoints.slice(0, 10).map(ep => ({
+                    method: 'GET', // API doesn't return method
+                    path: ep.endpoint || '',
+                    requests: ep.total_calls || 0,
+                    avg_time: Math.round(ep.avg_duration || 0)
+                }));
+            } catch (error) {
+                console.error('Error loading top endpoints:', error);
+            }
+        },
+
+        async loadRecentErrors() {
+            try {
+                const response = await fetch(`{{ route('super-admin.analytics.errors') }}?range=${this.selectedRange}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const result = await response.json();
+                const data = result.data || {};
+                const errors = data.recent_errors || [];
+                this.recentErrors = errors.slice(0, 10).map(err => ({
+                    id: err.call_id,
+                    created_at: err.called_at,
+                    status: err.http_status || 500,
+                    endpoint: err.endpoint || '',
+                    org_name: '', // Not provided
+                    message: err.error_message || 'Unknown error'
+                }));
+            } catch (error) {
+                console.error('Error loading recent errors:', error);
             }
         },
 

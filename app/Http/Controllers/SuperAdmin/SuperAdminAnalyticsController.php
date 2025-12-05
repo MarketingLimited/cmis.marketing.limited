@@ -296,7 +296,7 @@ class SuperAdminAnalyticsController extends Controller
             'error_rate' => PlatformApiCall::getErrorRate(null, null, $hours),
             'avg_response_time' => round(PlatformApiCall::where('called_at', '>=', $startTime)->avg('duration_ms') ?? 0, 2),
             'unique_orgs' => PlatformApiCall::where('called_at', '>=', $startTime)->distinct('org_id')->count('org_id'),
-            'unique_users' => PlatformApiCall::where('called_at', '>=', $startTime)->whereNotNull('user_id')->distinct('user_id')->count('user_id'),
+            'unique_connections' => PlatformApiCall::where('called_at', '>=', $startTime)->whereNotNull('connection_id')->distinct('connection_id')->count('connection_id'),
         ];
     }
 
