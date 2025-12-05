@@ -1041,4 +1041,38 @@ return [
     'confirm_delete' => 'Confirm Delete',
     'delete_tiktok_account_warning' => 'Are you sure you want to delete the TikTok account ":name"? This will remove it from video publishing and cannot be undone.',
 
+    // TikTok Business Assets AJAX Loading
+    'tiktok_accounts_loaded' => 'TikTok accounts loaded successfully',
+    'failed_to_load_tiktok_accounts' => 'Failed to load TikTok accounts',
+    'tiktok_account_deleted' => 'TikTok account deleted successfully',
+    'tiktok_account_not_found' => 'TikTok account not found',
+    'failed_to_delete_tiktok_account' => 'Failed to delete TikTok account',
+    'connection_not_found' => 'Connection not found',
+    'tiktok_advertisers_loaded' => 'TikTok advertisers loaded successfully',
+    'failed_to_load_tiktok_advertisers' => 'Failed to load TikTok advertisers',
+    'tiktok_pixels_loaded' => 'TikTok pixels loaded successfully',
+    'failed_to_load_tiktok_pixels' => 'Failed to load TikTok pixels',
+    'tiktok_catalogs_loaded' => 'TikTok catalogs loaded successfully',
+    'failed_to_load_tiktok_catalogs' => 'Failed to load TikTok catalogs',
+    'tiktok_cache_cleared' => 'TikTok assets cache cleared',
+    'failed_to_refresh_tiktok_assets' => 'Failed to refresh TikTok assets',
+    'cache_status_retrieved' => 'Cache status retrieved',
+    'failed_to_get_cache_status' => 'Failed to get cache status',
+
+    // TikTok Business Assets UI
+    'refresh_assets' => 'Refresh Assets',
+    'refreshing' => 'Refreshing...',
+    'loading_assets' => 'Loading assets...',
+    'loading_tiktok_accounts' => 'Loading TikTok accounts...',
+    'loading_ad_accounts' => 'Loading ad accounts...',
+    'loading_pixels' => 'Loading pixels...',
+    'loading_catalogs' => 'Loading catalogs...',
+    'search_tiktok_accounts' => 'Search TikTok accounts...',
+    'search_ad_accounts' => 'Search ad accounts...',
+    'search_pixels' => 'Search pixels...',
+    'search_catalogs' => 'Search catalogs...',
+    'accounts_connected' => 'account(s) connected',
+    'deleting' => 'Deleting...',
+    'try_again' => 'Try again',
+
 ];

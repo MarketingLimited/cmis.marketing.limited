@@ -1325,4 +1325,38 @@ return [
     'confirm_delete' => 'تأكيد الحذف',
     'delete_tiktok_account_warning' => 'هل أنت متأكد من حذف حساب TikTok ":name"؟ سيتم إزالته من نشر الفيديوهات ولا يمكن التراجع عن هذا الإجراء.',
 
+    // TikTok Business Assets AJAX Loading
+    'tiktok_accounts_loaded' => 'تم تحميل حسابات TikTok بنجاح',
+    'failed_to_load_tiktok_accounts' => 'فشل في تحميل حسابات TikTok',
+    'tiktok_account_deleted' => 'تم حذف حساب TikTok بنجاح',
+    'tiktok_account_not_found' => 'لم يتم العثور على حساب TikTok',
+    'failed_to_delete_tiktok_account' => 'فشل في حذف حساب TikTok',
+    'connection_not_found' => 'لم يتم العثور على الاتصال',
+    'tiktok_advertisers_loaded' => 'تم تحميل حسابات إعلانات TikTok بنجاح',
+    'failed_to_load_tiktok_advertisers' => 'فشل في تحميل حسابات إعلانات TikTok',
+    'tiktok_pixels_loaded' => 'تم تحميل بكسلات TikTok بنجاح',
+    'failed_to_load_tiktok_pixels' => 'فشل في تحميل بكسلات TikTok',
+    'tiktok_catalogs_loaded' => 'تم تحميل كتالوجات TikTok بنجاح',
+    'failed_to_load_tiktok_catalogs' => 'فشل في تحميل كتالوجات TikTok',
+    'tiktok_cache_cleared' => 'تم مسح ذاكرة التخزين المؤقت لأصول TikTok',
+    'failed_to_refresh_tiktok_assets' => 'فشل في تحديث أصول TikTok',
+    'cache_status_retrieved' => 'تم استرداد حالة ذاكرة التخزين المؤقت',
+    'failed_to_get_cache_status' => 'فشل في الحصول على حالة ذاكرة التخزين المؤقت',
+
+    // TikTok Business Assets UI
+    'refresh_assets' => 'تحديث الأصول',
+    'refreshing' => 'جارٍ التحديث...',
+    'loading_assets' => 'جارٍ تحميل الأصول...',
+    'loading_tiktok_accounts' => 'جارٍ تحميل حسابات TikTok...',
+    'loading_ad_accounts' => 'جارٍ تحميل الحسابات الإعلانية...',
+    'loading_pixels' => 'جارٍ تحميل البكسلات...',
+    'loading_catalogs' => 'جارٍ تحميل الكتالوجات...',
+    'search_tiktok_accounts' => 'البحث في حسابات TikTok...',
+    'search_ad_accounts' => 'البحث في الحسابات الإعلانية...',
+    'search_pixels' => 'البحث في البكسلات...',
+    'search_catalogs' => 'البحث في الكتالوجات...',
+    'accounts_connected' => 'حساب(ات) مرتبطة',
+    'deleting' => 'جارٍ الحذف...',
+    'try_again' => 'حاول مرة أخرى',
+
 ];

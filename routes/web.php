@@ -23,6 +23,7 @@ use App\Http\Controllers\UnifiedCommentsController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Api\MetaAssetsApiController;
 use App\Http\Controllers\Api\GoogleAssetsApiController;
+use App\Http\Controllers\Api\TikTokAssetsApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,7 +62,8 @@ Route::prefix('integrations')->name('integrations.')->group(function () {
     Route::get('/twitter/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTwitter'])->name('twitter.callback');
     Route::get('/pinterest/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackPinterest'])->name('pinterest.callback');
     Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
-    Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokAds'])->name('tiktok-ads.callback');
+    Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokBusiness'])->name('tiktok-ads.callback');
+    Route::get('/tiktok-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokBusiness'])->name('tiktok-business.callback');
     Route::get('/tumblr/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTumblr'])->name('tumblr.callback');
     Route::get('/reddit/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackReddit'])->name('reddit.callback');
     Route::get('/google-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackGoogleBusiness'])->name('google-business.callback');
@@ -679,9 +681,13 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/tiktok/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTok'])->name('tiktok.callback');
                 Route::post('/tiktok/{connection}/refresh', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'refreshTikTokToken'])->name('tiktok.refresh');
 
-                // TikTok Ads OAuth (Business API - for advertising)
-                Route::get('/tiktok-ads/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTokAds'])->name('tiktok-ads.authorize');
-                Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokAds'])->name('tiktok-ads.callback');
+                // TikTok Ads OAuth (Business API - for advertising) - LEGACY
+                Route::get('/tiktok-ads/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTokBusiness'])->name('tiktok-ads.authorize');
+                Route::get('/tiktok-ads/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokBusiness'])->name('tiktok-ads.callback');
+
+                // TikTok Business OAuth (Business API v1.3 - for Business Center, Ads, Pixels, Catalogs)
+                Route::get('/tiktok-business/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeTikTokBusiness'])->name('tiktok-business.authorize');
+                Route::get('/tiktok-business/callback', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'callbackTikTokBusiness'])->name('tiktok-business.callback');
 
                 // Reddit OAuth
                 Route::get('/reddit/authorize', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'authorizeReddit'])->name('reddit.authorize');
@@ -717,9 +723,24 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAssets'])->name('tiktok.assets');
                 Route::post('/tiktok/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAssets'])->name('tiktok.assets.store');
 
-                // TikTok Ads Assets (Advertiser Accounts)
-                Route::get('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokAdsAssets'])->name('tiktok-ads.assets');
-                Route::post('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokAdsAssets'])->name('tiktok-ads.assets.store');
+                // TikTok Ads Assets (Advertiser Accounts) - LEGACY
+                Route::get('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokBusinessAssets'])->name('tiktok-ads.assets');
+                Route::post('/tiktok-ads/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokBusinessAssets'])->name('tiktok-ads.assets.store');
+
+                // TikTok Business Assets (Ad Accounts, Pixels, Catalogs, etc.)
+                Route::get('/tiktok-business/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectTikTokBusinessAssets'])->name('tiktok-business.assets');
+                Route::post('/tiktok-business/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'storeTikTokBusinessAssets'])->name('tiktok-business.assets.store');
+
+                // TikTok Business Assets AJAX Endpoints (progressive loading)
+                Route::prefix('tiktok-business/{connection}/assets/ajax')->name('tiktok-business.assets.ajax.')->group(function () {
+                    Route::get('/tiktok-accounts', [TikTokAssetsApiController::class, 'getTikTokAccounts'])->name('tiktok-accounts');
+                    Route::delete('/tiktok-accounts/{accountId}', [TikTokAssetsApiController::class, 'deleteTikTokAccount'])->name('tiktok-accounts.delete');
+                    Route::get('/advertisers', [TikTokAssetsApiController::class, 'getAdvertisers'])->name('advertisers');
+                    Route::get('/pixels', [TikTokAssetsApiController::class, 'getPixels'])->name('pixels');
+                    Route::get('/catalogs', [TikTokAssetsApiController::class, 'getCatalogs'])->name('catalogs');
+                    Route::post('/refresh', [TikTokAssetsApiController::class, 'refreshAll'])->name('refresh');
+                    Route::get('/cache-status', [TikTokAssetsApiController::class, 'getCacheStatus'])->name('cache-status');
+                });
 
                 // Snapchat Assets
                 Route::get('/snapchat/{connection}/assets', [App\Http\Controllers\Settings\PlatformConnectionsController::class, 'selectSnapchatAssets'])->name('snapchat.assets');
