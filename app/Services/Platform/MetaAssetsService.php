@@ -191,23 +191,73 @@ class MetaAssetsService
     {
         if ($forceRefresh) {
             Cache::forget($this->getCacheKey($connectionId, 'all_user_assets'));
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
         }
 
-        $allAssets = $this->getAllUserAssets($accessToken, $connectionId);
-        return $allAssets['pages'] ?? [];
+        // Get pages from /me/accounts (pages where user has a role)
+        $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
+        $userPages = $userAssets['pages'] ?? [];
+
+        // Get pages from businesses (owned_pages and client_pages)
+        $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        $businessPages = $businessAssets['pages'] ?? [];
+
+        // Merge and deduplicate (user pages take priority)
+        $allPages = $userPages;
+        $existingIds = array_column($allPages, 'id');
+
+        foreach ($businessPages as $page) {
+            if (!in_array($page['id'], $existingIds)) {
+                $allPages[] = $page;
+                $existingIds[] = $page['id'];
+            }
+        }
+
+        Log::debug('Pages merged from user and business assets', [
+            'user_pages' => count($userPages),
+            'business_pages' => count($businessPages),
+            'total_unique' => count($allPages),
+        ]);
+
+        return $allPages;
     }
 
     /**
-     * Get Instagram Business accounts (uses shared cache from getAllUserAssets - 0 extra API calls).
+     * Get Instagram Business accounts (merges from user assets and business assets).
      */
     public function getInstagramAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
         if ($forceRefresh) {
             Cache::forget($this->getCacheKey($connectionId, 'all_user_assets'));
+            Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
         }
 
-        $allAssets = $this->getAllUserAssets($accessToken, $connectionId);
-        return $allAssets['instagram'] ?? [];
+        // Get Instagram from /me/accounts (via connected pages)
+        $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
+        $userInstagram = $userAssets['instagram'] ?? [];
+
+        // Get Instagram from businesses (via owned_pages and client_pages)
+        $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
+        $businessInstagram = $businessAssets['instagram'] ?? [];
+
+        // Merge and deduplicate (user Instagram take priority)
+        $allInstagram = $userInstagram;
+        $existingIds = array_column($allInstagram, 'id');
+
+        foreach ($businessInstagram as $ig) {
+            if (!in_array($ig['id'], $existingIds)) {
+                $allInstagram[] = $ig;
+                $existingIds[] = $ig['id'];
+            }
+        }
+
+        Log::debug('Instagram merged from user and business assets', [
+            'user_instagram' => count($userInstagram),
+            'business_instagram' => count($businessInstagram),
+            'total_unique' => count($allInstagram),
+        ]);
+
+        return $allInstagram;
     }
 
     /**
@@ -490,6 +540,7 @@ class MetaAssetsService
 
             try {
                 // Base fields that work for both User tokens and System User tokens
+                // NOTE: Pages use lighter fields (no nested instagram) to avoid "too much data" error
                 $baseFields = [
                     'id',
                     'name',
@@ -497,6 +548,9 @@ class MetaAssetsService
                     'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
                     'client_product_catalogs.limit(100){id,name,product_count,vertical}',
                     'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+                    // Pages with lighter fields (no nested instagram_business_account to avoid payload limits)
+                    'owned_pages.limit(100){id,name,category}',
+                    'client_pages.limit(100){id,name,category}',
                 ];
 
                 // Extended fields (only work with System User tokens)
@@ -534,6 +588,8 @@ class MetaAssetsService
                 $catalogs = [];
                 $whatsappAccounts = [];
                 $offlineEventSets = [];
+                $businessPages = [];
+                $businessInstagram = [];
 
                 foreach ($rawBusinesses as $business) {
                     $businessId = $business['id'] ?? null;
@@ -618,6 +674,82 @@ class MetaAssetsService
                             ];
                         }
                     }
+
+                    // Extract owned pages from business
+                    foreach ($business['owned_pages']['data'] ?? [] as $page) {
+                        $existingIds = array_column($businessPages, 'id');
+                        if (!in_array($page['id'], $existingIds)) {
+                            $businessPages[] = [
+                                'id' => $page['id'],
+                                'name' => $page['name'] ?? 'Unknown Page',
+                                'category' => $page['category'] ?? null,
+                                'picture' => $page['picture']['data']['url'] ?? null,
+                                'has_instagram' => isset($page['instagram_business_account']),
+                                'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                                'source' => 'owned',
+                            ];
+
+                            // Extract Instagram from page if present
+                            if (isset($page['instagram_business_account'])) {
+                                $ig = $page['instagram_business_account'];
+                                $existingIgIds = array_column($businessInstagram, 'id');
+                                if (!in_array($ig['id'], $existingIgIds)) {
+                                    $businessInstagram[] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => $page['id'],
+                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                                        'business_id' => $businessId,
+                                        'business_name' => $businessName,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+
+                    // Extract client pages from business
+                    foreach ($business['client_pages']['data'] ?? [] as $page) {
+                        $existingIds = array_column($businessPages, 'id');
+                        if (!in_array($page['id'], $existingIds)) {
+                            $businessPages[] = [
+                                'id' => $page['id'],
+                                'name' => $page['name'] ?? 'Unknown Page',
+                                'category' => $page['category'] ?? null,
+                                'picture' => $page['picture']['data']['url'] ?? null,
+                                'has_instagram' => isset($page['instagram_business_account']),
+                                'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                                'business_id' => $businessId,
+                                'business_name' => $businessName,
+                                'source' => 'client',
+                            ];
+
+                            // Extract Instagram from page if present
+                            if (isset($page['instagram_business_account'])) {
+                                $ig = $page['instagram_business_account'];
+                                $existingIgIds = array_column($businessInstagram, 'id');
+                                if (!in_array($ig['id'], $existingIgIds)) {
+                                    $businessInstagram[] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => $page['id'],
+                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                                        'business_id' => $businessId,
+                                        'business_name' => $businessName,
+                                    ];
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Log::info('ALL business assets fetched' . ($usedFallback ? ' (via System User fallback)' : ' with pagination'), [
@@ -625,6 +757,8 @@ class MetaAssetsService
                     'catalogs' => count($catalogs),
                     'whatsapp_accounts' => count($whatsappAccounts),
                     'offline_event_sets' => count($offlineEventSets),
+                    'business_pages' => count($businessPages),
+                    'business_instagram' => count($businessInstagram),
                     'used_fallback' => $usedFallback,
                 ]);
 
@@ -633,10 +767,12 @@ class MetaAssetsService
                     'catalogs' => $catalogs,
                     'whatsapp' => $whatsappAccounts,
                     'offline_event_sets' => $offlineEventSets,
+                    'pages' => $businessPages,
+                    'instagram' => $businessInstagram,
                 ];
             } catch (\Exception $e) {
                 Log::error('Failed to fetch business assets', ['error' => $e->getMessage()]);
-                return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => []];
+                return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => [], 'pages' => [], 'instagram' => []];
             }
         });
     }
@@ -657,7 +793,8 @@ class MetaAssetsService
             return [];
         }
 
-        // Build the fields string (same as direct query)
+        // Build the fields string - includes pages for business-owned pages
+        // Using lighter fields for pages to avoid payload limits
         $fields = implode(',', [
             'id',
             'name',
@@ -665,6 +802,9 @@ class MetaAssetsService
             'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
             'client_product_catalogs.limit(100){id,name,product_count,vertical}',
             'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+            // Include pages owned/managed by each business (lighter fields - no nested IG to avoid payload limits)
+            'owned_pages.limit(100){id,name,category}',
+            'client_pages.limit(100){id,name,category}',
         ]);
 
         // Build batch request array
