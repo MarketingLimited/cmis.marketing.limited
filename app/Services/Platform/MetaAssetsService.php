@@ -481,8 +481,10 @@ class MetaAssetsService
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_business_assets');
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
             Log::info('Fetching ALL business assets from Meta API (with pagination and field expansion)');
+
+            $usedFallback = false;
 
             try {
                 // Fetch ALL businesses with embedded catalogs, whatsapp, offline events using pagination
@@ -501,6 +503,14 @@ class MetaAssetsService
                         ]),
                     ]
                 );
+
+                // Fallback for System User tokens: when /me/businesses returns empty,
+                // extract business IDs from ad accounts and query each business directly
+                if (empty($rawBusinesses)) {
+                    Log::info('No businesses from /me/businesses, using System User fallback via ad accounts');
+                    $rawBusinesses = $this->getBusinessesFromAdAccounts($accessToken, $connectionId);
+                    $usedFallback = true;
+                }
 
                 // Parse and organize all data
                 $businesses = [];
@@ -593,11 +603,12 @@ class MetaAssetsService
                     }
                 }
 
-                Log::info('ALL business assets fetched with pagination', [
+                Log::info('ALL business assets fetched' . ($usedFallback ? ' (via System User fallback)' : ' with pagination'), [
                     'businesses' => count($businesses),
                     'catalogs' => count($catalogs),
                     'whatsapp_accounts' => count($whatsappAccounts),
                     'offline_event_sets' => count($offlineEventSets),
+                    'used_fallback' => $usedFallback,
                 ]);
 
                 return [
@@ -611,6 +622,113 @@ class MetaAssetsService
                 return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => []];
             }
         });
+    }
+
+    /**
+     * Fallback method to get businesses from ad accounts.
+     * Used when /me/businesses returns empty (common for System User tokens).
+     * Extracts unique business IDs from ad accounts and queries each business directly.
+     *
+     * @param string $accessToken The Meta API access token
+     * @param string $connectionId The connection ID for cache lookup
+     * @return array Array of business objects with expanded fields
+     */
+    private function getBusinessesFromAdAccounts(string $accessToken, string $connectionId): array
+    {
+        // Get ad account data (may already be cached from previous call)
+        $adAccountAssets = $this->getAllAdAccountAssets($accessToken, $connectionId);
+        $adAccounts = $adAccountAssets['ad_accounts'] ?? [];
+
+        if (empty($adAccounts)) {
+            Log::info('No ad accounts available for business extraction in fallback');
+            return [];
+        }
+
+        // Extract unique business IDs from ad accounts
+        $businessIds = [];
+        foreach ($adAccounts as $account) {
+            $businessId = $account['business_id'] ?? null;
+            if ($businessId && !isset($businessIds[$businessId])) {
+                $businessIds[$businessId] = true;
+            }
+        }
+
+        if (empty($businessIds)) {
+            Log::info('No business IDs found in ad accounts for fallback');
+            return [];
+        }
+
+        // Limit to prevent API exhaustion
+        $businessIds = array_slice(array_keys($businessIds), 0, self::MAX_BUSINESSES);
+
+        Log::info('Extracted business IDs from ad accounts for System User fallback', [
+            'unique_businesses' => count($businessIds),
+            'total_ad_accounts' => count($adAccounts),
+        ]);
+
+        // Query each business directly for its assets
+        $businesses = [];
+        $queryCount = 0;
+
+        foreach ($businessIds as $businessId) {
+            // Rate limiting between requests
+            if ($queryCount > 0) {
+                usleep(self::DELAY_BETWEEN_REQUESTS_MS * 1000);
+            }
+
+            try {
+                // Note: When querying Business node directly, not all fields are available
+                // offline_conversion_data_sets requires different access path
+                $response = Http::timeout(self::REQUEST_TIMEOUT)->get(
+                    self::BASE_URL . '/' . self::API_VERSION . '/' . $businessId,
+                    [
+                        'access_token' => $accessToken,
+                        'fields' => implode(',', [
+                            'id',
+                            'name',
+                            'verification_status',
+                            'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
+                            'client_product_catalogs.limit(100){id,name,product_count,vertical}',
+                            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
+                        ]),
+                    ]
+                );
+
+                if ($response->successful()) {
+                    $businesses[] = $response->json();
+                    Log::debug('Fetched business via direct query (System User fallback)', [
+                        'business_id' => $businessId,
+                    ]);
+                } else {
+                    $error = $response->json('error', []);
+                    Log::warning('Failed to fetch business directly in fallback', [
+                        'business_id' => $businessId,
+                        'error_code' => $error['code'] ?? null,
+                        'error_message' => $error['message'] ?? 'Unknown error',
+                    ]);
+
+                    // Stop on rate limit
+                    if (($error['code'] ?? 0) === 4 || ($error['code'] ?? 0) === 17) {
+                        Log::warning('Rate limit hit during System User fallback, stopping with partial results');
+                        break;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Exception fetching business in fallback', [
+                    'business_id' => $businessId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $queryCount++;
+        }
+
+        Log::info('System User business fallback completed', [
+            'businesses_fetched' => count($businesses),
+            'api_calls' => $queryCount,
+        ]);
+
+        return $businesses;
     }
 
     /**
