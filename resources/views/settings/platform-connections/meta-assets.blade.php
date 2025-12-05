@@ -282,7 +282,20 @@
                                             </div>
                                             <div class="min-w-0">
                                                 <span class="text-sm font-medium text-gray-900 block truncate" x-text="page.name"></span>
+                                                <span class="text-xs text-gray-400 block">ID: <span x-text="page.id"></span></span>
                                                 <span x-show="page.category" class="block text-xs text-gray-500" x-text="page.category"></span>
+                                                <span x-show="page.business_name && page.source === 'owned'" class="block text-xs text-indigo-600">
+                                                    <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="page.business_name"></span>
+                                                </span>
+                                                <span x-show="page.business_name && page.source === 'client'" class="block text-xs text-teal-600">
+                                                    <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="page.business_name"></span>
+                                                </span>
+                                                <span x-show="page.business_name && !page.source" class="block text-xs text-indigo-600">
+                                                    <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="page.business_name"></span>
+                                                </span>
+                                                <span x-show="!page.business_name" class="block text-xs text-gray-400">
+                                                    <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                                </span>
                                                 <span x-show="page.has_instagram" class="text-xs text-pink-600 inline-flex items-center gap-1">
                                                     <i class="fab fa-instagram"></i>{{ __('Instagram connected') }}
                                                 </span>
@@ -406,9 +419,19 @@
                                             </div>
                                             <div>
                                                 <span class="text-sm font-medium text-gray-900" x-text="ig.username || ig.name"></span>
+                                                <span class="text-xs text-gray-400 block">ID: <span x-text="ig.id"></span></span>
                                                 <span x-show="ig.followers_count" class="block text-xs text-gray-500" x-text="ig.followers_count.toLocaleString() + ' {{ __('settings.followers_label') }}'"></span>
-                                                <span x-show="ig.connected_page_name" class="text-xs text-blue-600">
+                                                <span x-show="ig.business_name && (ig.source === 'business_page' || ig.source === 'business_direct' || !ig.source)" class="block text-xs text-indigo-600">
+                                                    <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="ig.business_name"></span>
+                                                </span>
+                                                <span x-show="ig.business_name && ig.source === 'client'" class="block text-xs text-teal-600">
+                                                    <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="ig.business_name"></span>
+                                                </span>
+                                                <span x-show="!ig.business_name && ig.connected_page_name" class="block text-xs text-blue-600">
                                                     <i class="fab fa-facebook me-1"></i><span x-text="ig.connected_page_name"></span>
+                                                </span>
+                                                <span x-show="!ig.business_name && !ig.connected_page_name" class="block text-xs text-gray-400">
+                                                    <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -527,6 +550,16 @@
                                             <div>
                                                 <span class="text-sm font-medium text-gray-900" x-text="ig.username || ig.name"></span>
                                                 <span class="ms-1 text-xs text-gray-400">({{ __('Threads') }})</span>
+                                                <span class="text-xs text-gray-400 block">ID: <span x-text="ig.id"></span></span>
+                                                <span x-show="ig.business_name && (ig.source === 'business_page' || ig.source === 'business_direct' || !ig.source)" class="block text-xs text-indigo-600">
+                                                    <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="ig.business_name"></span>
+                                                </span>
+                                                <span x-show="ig.business_name && ig.source === 'client'" class="block text-xs text-teal-600">
+                                                    <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="ig.business_name"></span>
+                                                </span>
+                                                <span x-show="!ig.business_name" class="block text-xs text-gray-400">
+                                                    <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                                </span>
                                             </div>
                                         </div>
                                     </label>
@@ -652,7 +685,15 @@
                                         <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900" x-text="account.name"></span>
                                             <span class="text-xs text-gray-400 ms-2" x-text="'(' + account.account_id + ')'"></span>
-                                            <span x-show="account.business_name" class="block text-xs text-gray-500" x-text="account.business_name"></span>
+                                            <span x-show="account.business_name && account.source !== 'client'" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="account.business_name"></span>
+                                            </span>
+                                            <span x-show="account.business_name && account.source === 'client'" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="account.business_name"></span>
+                                            </span>
+                                            <span x-show="!account.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -762,7 +803,16 @@
                                         <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900" x-text="pixel.name"></span>
                                             <span class="text-xs text-gray-400 ms-1" x-text="'(' + pixel.id + ')'"></span>
-                                            <span class="block text-xs text-gray-500" x-text="pixel.ad_account_name"></span>
+                                            <span x-show="pixel.ad_account_name" class="block text-xs text-gray-500" x-text="pixel.ad_account_name"></span>
+                                            <span x-show="pixel.business_name && pixel.source !== 'client'" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="pixel.business_name"></span>
+                                            </span>
+                                            <span x-show="pixel.business_name && pixel.source === 'client'" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="pixel.business_name"></span>
+                                            </span>
+                                            <span x-show="!pixel.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                            </span>
                                         </div>
                                     </label>
                                 </template>
@@ -864,11 +914,20 @@
                                                class="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                         <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900" x-text="catalog.name"></span>
+                                            <span class="text-xs text-gray-400 block">ID: <span x-text="catalog.id"></span></span>
                                             <span class="block text-xs text-gray-500">
                                                 <span x-text="catalog.product_count?.toLocaleString() || 0"></span> {{ __('settings.products_label') }}
                                                 <span x-show="catalog.vertical"> &bull; <span x-text="catalog.vertical"></span></span>
                                             </span>
-                                            <span x-show="catalog.business_name" class="text-xs text-blue-600" x-text="catalog.business_name"></span>
+                                            <span x-show="catalog.business_name && !catalog.is_client_catalog" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="catalog.business_name"></span>
+                                            </span>
+                                            <span x-show="catalog.business_name && catalog.is_client_catalog" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="catalog.business_name"></span>
+                                            </span>
+                                            <span x-show="!catalog.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                            </span>
                                         </div>
                                     </label>
                                 </template>
@@ -980,9 +1039,19 @@
                                                class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="{{ $isRtl ? 'mr-3' : 'ml-3' }}">
                                             <span class="text-sm font-medium text-gray-900" x-text="wa.verified_name || wa.display_phone_number"></span>
+                                            <span class="text-xs text-gray-400 block">ID: <span x-text="wa.id"></span></span>
                                             <span x-show="wa.display_phone_number" class="block text-xs text-gray-500" x-text="wa.display_phone_number"></span>
                                             <span x-show="wa.waba_name" class="block text-xs text-green-600">
-                                                <i class="fas fa-building {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i><span x-text="wa.waba_name"></span>
+                                                <i class="fab fa-whatsapp me-1"></i><span x-text="wa.waba_name"></span>
+                                            </span>
+                                            <span x-show="wa.business_name && wa.source !== 'client'" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="wa.business_name"></span>
+                                            </span>
+                                            <span x-show="wa.business_name && wa.source === 'client'" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="wa.business_name"></span>
+                                            </span>
+                                            <span x-show="!wa.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
                                             <span x-show="wa.quality_rating" class="text-xs"
                                                   :class="wa.quality_rating === 'GREEN' ? 'text-green-600' : (wa.quality_rating === 'YELLOW' ? 'text-yellow-600' : 'text-red-600')">
@@ -1089,8 +1158,18 @@
                                                class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
                                         <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900" x-text="conversion.name"></span>
+                                            <span class="text-xs text-gray-400 block">ID: <span x-text="conversion.id"></span></span>
                                             <span x-show="conversion.custom_event_type" class="block text-xs text-gray-500" x-text="conversion.custom_event_type"></span>
-                                            <span class="block text-xs text-indigo-600" x-text="conversion.ad_account_name"></span>
+                                            <span x-show="conversion.ad_account_name" class="block text-xs text-gray-500" x-text="conversion.ad_account_name"></span>
+                                            <span x-show="conversion.business_name && conversion.source !== 'client'" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="conversion.business_name"></span>
+                                            </span>
+                                            <span x-show="conversion.business_name && conversion.source === 'client'" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="conversion.business_name"></span>
+                                            </span>
+                                            <span x-show="!conversion.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                            </span>
                                         </div>
                                     </label>
                                 </template>
@@ -1180,8 +1259,17 @@
                                                class="h-4 w-4 text-rose-600 border-gray-300 focus:ring-rose-500">
                                         <div class="ms-3">
                                             <span class="text-sm font-medium text-gray-900" x-text="eventSet.name"></span>
+                                            <span class="text-xs text-gray-400 block">ID: <span x-text="eventSet.id"></span></span>
                                             <span x-show="eventSet.description" class="block text-xs text-gray-500" x-text="eventSet.description"></span>
-                                            <span class="block text-xs text-rose-600" x-text="eventSet.business_name"></span>
+                                            <span x-show="eventSet.business_name && eventSet.source !== 'client'" class="block text-xs text-indigo-600">
+                                                <i class="fas fa-building me-1"></i>{{ __('Owned by:') }} <span x-text="eventSet.business_name"></span>
+                                            </span>
+                                            <span x-show="eventSet.business_name && eventSet.source === 'client'" class="block text-xs text-teal-600">
+                                                <i class="fas fa-handshake me-1"></i>{{ __('Managed by:') }} <span x-text="eventSet.business_name"></span>
+                                            </span>
+                                            <span x-show="!eventSet.business_name" class="block text-xs text-gray-400">
+                                                <i class="fas fa-user me-1"></i>{{ __('Personal') }}
+                                            </span>
                                         </div>
                                     </label>
                                 </template>

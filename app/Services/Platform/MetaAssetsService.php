@@ -185,7 +185,8 @@ class MetaAssetsService
     }
 
     /**
-     * Get Facebook Pages (uses shared cache from getAllUserAssets - 0 extra API calls).
+     * Get Facebook Pages with ownership priority: business owned > client > personal.
+     * Uses shared cache from getAllUserAssets and getAllBusinessAssets - 0 extra API calls.
      */
     public function getPages(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -194,28 +195,44 @@ class MetaAssetsService
             Cache::forget($this->getCacheKey($connectionId, 'all_business_assets'));
         }
 
-        // Get pages from /me/accounts (pages where user has a role)
-        $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
-        $userPages = $userAssets['pages'] ?? [];
-
-        // Get pages from businesses (owned_pages and client_pages)
+        // Get pages from businesses (owned_pages and client_pages) - HIGHEST PRIORITY
         $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
         $businessPages = $businessAssets['pages'] ?? [];
 
-        // Merge and deduplicate (user pages take priority)
-        $allPages = $userPages;
+        // Separate owned and client pages for proper priority ordering
+        $ownedPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'owned');
+        $clientPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'client');
+
+        // Start with owned pages (highest priority)
+        $allPages = array_values($ownedPages);
         $existingIds = array_column($allPages, 'id');
 
-        foreach ($businessPages as $page) {
+        // Add client pages (second priority) - only if not already in owned
+        foreach ($clientPages as $page) {
             if (!in_array($page['id'], $existingIds)) {
                 $allPages[] = $page;
                 $existingIds[] = $page['id'];
             }
         }
 
-        Log::debug('Pages merged from user and business assets', [
-            'user_pages' => count($userPages),
-            'business_pages' => count($businessPages),
+        // Get pages from /me/accounts (pages where user has a role) - LOWEST PRIORITY
+        $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
+        $userPages = $userAssets['pages'] ?? [];
+
+        // Add personal pages only if not already in business pages
+        foreach ($userPages as $page) {
+            if (!in_array($page['id'], $existingIds)) {
+                // Mark as personal since it's only from /me/accounts
+                $page['source'] = 'personal';
+                $allPages[] = $page;
+                $existingIds[] = $page['id'];
+            }
+        }
+
+        Log::debug('Pages merged with ownership priority (owned > client > personal)', [
+            'owned_pages' => count($ownedPages),
+            'client_pages' => count($clientPages),
+            'personal_pages' => count(array_filter($allPages, fn($p) => ($p['source'] ?? '') === 'personal')),
             'total_unique' => count($allPages),
         ]);
 
@@ -223,8 +240,8 @@ class MetaAssetsService
     }
 
     /**
-     * Get Instagram Business accounts (merges from multiple sources).
-     * Sources: user assets, business instagram_accounts edge, and business-owned pages.
+     * Get Instagram Business accounts with ownership priority: business owned > client > personal.
+     * Sources: business owned pages, business client pages, business instagram_accounts edge, user assets.
      */
     public function getInstagramAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -237,60 +254,84 @@ class MetaAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
-            // Get Instagram from /me/accounts (via connected pages)
-            $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
-            $userInstagram = $userAssets['instagram'] ?? [];
+            $allInstagram = [];
+            $existingIds = [];
+            $existingPageIds = [];
 
-            // Start with user Instagram
-            $allInstagram = $userInstagram;
-            $existingIds = array_column($allInstagram, 'id');
-            $existingPageIds = array_column($allInstagram, 'connected_page_id');
-
-            // Get business assets (includes instagram_accounts edge and pages)
+            // Get business assets (includes instagram_accounts edge and pages with source)
             $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
             $businessPages = $businessAssets['pages'] ?? [];
             $directBusinessInstagram = $businessAssets['instagram'] ?? [];
 
-            // Add direct business Instagram (from instagram_accounts edge)
+            // Separate owned and client pages for proper priority ordering
+            $ownedPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'owned');
+            $clientPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'client');
+
+            // STEP 1: Query Instagram from business OWNED pages (HIGHEST PRIORITY)
+            $ownedInstagramCount = 0;
+            if (!empty($ownedPages)) {
+                $ownedInstagram = $this->batchQueryPagesInstagram(array_values($ownedPages), $accessToken);
+                foreach ($ownedInstagram as $ig) {
+                    if (!in_array($ig['id'], $existingIds)) {
+                        $ig['source'] = 'owned';
+                        $allInstagram[] = $ig;
+                        $existingIds[] = $ig['id'];
+                        if (!empty($ig['connected_page_id'])) {
+                            $existingPageIds[] = $ig['connected_page_id'];
+                        }
+                        $ownedInstagramCount++;
+                    }
+                }
+            }
+
+            // STEP 2: Query Instagram from business CLIENT pages (SECOND PRIORITY)
+            $clientInstagramCount = 0;
+            if (!empty($clientPages)) {
+                $clientInstagram = $this->batchQueryPagesInstagram(array_values($clientPages), $accessToken);
+                foreach ($clientInstagram as $ig) {
+                    if (!in_array($ig['id'], $existingIds)) {
+                        $ig['source'] = 'client';
+                        $allInstagram[] = $ig;
+                        $existingIds[] = $ig['id'];
+                        if (!empty($ig['connected_page_id'])) {
+                            $existingPageIds[] = $ig['connected_page_id'];
+                        }
+                        $clientInstagramCount++;
+                    }
+                }
+            }
+
+            // STEP 3: Add direct business Instagram from instagram_accounts edge (THIRD PRIORITY)
             $directCount = 0;
             foreach ($directBusinessInstagram as $ig) {
                 if (!in_array($ig['id'], $existingIds)) {
+                    // Use source from the business info if available, otherwise 'owned'
+                    $ig['source'] = $ig['source'] ?? 'owned';
                     $allInstagram[] = $ig;
                     $existingIds[] = $ig['id'];
                     $directCount++;
                 }
             }
 
-            // Filter to pages we haven't already queried for Instagram
-            $pagesToQuery = [];
-            foreach ($businessPages as $page) {
-                $pageId = $page['id'] ?? null;
-                if ($pageId && !in_array($pageId, $existingPageIds)) {
-                    $pagesToQuery[] = $page;
-                    $existingPageIds[] = $pageId;
+            // STEP 4: Get Instagram from /me/accounts (via connected pages) - LOWEST PRIORITY (personal)
+            $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
+            $userInstagram = $userAssets['instagram'] ?? [];
+
+            $personalCount = 0;
+            foreach ($userInstagram as $ig) {
+                if (!in_array($ig['id'], $existingIds)) {
+                    $ig['source'] = 'personal';
+                    $allInstagram[] = $ig;
+                    $existingIds[] = $ig['id'];
+                    $personalCount++;
                 }
             }
 
-            // Query Instagram for business pages using batch API
-            $batchInstagramCount = 0;
-            if (!empty($pagesToQuery)) {
-                $batchInstagram = $this->batchQueryPagesInstagram($pagesToQuery, $accessToken);
-
-                // Add to merged list (deduplicate by ID)
-                foreach ($batchInstagram as $ig) {
-                    if (!in_array($ig['id'], $existingIds)) {
-                        $allInstagram[] = $ig;
-                        $existingIds[] = $ig['id'];
-                        $batchInstagramCount++;
-                    }
-                }
-            }
-
-            Log::debug('Instagram merged from all sources', [
-                'user_instagram' => count($userInstagram),
+            Log::debug('Instagram merged with ownership priority (owned > client > personal)', [
+                'owned_instagram' => $ownedInstagramCount,
+                'client_instagram' => $clientInstagramCount,
                 'direct_business_instagram' => $directCount,
-                'business_pages_queried' => count($pagesToQuery),
-                'batch_instagram_found' => $batchInstagramCount,
+                'personal_instagram' => $personalCount,
                 'total_unique' => count($allInstagram),
             ]);
 
@@ -387,115 +428,163 @@ class MetaAssetsService
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_adaccount_assets');
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
-            Log::info('Fetching ALL ad account assets from Meta API (with pagination and field expansion)');
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
+            Log::info('Fetching ALL ad account assets with ownership hierarchy (owned > client > personal)');
 
             try {
-                // Fetch ALL ad accounts with embedded pixels and custom conversions using pagination
-                $rawAccounts = $this->fetchAllPages(
-                    self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
-                    $accessToken,
-                    [
-                        'fields' => implode(',', [
-                            'id',
-                            'name',
-                            'account_id',
-                            'account_status',
-                            'disable_reason',
-                            'currency',
-                            'timezone_name',
-                            'timezone_id',
-                            'business_name',
-                            'business',
-                            'spend_cap',
-                            'amount_spent',
-                            'balance',
-                            'funding_source_details',
-                            'created_time',
-                            'capabilities',
-                            'is_prepay_account',
-                            'min_daily_budget',
-                            'adspixels.limit(100){id,name,creation_time,last_fired_time}',
-                            'customconversions.limit(100){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
-                        ]),
-                    ]
-                );
-
-                // Parse ad accounts and extract pixels + custom conversions
                 $adAccounts = [];
                 $pixels = [];
                 $customConversions = [];
+                $processedAccountIds = []; // Track IDs to prevent duplicates
 
-                foreach ($rawAccounts as $account) {
-                    $statusCode = $account['account_status'] ?? 0;
-                    $disableReason = $account['disable_reason'] ?? null;
-                    $accountId = $account['id'];
-                    $accountName = $account['name'] ?? 'Unknown';
+                // Ad account fields for detailed info
+                $adAccountFields = implode(',', [
+                    'id',
+                    'name',
+                    'account_id',
+                    'account_status',
+                    'disable_reason',
+                    'currency',
+                    'timezone_name',
+                    'timezone_id',
+                    'spend_cap',
+                    'amount_spent',
+                    'balance',
+                    'funding_source_details',
+                    'created_time',
+                    'capabilities',
+                    'is_prepay_account',
+                    'min_daily_budget',
+                    'adspixels.limit(100){id,name,creation_time,last_fired_time}',
+                    'customconversions.limit(100){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
+                ]);
 
-                    // Store ad account info
-                    $adAccounts[] = [
-                        'id' => $accountId,
-                        'account_id' => $account['account_id'] ?? str_replace('act_', '', $accountId),
-                        'name' => $accountName,
-                        'business_name' => $account['business_name'] ?? null,
-                        'business_id' => $account['business']['id'] ?? null,
-                        'currency' => $account['currency'] ?? 'USD',
-                        'timezone' => $account['timezone_name'] ?? 'UTC',
-                        'timezone_id' => $account['timezone_id'] ?? null,
-                        'status' => $this->getAccountStatusLabel($statusCode),
-                        'status_code' => $statusCode,
-                        'disable_reason' => $disableReason ? $this->getDisableReasonLabel($disableReason) : null,
-                        'spend_cap' => $account['spend_cap'] ?? null,
-                        'amount_spent' => $account['amount_spent'] ?? '0',
-                        'balance' => $account['balance'] ?? '0',
-                        'is_prepay' => $account['is_prepay_account'] ?? false,
-                        'min_daily_budget' => $account['min_daily_budget'] ?? null,
-                        'capabilities' => $account['capabilities'] ?? [],
-                        'funding_source' => $account['funding_source_details']['display_string'] ?? null,
-                        'created_at' => $account['created_time'] ?? null,
-                        'can_create_ads' => $statusCode === 1,
-                    ];
+                // STEP 1: Fetch all businesses first
+                $businesses = $this->fetchAllPages(
+                    self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
+                    $accessToken,
+                    ['fields' => 'id,name']
+                );
 
-                    // Extract pixels
-                    foreach ($account['adspixels']['data'] ?? [] as $pixel) {
-                        $existingIds = array_column($pixels, 'id');
-                        if (!in_array($pixel['id'], $existingIds)) {
-                            $pixels[] = [
-                                'id' => $pixel['id'],
-                                'name' => $pixel['name'] ?? 'Unnamed Pixel',
-                                'ad_account_id' => $accountId,
-                                'ad_account_name' => $accountName,
-                                'creation_time' => $pixel['creation_time'] ?? null,
-                                'last_fired_time' => $pixel['last_fired_time'] ?? null,
-                            ];
+                Log::debug('Fetched businesses for ad account ownership', ['count' => count($businesses)]);
+
+                // STEP 2: For each business, fetch owned_ad_accounts (HIGHEST PRIORITY)
+                foreach ($businesses as $business) {
+                    $businessId = $business['id'] ?? null;
+                    $businessName = $business['name'] ?? 'Unknown Business';
+
+                    if (!$businessId) continue;
+
+                    // Fetch owned ad accounts for this business
+                    try {
+                        $ownedAccounts = $this->fetchAllPages(
+                            self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_ad_accounts",
+                            $accessToken,
+                            ['fields' => $adAccountFields]
+                        );
+
+                        foreach ($ownedAccounts as $account) {
+                            $accountId = $account['id'];
+                            if (in_array($accountId, $processedAccountIds)) continue;
+
+                            $processedAccountIds[] = $accountId;
+                            $this->addAdAccountToResults(
+                                $account,
+                                $businessId,
+                                $businessName,
+                                'owned',
+                                $adAccounts,
+                                $pixels,
+                                $customConversions
+                            );
                         }
-                    }
 
-                    // Extract custom conversions
-                    foreach ($account['customconversions']['data'] ?? [] as $conversion) {
-                        $existingIds = array_column($customConversions, 'id');
-                        if (!in_array($conversion['id'], $existingIds)) {
-                            $customConversions[] = [
-                                'id' => $conversion['id'],
-                                'name' => $conversion['name'] ?? 'Unnamed Conversion',
-                                'description' => $conversion['description'] ?? null,
-                                'custom_event_type' => $conversion['custom_event_type'] ?? null,
-                                'rule' => $conversion['rule'] ?? null,
-                                'pixel_id' => $conversion['pixel']['id'] ?? null,
-                                'ad_account_id' => $accountId,
-                                'ad_account_name' => $accountName,
-                                'creation_time' => $conversion['creation_time'] ?? null,
-                                'last_fired_time' => $conversion['last_fired_time'] ?? null,
-                                'is_archived' => $conversion['is_archived'] ?? false,
-                            ];
-                        }
+                        Log::debug('Fetched owned ad accounts from business', [
+                            'business' => $businessName,
+                            'owned_count' => count($ownedAccounts),
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to fetch owned_ad_accounts for business', [
+                            'business_id' => $businessId,
+                            'error' => $e->getMessage(),
+                        ]);
                     }
                 }
 
-                Log::info('ALL ad account assets fetched with pagination', [
+                // STEP 3: For each business, fetch client_ad_accounts (SECOND PRIORITY)
+                foreach ($businesses as $business) {
+                    $businessId = $business['id'] ?? null;
+                    $businessName = $business['name'] ?? 'Unknown Business';
+
+                    if (!$businessId) continue;
+
+                    // Fetch client ad accounts for this business
+                    try {
+                        $clientAccounts = $this->fetchAllPages(
+                            self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/client_ad_accounts",
+                            $accessToken,
+                            ['fields' => $adAccountFields]
+                        );
+
+                        foreach ($clientAccounts as $account) {
+                            $accountId = $account['id'];
+                            if (in_array($accountId, $processedAccountIds)) continue;
+
+                            $processedAccountIds[] = $accountId;
+                            $this->addAdAccountToResults(
+                                $account,
+                                $businessId,
+                                $businessName,
+                                'client',
+                                $adAccounts,
+                                $pixels,
+                                $customConversions
+                            );
+                        }
+
+                        Log::debug('Fetched client ad accounts from business', [
+                            'business' => $businessName,
+                            'client_count' => count($clientAccounts),
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to fetch client_ad_accounts for business', [
+                            'business_id' => $businessId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // STEP 4: Fetch personal ad accounts from /me/adaccounts (LOWEST PRIORITY - fallback)
+                $personalAccounts = $this->fetchAllPages(
+                    self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
+                    $accessToken,
+                    ['fields' => $adAccountFields]
+                );
+
+                foreach ($personalAccounts as $account) {
+                    $accountId = $account['id'];
+                    if (in_array($accountId, $processedAccountIds)) continue;
+
+                    $processedAccountIds[] = $accountId;
+                    // Personal accounts - no business ownership
+                    $this->addAdAccountToResults(
+                        $account,
+                        null,
+                        null,
+                        'personal',
+                        $adAccounts,
+                        $pixels,
+                        $customConversions
+                    );
+                }
+
+                Log::info('ALL ad account assets fetched with ownership hierarchy', [
                     'ad_accounts' => count($adAccounts),
                     'pixels' => count($pixels),
                     'custom_conversions' => count($customConversions),
+                    'owned_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'owned')),
+                    'client_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'client')),
+                    'personal_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'personal')),
                 ]);
 
                 return [
@@ -508,6 +597,90 @@ class MetaAssetsService
                 return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
             }
         });
+    }
+
+    /**
+     * Helper method to add an ad account and its nested assets to results.
+     */
+    private function addAdAccountToResults(
+        array $account,
+        ?string $businessId,
+        ?string $businessName,
+        string $source,
+        array &$adAccounts,
+        array &$pixels,
+        array &$customConversions
+    ): void {
+        $statusCode = $account['account_status'] ?? 0;
+        $disableReason = $account['disable_reason'] ?? null;
+        $accountId = $account['id'];
+        $accountName = $account['name'] ?? 'Unknown';
+
+        // Store ad account info with ownership
+        $adAccounts[] = [
+            'id' => $accountId,
+            'account_id' => $account['account_id'] ?? str_replace('act_', '', $accountId),
+            'name' => $accountName,
+            'business_name' => $businessName,
+            'business_id' => $businessId,
+            'source' => $source, // 'owned', 'client', or 'personal'
+            'currency' => $account['currency'] ?? 'USD',
+            'timezone' => $account['timezone_name'] ?? 'UTC',
+            'timezone_id' => $account['timezone_id'] ?? null,
+            'status' => $this->getAccountStatusLabel($statusCode),
+            'status_code' => $statusCode,
+            'disable_reason' => $disableReason ? $this->getDisableReasonLabel($disableReason) : null,
+            'spend_cap' => $account['spend_cap'] ?? null,
+            'amount_spent' => $account['amount_spent'] ?? '0',
+            'balance' => $account['balance'] ?? '0',
+            'is_prepay' => $account['is_prepay_account'] ?? false,
+            'min_daily_budget' => $account['min_daily_budget'] ?? null,
+            'capabilities' => $account['capabilities'] ?? [],
+            'funding_source' => $account['funding_source_details']['display_string'] ?? null,
+            'created_at' => $account['created_time'] ?? null,
+            'can_create_ads' => $statusCode === 1,
+        ];
+
+        // Extract pixels (inherit business info from ad account)
+        foreach ($account['adspixels']['data'] ?? [] as $pixel) {
+            $existingIds = array_column($pixels, 'id');
+            if (!in_array($pixel['id'], $existingIds)) {
+                $pixels[] = [
+                    'id' => $pixel['id'],
+                    'name' => $pixel['name'] ?? 'Unnamed Pixel',
+                    'ad_account_id' => $accountId,
+                    'ad_account_name' => $accountName,
+                    'business_name' => $businessName,
+                    'business_id' => $businessId,
+                    'source' => $source,
+                    'creation_time' => $pixel['creation_time'] ?? null,
+                    'last_fired_time' => $pixel['last_fired_time'] ?? null,
+                ];
+            }
+        }
+
+        // Extract custom conversions (inherit business info from ad account)
+        foreach ($account['customconversions']['data'] ?? [] as $conversion) {
+            $existingIds = array_column($customConversions, 'id');
+            if (!in_array($conversion['id'], $existingIds)) {
+                $customConversions[] = [
+                    'id' => $conversion['id'],
+                    'name' => $conversion['name'] ?? 'Unnamed Conversion',
+                    'description' => $conversion['description'] ?? null,
+                    'custom_event_type' => $conversion['custom_event_type'] ?? null,
+                    'rule' => $conversion['rule'] ?? null,
+                    'pixel_id' => $conversion['pixel']['id'] ?? null,
+                    'ad_account_id' => $accountId,
+                    'ad_account_name' => $accountName,
+                    'business_name' => $businessName,
+                    'business_id' => $businessId,
+                    'source' => $source,
+                    'creation_time' => $conversion['creation_time'] ?? null,
+                    'last_fired_time' => $conversion['last_fired_time'] ?? null,
+                    'is_archived' => $conversion['is_archived'] ?? false,
+                ];
+            }
+        }
     }
 
     /**
