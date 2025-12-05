@@ -155,7 +155,7 @@ class TikTokAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $advertiserIds) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken, $advertiserIds) {
             Log::info('Fetching TikTok advertisers from API');
 
             if (empty($advertiserIds)) {
@@ -220,7 +220,7 @@ class TikTokAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $advertiserIds) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken, $advertiserIds) {
             Log::info('Fetching TikTok pixels from API', ['advertiser_count' => count($advertiserIds)]);
 
             if (empty($advertiserIds)) {
@@ -270,7 +270,7 @@ class TikTokAssetsService
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $advertiserIds) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken, $advertiserIds) {
             Log::info('Fetching TikTok catalogs from API', ['advertiser_count' => count($advertiserIds)]);
 
             if (empty($advertiserIds)) {
