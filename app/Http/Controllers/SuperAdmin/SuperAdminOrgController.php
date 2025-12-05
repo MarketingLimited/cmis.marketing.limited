@@ -89,6 +89,9 @@ class SuperAdminOrgController extends Controller
             ])
             ->findOrFail($orgId);
 
+        // Deduplicate users (user may have multiple roles in same org)
+        $org->setRelation('users', $org->users->unique('user_id')->values());
+
         // Get API usage stats for this org
         $apiStats = [
             'total_calls' => DB::table('cmis.platform_api_calls')
