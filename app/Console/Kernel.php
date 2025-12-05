@@ -133,9 +133,10 @@ class Kernel extends ConsoleKernel
                 Log::error('❌ Failed to process scheduled posts');
             });
 
-        // Refresh expired OAuth tokens every hour
+        // Refresh expired OAuth tokens every 30 minutes
+        // More frequent than hourly since Google tokens expire in 1 hour
         $schedule->job(new RefreshExpiredTokensJob())
-            ->hourly()
+            ->everyThirtyMinutes()
             ->withoutOverlapping()
             ->onOneServer()
             ->onSuccess(function () {

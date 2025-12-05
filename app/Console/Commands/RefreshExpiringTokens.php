@@ -97,11 +97,100 @@ class RefreshExpiringTokens extends Command
     {
         return match ($connection->platform) {
             'tiktok' => PlatformConnectionsController::refreshTikTokTokenSilently($connection),
-            // Add other platforms here as needed
-            // 'google' => $this->refreshGoogleToken($connection),
-            // 'meta' => $this->refreshMetaToken($connection),
+            'google' => $this->refreshGoogleToken($connection),
+            'meta' => $this->refreshMetaToken($connection),
             default => $this->logUnsupportedPlatform($connection),
         };
+    }
+
+    /**
+     * Refresh Google access token.
+     */
+    protected function refreshGoogleToken(PlatformConnection $connection): bool
+    {
+        try {
+            $config = config('social-platforms.google');
+            $response = \Illuminate\Support\Facades\Http::asForm()->post(
+                $config['token_url'] ?? 'https://oauth2.googleapis.com/token',
+                [
+                    'client_id' => $config['client_id'] ?? '',
+                    'client_secret' => $config['client_secret'] ?? '',
+                    'refresh_token' => $connection->refresh_token,
+                    'grant_type' => 'refresh_token',
+                ]
+            );
+
+            if (!$response->successful()) {
+                Log::error('Google token refresh failed', [
+                    'connection_id' => $connection->connection_id,
+                    'error' => $response->body(),
+                ]);
+                return false;
+            }
+
+            $tokenData = $response->json();
+            // Use server timezone (Europe/Berlin) to match PostgreSQL's NOW()
+            $expiresAt = now('Europe/Berlin')->addSeconds($tokenData['expires_in'] ?? 3600);
+            $connection->update([
+                'access_token' => $tokenData['access_token'],
+                'token_expires_at' => $expiresAt,
+                'status' => 'active',
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Google token refresh exception', [
+                'connection_id' => $connection->connection_id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Refresh Meta access token.
+     */
+    protected function refreshMetaToken(PlatformConnection $connection): bool
+    {
+        try {
+            $config = config('social-platforms.meta');
+            $response = \Illuminate\Support\Facades\Http::get(
+                'https://graph.facebook.com/v18.0/oauth/access_token',
+                [
+                    'grant_type' => 'fb_exchange_token',
+                    'client_id' => $config['app_id'] ?? '',
+                    'client_secret' => $config['app_secret'] ?? '',
+                    'fb_exchange_token' => $connection->access_token,
+                ]
+            );
+
+            if (!$response->successful()) {
+                Log::error('Meta token refresh failed', [
+                    'connection_id' => $connection->connection_id,
+                    'error' => $response->body(),
+                ]);
+                return false;
+            }
+
+            $tokenData = $response->json();
+            // Use server timezone (Europe/Berlin) to match PostgreSQL's NOW()
+            $expiresAt = isset($tokenData['expires_in'])
+                ? now('Europe/Berlin')->addSeconds($tokenData['expires_in'])
+                : now('Europe/Berlin')->addDays(60);
+            $connection->update([
+                'access_token' => $tokenData['access_token'],
+                'token_expires_at' => $expiresAt,
+                'status' => 'active',
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Meta token refresh exception', [
+                'connection_id' => $connection->connection_id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
 
     /**

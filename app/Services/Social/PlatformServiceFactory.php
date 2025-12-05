@@ -39,6 +39,15 @@ class PlatformServiceFactory
     ];
 
     /**
+     * Platforms that support token refresh but aren't social services
+     * These are OAuth providers that grant access to multiple services
+     */
+    protected static array $tokenRefreshOnlyPlatforms = [
+        'google',  // Google OAuth (YouTube, Ads, Analytics, etc.)
+        'meta',    // Meta OAuth (Facebook, Instagram)
+    ];
+
+    /**
      * Create platform service instance from PlatformConnection
      *
      * @param PlatformConnection $connection Active platform connection with OAuth tokens
@@ -122,14 +131,16 @@ class PlatformServiceFactory
     }
 
     /**
-     * Check if platform is supported
+     * Check if platform is supported (for social services or token refresh)
      *
      * @param string $platform Platform name
-     * @return bool True if platform has service implementation
+     * @return bool True if platform has service implementation or supports token refresh
      */
     public static function isSupported(string $platform): bool
     {
-        return isset(self::$platformServices[strtolower($platform)]);
+        $platform = strtolower($platform);
+        return isset(self::$platformServices[$platform])
+            || in_array($platform, self::$tokenRefreshOnlyPlatforms);
     }
 
     /**
@@ -194,6 +205,14 @@ class PlatformServiceFactory
             // Platform-specific token refresh handling
             if ($platform === 'tiktok') {
                 return self::refreshTikTokToken($connection, $config);
+            }
+
+            if ($platform === 'google') {
+                return self::refreshGoogleToken($connection, $config);
+            }
+
+            if ($platform === 'meta') {
+                return self::refreshMetaToken($connection, $config);
             }
 
             // Generic OAuth2 token refresh
@@ -299,6 +318,116 @@ class PlatformServiceFactory
         ]);
 
         Log::info('TikTok token refreshed successfully', [
+            'connection_id' => $connection->connection_id,
+            'expires_at' => $connection->token_expires_at,
+        ]);
+
+        return $connection->fresh();
+    }
+
+    /**
+     * Refresh Google access token using refresh token
+     *
+     * Google OAuth2 uses standard refresh token flow
+     *
+     * @param PlatformConnection $connection Google connection
+     * @param array $config Google platform config
+     * @return PlatformConnection Updated connection
+     * @throws \Exception If refresh fails
+     */
+    protected static function refreshGoogleToken(PlatformConnection $connection, array $config): PlatformConnection
+    {
+        $response = \Illuminate\Support\Facades\Http::asForm()->post($config['token_url'] ?? 'https://oauth2.googleapis.com/token', [
+            'client_id' => $config['client_id'] ?? '',
+            'client_secret' => $config['client_secret'] ?? '',
+            'refresh_token' => $connection->refresh_token,
+            'grant_type' => 'refresh_token',
+        ]);
+
+        if (!$response->successful()) {
+            $error = $response->json('error_description', $response->body());
+            throw new \Exception('Google token refresh failed: ' . $error);
+        }
+
+        $tokenData = $response->json();
+
+        if (empty($tokenData['access_token'])) {
+            throw new \Exception('Google token refresh error: No access_token in response');
+        }
+
+        // Update connection with new token
+        // Note: Google doesn't return a new refresh_token on refresh
+        // Use server timezone (Europe/Berlin) to match PostgreSQL's NOW()
+        $expiresAt = isset($tokenData['expires_in'])
+            ? now('Europe/Berlin')->addSeconds($tokenData['expires_in'])
+            : now('Europe/Berlin')->addHours(1);
+        $connection->update([
+            'access_token' => $tokenData['access_token'],
+            'token_expires_at' => $expiresAt,
+            'status' => 'active',
+            'last_error_at' => null,
+            'last_error_message' => null,
+            'account_metadata' => array_merge($connection->account_metadata ?? [], [
+                'last_token_refresh' => now('Europe/Berlin')->toIso8601String(),
+            ]),
+        ]);
+
+        Log::info('Google token refreshed successfully', [
+            'connection_id' => $connection->connection_id,
+            'expires_at' => $connection->token_expires_at,
+        ]);
+
+        return $connection->fresh();
+    }
+
+    /**
+     * Refresh Meta (Facebook/Instagram) access token
+     *
+     * Meta uses long-lived tokens that can be refreshed by exchanging them
+     *
+     * @param PlatformConnection $connection Meta connection
+     * @param array $config Meta platform config
+     * @return PlatformConnection Updated connection
+     * @throws \Exception If refresh fails
+     */
+    protected static function refreshMetaToken(PlatformConnection $connection, array $config): PlatformConnection
+    {
+        // Meta uses token exchange for long-lived tokens
+        $response = \Illuminate\Support\Facades\Http::get('https://graph.facebook.com/v18.0/oauth/access_token', [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => $config['app_id'] ?? '',
+            'client_secret' => $config['app_secret'] ?? '',
+            'fb_exchange_token' => $connection->access_token, // Exchange current token
+        ]);
+
+        if (!$response->successful()) {
+            $error = $response->json('error.message', $response->body());
+            throw new \Exception('Meta token refresh failed: ' . $error);
+        }
+
+        $tokenData = $response->json();
+
+        if (empty($tokenData['access_token'])) {
+            throw new \Exception('Meta token refresh error: No access_token in response');
+        }
+
+        // Update connection with new token
+        // Use server timezone (Europe/Berlin) to match PostgreSQL's NOW()
+        $expiresAt = isset($tokenData['expires_in'])
+            ? now('Europe/Berlin')->addSeconds($tokenData['expires_in'])
+            : now('Europe/Berlin')->addDays(60);
+        $connection->update([
+            'access_token' => $tokenData['access_token'],
+            'token_expires_at' => $expiresAt,
+            'status' => 'active',
+            'last_error_at' => null,
+            'last_error_message' => null,
+            'account_metadata' => array_merge($connection->account_metadata ?? [], [
+                'last_token_refresh' => now('Europe/Berlin')->toIso8601String(),
+            ]),
+        ]);
+
+        Log::info('Meta token refreshed successfully', [
             'connection_id' => $connection->connection_id,
             'expires_at' => $connection->token_expires_at,
         ]);
