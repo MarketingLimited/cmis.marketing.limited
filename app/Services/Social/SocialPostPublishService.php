@@ -3,6 +3,7 @@
 namespace App\Services\Social;
 
 use App\Models\Platform\PlatformConnection;
+use App\Services\Platform\GoogleAssetsService;
 use App\Services\Social\Publishers\TikTokPublisher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -1100,7 +1101,16 @@ class SocialPostPublishService
                 ];
             }
 
-            $accessToken = $connection->access_token;
+            // Get valid access token (refresh if expired)
+            $googleAssetsService = app(GoogleAssetsService::class);
+            $accessToken = $googleAssetsService->getValidAccessToken($connection);
+
+            if (!$accessToken) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to get valid Google access token. Please reconnect your Google account.',
+                ];
+            }
 
             // Get post metadata for title
             $postMetadata = DB::table('cmis.social_posts')
