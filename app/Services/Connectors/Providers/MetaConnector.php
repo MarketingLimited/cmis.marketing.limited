@@ -34,17 +34,70 @@ class MetaConnector extends AbstractConnector
             'client_id' => config('services.meta.client_id'),
             'redirect_uri' => config('services.meta.redirect_uri'),
             'scope' => implode(',', [
+                // Insights & Analytics
+                'read_insights',
+                'attribution_read',
+
+                // Publishing
+                'publish_video',
+
+                // Catalog & Commerce
+                'catalog_management',
+                'commerce_account_read_settings',
+                'commerce_account_manage_orders',
+                'commerce_account_read_orders',
+                'commerce_account_read_reports',
+
+                // Advanced Features
+                'private_computation_access',
+
+                // Threads
+                'threads_business_basic',
+
+                // Pages - Content & Management
                 'pages_show_list',
                 'pages_read_engagement',
+                'pages_read_user_content',
+                'pages_manage_cta',
+                'pages_manage_instant_articles',
+                'pages_manage_metadata',
+                'pages_manage_ads',
                 'pages_manage_posts',
                 'pages_manage_engagement',
                 'pages_messaging',
+                'pages_utility_messaging',
+                'read_page_mailboxes',
+                'page_events',
+                'paid_marketing_messages',
+
+                // Instagram
                 'instagram_basic',
-                'instagram_content_publish',
                 'instagram_manage_comments',
+                'instagram_manage_insights',
+                'instagram_content_publish',
                 'instagram_manage_messages',
-                'ads_read',
+                'instagram_shopping_tag_products',
+                'instagram_branded_content_brand',
+                'instagram_branded_content_ads_brand',
+
+                // Ads
                 'ads_management',
+                'ads_read',
+
+                // Business
+                'business_management',
+                'manage_app_solution',
+
+                // Leads
+                'leads_retrieval',
+
+                // WhatsApp
+                'whatsapp_business_management',
+                'whatsapp_business_messaging',
+                'whatsapp_business_manage_events',
+
+                // Profile
+                'public_profile',
             ]),
             'response_type' => 'code',
             'state' => $options['state'] ?? bin2hex(random_bytes(16)),
