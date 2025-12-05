@@ -284,8 +284,8 @@
 
                 <div class="flex items-center gap-3">
                     <!-- Quick Actions -->
-                    <a href="{{ route('dashboard') }}" class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-                        <i class="fas fa-arrow-left"></i>
+                    <a href="/" class="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                        <i class="fas fa-arrow-{{ $isRtl ?? false ? 'right' : 'left' }}"></i>
                         <span>{{ __('super_admin.back_to_app') }}</span>
                     </a>
 
