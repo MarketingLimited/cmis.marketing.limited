@@ -302,9 +302,10 @@ class SuperAdminSystemController extends Controller
             Cache::forget($key);
 
             $driver = config('cache.default');
-            $hitRate = '-';
-            $memoryUsed = '-';
+            $hitRate = null;
+            $memoryUsed = null;
             $keys = 0;
+            $driverLabel = ucfirst($driver);
 
             // Get Redis stats if using Redis
             if ($driver === 'redis') {
@@ -317,6 +318,8 @@ class SuperAdminSystemController extends Controller
                     $total = $hits + $misses;
                     if ($total > 0) {
                         $hitRate = round(($hits / $total) * 100, 1);
+                    } else {
+                        $hitRate = 0;
                     }
 
                     // Memory used
@@ -331,14 +334,37 @@ class SuperAdminSystemController extends Controller
                     // Redis stats not available
                     Log::debug('Could not get Redis stats: ' . $e->getMessage());
                 }
+            } elseif ($driver === 'file') {
+                // For file cache, we can count cached files
+                $cachePath = storage_path('framework/cache/data');
+                if (is_dir($cachePath)) {
+                    $iterator = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($cachePath, \RecursiveDirectoryIterator::SKIP_DOTS)
+                    );
+                    $keys = iterator_count($iterator);
+                }
+                $driverLabel = 'File';
+            } elseif ($driver === 'array') {
+                // Array driver is in-memory per request, no persistent stats
+                $driverLabel = 'Array (In-Memory)';
+            } elseif ($driver === 'database') {
+                // Database cache - count entries
+                try {
+                    $keys = DB::table('cache')->count();
+                } catch (\Exception $e) {
+                    $keys = 0;
+                }
+                $driverLabel = 'Database';
             }
 
             return [
                 'status' => $value === 'test' ? 'healthy' : 'degraded',
                 'driver' => $driver,
+                'driver_label' => $driverLabel,
                 'hit_rate' => $hitRate,
                 'memory_used' => $memoryUsed,
                 'keys' => $keys,
+                'supports_stats' => in_array($driver, ['redis']),
             ];
         } catch (\Exception $e) {
             return [

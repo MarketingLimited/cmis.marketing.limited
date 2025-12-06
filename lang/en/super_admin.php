@@ -303,6 +303,8 @@ return [
         'cache' => 'Cache',
         'hit_rate' => 'Hit Rate',
         'memory_used' => 'Memory Used',
+        'cached_keys' => 'Cached Keys',
+        'driver_type' => 'Driver Type',
         'queue' => 'Queue',
         'pending_jobs' => 'Pending Jobs',
         'failed_jobs' => 'Failed Jobs',

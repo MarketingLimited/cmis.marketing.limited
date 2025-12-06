@@ -99,7 +99,7 @@
                     </div>
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('super_admin.system.cache') }}</h3>
-                        <p class="text-sm text-gray-500">Redis</p>
+                        <p class="text-sm text-gray-500" x-text="services.cache?.driver_label || 'Cache'"></p>
                     </div>
                 </div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -111,14 +111,30 @@
                       x-text="services.cache?.status || '{{ __('super_admin.system.checking') }}'"></span>
             </div>
             <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.hit_rate') }}</span>
-                    <span class="text-gray-900 dark:text-white" x-text="(services.cache?.hit_rate || '-') + '%'"></span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.memory_used') }}</span>
-                    <span class="text-gray-900 dark:text-white" x-text="services.cache?.memory_used || '-'"></span>
-                </div>
+                <template x-if="services.cache?.supports_stats">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.hit_rate') }}</span>
+                            <span class="text-gray-900 dark:text-white" x-text="(services.cache?.hit_rate ?? 0) + '%'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.memory_used') }}</span>
+                            <span class="text-gray-900 dark:text-white" x-text="services.cache?.memory_used || 'N/A'"></span>
+                        </div>
+                    </div>
+                </template>
+                <template x-if="!services.cache?.supports_stats">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.cached_keys') }}</span>
+                            <span class="text-gray-900 dark:text-white" x-text="services.cache?.keys ?? 0"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ __('super_admin.system.driver_type') }}</span>
+                            <span class="text-gray-900 dark:text-white" x-text="services.cache?.driver || 'unknown'"></span>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
 
@@ -352,8 +368,12 @@ function systemHealth() {
                 if (checks.cache) {
                     this.services.cache = {
                         status: checks.cache.status === 'unhealthy' ? 'down' : checks.cache.status,
-                        hit_rate: checks.cache.hit_rate || '-',
-                        memory_used: checks.cache.memory_used || '-'
+                        driver: checks.cache.driver || 'unknown',
+                        driver_label: checks.cache.driver_label || 'Cache',
+                        hit_rate: checks.cache.hit_rate,
+                        memory_used: checks.cache.memory_used,
+                        keys: checks.cache.keys || 0,
+                        supports_stats: checks.cache.supports_stats || false
                     };
                 }
 
