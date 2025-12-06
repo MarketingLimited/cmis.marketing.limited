@@ -375,15 +375,41 @@ class MetaAssetsService
                         if (($batchResponse['code'] ?? 0) === 200) {
                             $body = json_decode($batchResponse['body'] ?? '{}', true);
                             if (!empty($body['id'])) {
-                                $pages[] = [
+                                $pageData = [
                                     'id' => $body['id'],
                                     'name' => $body['name'] ?? 'Unknown Page',
                                     'category' => $body['category'] ?? null,
                                     'picture' => $body['picture']['data']['url'] ?? null,
                                     'has_instagram' => isset($body['instagram_business_account']),
                                     'instagram_id' => $body['instagram_business_account']['id'] ?? null,
-                                    'instagram_data' => $body['instagram_business_account'] ?? null,
+                                    // Pages from /me/accounts are personal pages
+                                    'source' => 'personal',
+                                    'business_id' => null,
+                                    'business_name' => null,
                                 ];
+
+                                // Extract Instagram with ownership inherited from page
+                                if (isset($body['instagram_business_account'])) {
+                                    $ig = $body['instagram_business_account'];
+                                    $pageData['instagram_data'] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => $body['id'],
+                                        'connected_page_name' => $body['name'] ?? 'Unknown Page',
+                                        // Inherit ownership from page
+                                        'source' => 'personal',
+                                        'business_id' => null,
+                                        'business_name' => null,
+                                    ];
+                                } else {
+                                    $pageData['instagram_data'] = null;
+                                }
+
+                                $pages[] = $pageData;
                             }
                         }
                     }
@@ -1684,6 +1710,12 @@ class MetaAssetsService
                                     'biography' => $threadsData['threads_biography'] ?? null,
                                     'connected_instagram' => $ig['username'] ?? null,
                                     'instagram_id' => $igId,
+                                    // Inherit ownership from Instagram (which inherits from Pages)
+                                    'source' => $ig['source'] ?? 'personal',
+                                    'connected_page_id' => $ig['connected_page_id'] ?? null,
+                                    'connected_page_name' => $ig['connected_page_name'] ?? null,
+                                    'business_id' => $ig['business_id'] ?? null,
+                                    'business_name' => $ig['business_name'] ?? null,
                                 ];
                             }
                         }
