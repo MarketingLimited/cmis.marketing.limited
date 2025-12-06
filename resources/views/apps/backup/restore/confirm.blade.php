@@ -310,10 +310,30 @@ function confirmRestore() {
 
             this.codeSending = true;
             try {
-                // TODO: Implement actual API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch('{{ route("orgs.backup.restore.send-verification", ["org" => $org, "restore" => $restore->id]) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || '{{ __("backup.code_send_failed") }}');
+                }
+
                 this.codeSent = true;
                 this.codeCooldown = 60;
+
+                // Show success message with masked email
+                if (data.data && data.data.email) {
+                    window.notify('{{ __("backup.verification_code_sent_to") }} ' + data.data.email, 'success');
+                } else {
+                    window.notify('{{ __("backup.verification_code_sent") }}', 'success');
+                }
 
                 const interval = setInterval(() => {
                     this.codeCooldown--;
@@ -322,7 +342,8 @@ function confirmRestore() {
                     }
                 }, 1000);
             } catch (error) {
-                alert('{{ __("backup.code_send_failed") }}');
+                console.error('Error sending verification code:', error);
+                window.notify(error.message || '{{ __("backup.code_send_failed") }}', 'error');
             } finally {
                 this.codeSending = false;
             }

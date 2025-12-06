@@ -96,7 +96,17 @@ return [
     'provider_hint' => 'مصدر إنشاء المؤسسة (اختياري)',
     'save_changes' => 'حفظ التغييرات',
     'updated_success' => 'تم تحديث المؤسسة بنجاح',
+    'updated_successfully' => 'تم تحديث المؤسسة بنجاح',
+    'updating' => 'جاري تحديث المؤسسة...',
     'update_failed' => 'فشل تحديث المؤسسة: :error',
+    'default_locale' => 'اللغة الافتراضية',
+    'arabic' => 'العربية',
+    'english' => 'الإنجليزية',
+    'sar' => 'ريال سعودي (SAR)',
+    'usd' => 'دولار أمريكي (USD)',
+    'eur' => 'يورو (EUR)',
+    'gbp' => 'جنيه إسترليني (GBP)',
+    'aed' => 'درهم إماراتي (AED)',
 
     // Organization Show Page
     'edit' => 'تعديل',

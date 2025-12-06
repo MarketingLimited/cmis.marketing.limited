@@ -23,66 +23,11 @@
 
     <title>@yield('title', 'CMIS') - {{ $dashboardTitle }}</title>
 
-    <!-- Tailwind CSS CDN - TODO: Replace with compiled CSS for production -->
-    <!-- For production, run: npm install -D tailwindcss && npx tailwindcss build -->
-    <script>
-        // Suppress Tailwind CDN production warning
-        (function() {
-            const originalWarn = console.warn;
-            console.warn = function(...args) {
-                if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
-                    return; // Suppress Tailwind CDN warning
-                }
-                originalWarn.apply(console, args);
-            };
-        })();
-    </script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <script>
-        // Configure Tailwind
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
-                    }
-                }
-            },
-            corePlugins: {
-                preflight: true,
-            }
-        };
-    </script>
-
-    <!-- Alpine.js Plugins - must load before Alpine core -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Alpine.js CDN - loaded early with defer to prevent FOUC -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Compiled CSS & JS via Vite (includes Tailwind, Alpine.js, Chart.js) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Icons: Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Chart.js CDN - Conditional Loading -->
-    @if(request()->routeIs('analytics.*') || request()->routeIs('orgs.dashboard.*') || request()->routeIs('dashboard.*'))
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    @endif
 
     <!-- JavaScript Translations -->
     <x-js-translations />

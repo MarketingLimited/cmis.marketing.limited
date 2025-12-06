@@ -761,6 +761,186 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Get analytics summary for dashboard
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return $this->error('No active organization found', 404);
+            }
+
+            $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
+            $endDate = $request->input('end_date', now()->format('Y-m-d'));
+            $platform = $request->input('platform');
+
+            // Get platform performance metrics
+            $platformQuery = DB::table('cmis_ads.ad_campaigns as c')
+                ->leftJoin('cmis_ads.ad_metrics as m', 'c.campaign_id', '=', 'm.campaign_id')
+                ->where('c.org_id', $orgId)
+                ->whereBetween('m.date', [$startDate, $endDate]);
+
+            if ($platform && $platform !== 'all') {
+                $platformQuery->where('c.platform', $platform);
+            }
+
+            $platforms = $platformQuery
+                ->select(
+                    'c.platform as name',
+                    DB::raw('COALESCE(SUM(m.spend), 0) as spend'),
+                    DB::raw('COALESCE(SUM(m.clicks), 0) as clicks'),
+                    DB::raw('COALESCE(SUM(m.impressions), 0) as impressions'),
+                    DB::raw('COALESCE(SUM(m.conversions), 0) as conversions'),
+                    DB::raw('CASE WHEN SUM(m.impressions) > 0 THEN ROUND(SUM(m.clicks)::numeric / SUM(m.impressions) * 100, 2) ELSE 0 END as ctr'),
+                    DB::raw('CASE WHEN SUM(m.spend) > 0 THEN ROUND(SUM(m.revenue)::numeric / SUM(m.spend), 2) ELSE 0 END as roas')
+                )
+                ->groupBy('c.platform')
+                ->get();
+
+            // Get daily trends
+            $trends = DB::table('cmis_ads.ad_metrics as m')
+                ->join('cmis_ads.ad_campaigns as c', 'c.campaign_id', '=', 'm.campaign_id')
+                ->where('c.org_id', $orgId)
+                ->whereBetween('m.date', [$startDate, $endDate])
+                ->select(
+                    DB::raw('DATE(m.date) as date'),
+                    DB::raw('COALESCE(SUM(m.spend), 0) as spend'),
+                    DB::raw('COALESCE(SUM(m.impressions), 0) as impressions'),
+                    DB::raw('COALESCE(SUM(m.clicks), 0) as clicks'),
+                    DB::raw('COALESCE(SUM(m.conversions), 0) as conversions')
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            return $this->success([
+                'platforms' => $platforms,
+                'trends' => $trends,
+                'date_range' => [
+                    'start' => $startDate,
+                    'end' => $endDate,
+                ],
+            ], 'Analytics summary retrieved successfully');
+        } catch (\Exception $e) {
+            Log::error("Failed to get analytics summary: {$e->getMessage()}");
+            return $this->serverError('Failed to get analytics summary');
+        }
+    }
+
+    /**
+     * Get KPI metrics for analytics dashboard
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function kpis(Request $request): JsonResponse
+    {
+        try {
+            $orgId = $this->resolveOrgId($request);
+
+            if (!$orgId) {
+                return $this->error('No active organization found', 404);
+            }
+
+            $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
+            $endDate = $request->input('end_date', now()->format('Y-m-d'));
+            $platform = $request->input('platform');
+
+            // Current period metrics
+            $currentQuery = DB::table('cmis_ads.ad_metrics as m')
+                ->join('cmis_ads.ad_campaigns as c', 'c.campaign_id', '=', 'm.campaign_id')
+                ->where('c.org_id', $orgId)
+                ->whereBetween('m.date', [$startDate, $endDate]);
+
+            if ($platform && $platform !== 'all') {
+                $currentQuery->where('c.platform', $platform);
+            }
+
+            $current = $currentQuery->select(
+                DB::raw('COALESCE(SUM(m.spend), 0) as total_spend'),
+                DB::raw('COALESCE(SUM(m.impressions), 0) as impressions'),
+                DB::raw('COALESCE(SUM(m.clicks), 0) as clicks'),
+                DB::raw('COALESCE(SUM(m.conversions), 0) as conversions'),
+                DB::raw('COALESCE(SUM(m.revenue), 0) as revenue')
+            )->first();
+
+            // Calculate previous period for comparison
+            $daysDiff = Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate));
+            $prevStartDate = Carbon::parse($startDate)->subDays($daysDiff + 1)->format('Y-m-d');
+            $prevEndDate = Carbon::parse($startDate)->subDay()->format('Y-m-d');
+
+            $previousQuery = DB::table('cmis_ads.ad_metrics as m')
+                ->join('cmis_ads.ad_campaigns as c', 'c.campaign_id', '=', 'm.campaign_id')
+                ->where('c.org_id', $orgId)
+                ->whereBetween('m.date', [$prevStartDate, $prevEndDate]);
+
+            if ($platform && $platform !== 'all') {
+                $previousQuery->where('c.platform', $platform);
+            }
+
+            $previous = $previousQuery->select(
+                DB::raw('COALESCE(SUM(m.spend), 0) as total_spend'),
+                DB::raw('COALESCE(SUM(m.impressions), 0) as impressions'),
+                DB::raw('COALESCE(SUM(m.clicks), 0) as clicks'),
+                DB::raw('COALESCE(SUM(m.conversions), 0) as conversions')
+            )->first();
+
+            // Calculate percentage changes
+            $spendChange = $previous->total_spend > 0
+                ? round((($current->total_spend - $previous->total_spend) / $previous->total_spend) * 100, 1)
+                : 0;
+            $impressionsChange = $previous->impressions > 0
+                ? round((($current->impressions - $previous->impressions) / $previous->impressions) * 100, 1)
+                : 0;
+            $clicksChange = $previous->clicks > 0
+                ? round((($current->clicks - $previous->clicks) / $previous->clicks) * 100, 1)
+                : 0;
+            $conversionsChange = $previous->conversions > 0
+                ? round((($current->conversions - $previous->conversions) / $previous->conversions) * 100, 1)
+                : 0;
+
+            // Calculate derived metrics
+            $ctr = $current->impressions > 0
+                ? round(($current->clicks / $current->impressions) * 100, 2)
+                : 0;
+            $cpc = $current->clicks > 0
+                ? round($current->total_spend / $current->clicks, 2)
+                : 0;
+            $roas = $current->total_spend > 0
+                ? round($current->revenue / $current->total_spend, 2)
+                : 0;
+
+            return $this->success([
+                'kpis' => [
+                    'total_spend' => (float) $current->total_spend,
+                    'spend_change' => $spendChange,
+                    'impressions' => (int) $current->impressions,
+                    'impressions_change' => $impressionsChange,
+                    'clicks' => (int) $current->clicks,
+                    'clicks_change' => $clicksChange,
+                    'conversions' => (int) $current->conversions,
+                    'conversions_change' => $conversionsChange,
+                    'ctr' => $ctr,
+                    'cpc' => $cpc,
+                    'roas' => $roas,
+                ],
+                'date_range' => [
+                    'current' => ['start' => $startDate, 'end' => $endDate],
+                    'previous' => ['start' => $prevStartDate, 'end' => $prevEndDate],
+                ],
+            ], 'KPIs retrieved successfully');
+        } catch (\Exception $e) {
+            Log::error("Failed to get KPIs: {$e->getMessage()}");
+            return $this->serverError('Failed to get KPIs');
+        }
+    }
+
+    /**
      * Get audience demographics
      *
      * @param Request $request

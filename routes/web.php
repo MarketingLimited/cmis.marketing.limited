@@ -1009,6 +1009,8 @@ Route::middleware(['auth'])->group(function () {
                     ->middleware('backup.permission:backup.restore');
                 Route::get('/{restore}/confirm', [RestoreController::class, 'confirm'])->name('confirm')
                     ->middleware('backup.permission:backup.restore');
+                Route::post('/{restore}/send-verification', [RestoreController::class, 'sendVerificationCode'])->name('send-verification')
+                    ->middleware('backup.permission:backup.restore');
                 Route::post('/{restore}/process', [RestoreController::class, 'process'])->name('process')
                     ->middleware('backup.permission:backup.restore');
                 Route::get('/{restore}/progress', [RestoreController::class, 'progress'])->name('progress')

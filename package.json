@@ -15,6 +15,8 @@
         "playwright:install": "playwright install --with-deps"
     },
     "dependencies": {
+        "@alpinejs/collapse": "^3.15.2",
+        "@alpinejs/focus": "^3.15.2",
         "alpinejs": "^3.13.5",
         "chart.js": "^4.4.1",
         "puppeteer": "^24.31.0"

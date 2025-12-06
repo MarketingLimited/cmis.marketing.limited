@@ -96,7 +96,17 @@ return [
     'provider_hint' => 'Source of organization creation (optional)',
     'save_changes' => 'Save Changes',
     'updated_success' => 'Organization updated successfully',
+    'updated_successfully' => 'Organization updated successfully',
+    'updating' => 'Updating organization...',
     'update_failed' => 'Failed to update organization: :error',
+    'default_locale' => 'Default Language',
+    'arabic' => 'Arabic',
+    'english' => 'English',
+    'sar' => 'Saudi Riyal (SAR)',
+    'usd' => 'US Dollar (USD)',
+    'eur' => 'Euro (EUR)',
+    'gbp' => 'British Pound (GBP)',
+    'aed' => 'UAE Dirham (AED)',
 
     // Organization Show Page
     'edit' => 'Edit',

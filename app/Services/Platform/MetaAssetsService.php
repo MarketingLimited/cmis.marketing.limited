@@ -354,7 +354,7 @@ class MetaAssetsService
         }
 
         $pages = [];
-        $fields = 'id,name,category,picture{url},access_token,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}';
+        $fields = 'id,name,category,picture{url},access_token,tasks,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}';
         $chunks = array_chunk($pageIds, self::BATCH_SIZE);
         $batchNumber = 0;
 
@@ -386,6 +386,10 @@ class MetaAssetsService
                         if (($batchResponse['code'] ?? 0) === 200) {
                             $body = json_decode($batchResponse['body'] ?? '{}', true);
                             if (!empty($body['id'])) {
+                                // Calculate access level from tasks
+                                $pageTasks = $body['tasks'] ?? [];
+                                $pageAccess = $this->calculateAccessLevel($pageTasks);
+
                                 $pageData = [
                                     'id' => $body['id'],
                                     'name' => $body['name'] ?? 'Unknown Page',
@@ -397,11 +401,16 @@ class MetaAssetsService
                                     'source' => 'personal',
                                     'business_id' => null,
                                     'business_name' => null,
+                                    // Access control data
+                                    'tasks' => $pageTasks,
+                                    'access_level' => $pageAccess['level'],
+                                    'permissions' => $pageAccess['permissions'],
                                 ];
 
                                 // Extract Instagram with ownership inherited from page
                                 if (isset($body['instagram_business_account'])) {
                                     $ig = $body['instagram_business_account'];
+                                    // Instagram inherits access from connected page
                                     $pageData['instagram_data'] = [
                                         'id' => $ig['id'],
                                         'username' => $ig['username'] ?? null,
@@ -415,6 +424,10 @@ class MetaAssetsService
                                         'source' => 'personal',
                                         'business_id' => null,
                                         'business_name' => null,
+                                        // Instagram inherits access from connected page
+                                        'tasks' => $pageTasks,
+                                        'access_level' => $pageAccess['level'],
+                                        'permissions' => $pageAccess['permissions'],
                                     ];
                                 } else {
                                     $pageData['instagram_data'] = null;
@@ -906,13 +919,13 @@ class MetaAssetsService
         $businessPages = [];
         $businessInstagram = [];
 
-        // Base fields for all token types
+        // Base fields for all token types - includes permitted_tasks for access control
         $baseFields = 'id,name,verification_status,' .
-            'owned_product_catalogs.limit(100){id,name,product_count,vertical},' .
-            'client_product_catalogs.limit(100){id,name,product_count,vertical},' .
-            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}},' .
-            'owned_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}},' .
-            'client_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}';
+            'owned_product_catalogs.limit(100){id,name,product_count,vertical,permitted_tasks},' .
+            'client_product_catalogs.limit(100){id,name,product_count,vertical,permitted_tasks},' .
+            'owned_whatsapp_business_accounts.limit(100){id,name,permitted_tasks,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}},' .
+            'owned_pages.limit(100){id,name,category,tasks,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}},' .
+            'client_pages.limit(100){id,name,category,permitted_tasks,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}';
 
         // Extended fields for System User tokens
         $fields = $isSystemUser
@@ -961,8 +974,10 @@ class MetaAssetsService
                                 'verification_status' => $business['verification_status'] ?? null,
                             ];
 
-                            // Extract owned catalogs
+                            // Extract owned catalogs (owned = full control by default)
                             foreach ($business['owned_product_catalogs']['data'] ?? [] as $catalog) {
+                                $catalogTasks = $catalog['permitted_tasks'] ?? ['MANAGE'];
+                                $catalogAccess = $this->calculateAccessLevel($catalogTasks);
                                 $catalogs[] = [
                                     'id' => $catalog['id'],
                                     'name' => $catalog['name'] ?? 'Unnamed Catalog',
@@ -971,11 +986,16 @@ class MetaAssetsService
                                     'business_id' => $businessId,
                                     'business_name' => $businessName,
                                     'source' => 'owned',
+                                    'tasks' => $catalogTasks,
+                                    'access_level' => $catalogAccess['level'],
+                                    'permissions' => $catalogAccess['permissions'],
                                 ];
                             }
 
                             // Extract client catalogs
                             foreach ($business['client_product_catalogs']['data'] ?? [] as $catalog) {
+                                $catalogTasks = $catalog['permitted_tasks'] ?? [];
+                                $catalogAccess = $this->calculateAccessLevel($catalogTasks);
                                 $catalogs[] = [
                                     'id' => $catalog['id'],
                                     'name' => $catalog['name'] ?? 'Unnamed Catalog',
@@ -984,6 +1004,9 @@ class MetaAssetsService
                                     'business_id' => $businessId,
                                     'business_name' => $businessName,
                                     'source' => 'client',
+                                    'tasks' => $catalogTasks,
+                                    'access_level' => $catalogAccess['level'],
+                                    'permissions' => $catalogAccess['permissions'],
                                 ];
                             }
 
@@ -2994,5 +3017,50 @@ class MetaAssetsService
             10 => 'Business verification issues',
             default => 'Unknown',
         };
+    }
+
+    /**
+     * Calculate access level from tasks/permissions array.
+     *
+     * Meta's task-based permission model:
+     * - Full Control: Has MANAGE task (admin-level access)
+     * - Partial Access: Has some tasks but not MANAGE
+     * - No Control: No tasks or empty array (read-only)
+     *
+     * Task values from Meta API:
+     * - Pages: MANAGE, CREATE_CONTENT, MODERATE, ADVERTISE, ANALYZE, MESSAGING
+     * - Ad Accounts: MANAGE, ADVERTISE, ANALYZE
+     * - Pixels: EDIT, ANALYZE
+     *
+     * @param array $tasks Array of task strings from API
+     * @return array ['level' => 'full'|'partial'|'none', 'permissions' => array]
+     */
+    protected function calculateAccessLevel(array $tasks): array
+    {
+        // Normalize: remove empty values and convert to uppercase for consistency
+        $tasks = array_filter($tasks, fn($t) => !empty($t));
+        $tasks = array_map('strtoupper', $tasks);
+        $tasks = array_values(array_unique($tasks));
+
+        if (empty($tasks)) {
+            return [
+                'level' => 'none',
+                'permissions' => [],
+            ];
+        }
+
+        // MANAGE indicates full control (admin-level access)
+        if (in_array('MANAGE', $tasks)) {
+            return [
+                'level' => 'full',
+                'permissions' => $tasks,
+            ];
+        }
+
+        // Has some tasks but not MANAGE = partial access
+        return [
+            'level' => 'partial',
+            'permissions' => $tasks,
+        ];
     }
 }

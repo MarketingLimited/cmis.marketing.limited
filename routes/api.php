@@ -2706,7 +2706,7 @@ Route::middleware(['auth:sanctum', 'resolve.active.org'])
             Route::get('/summary', [\App\Http\Controllers\API\AnalyticsController::class, 'summary'])
                 ->name('summary');
 
-            Route::get('/kpis', [\App\Http\Controllers\Analytics\KpiController::class, 'index'])
+            Route::get('/kpis', [\App\Http\Controllers\API\AnalyticsController::class, 'kpis'])
                 ->name('kpis');
 
             // Export routes

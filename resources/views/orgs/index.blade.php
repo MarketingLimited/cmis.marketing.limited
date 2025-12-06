@@ -162,7 +162,7 @@
         </x-ui.button>
     </div>
 
-    <!-- Create/Edit Organization Modal -->
+    <!-- Create Organization Modal -->
     <x-ui.modal name="create-org-modal" title="{{ __('organizations.new_organization') }}" max-width="lg">
         <form @submit.prevent="orgFormData.submitOrg()">
             <x-forms.input
@@ -211,6 +211,65 @@
         </x-slot>
     </x-ui.modal>
 
+    <!-- Edit Organization Modal -->
+    <x-ui.modal name="edit-org-modal" title="{{ __('organizations.edit_organization') }}" max-width="lg">
+        <form @submit.prevent="orgsData.updateOrg()">
+            <x-forms.input
+                label="{{ __('organizations.organization_name') }}"
+                name="edit_name"
+                x-model="orgsData.editFormData.name"
+                required
+                placeholder="{{ __('organizations.organization_name_placeholder') }}" />
+
+            <x-forms.textarea
+                label="{{ __('organizations.description') }}"
+                name="edit_description"
+                x-model="orgsData.editFormData.description"
+                placeholder="{{ __('organizations.description_placeholder') }}" />
+
+            <x-forms.input
+                label="{{ __('organizations.email') }}"
+                name="edit_email"
+                type="email"
+                x-model="orgsData.editFormData.email"
+                placeholder="{{ __('organizations.email_placeholder') }}" />
+
+            <x-forms.input
+                label="{{ __('organizations.phone') }}"
+                name="edit_phone"
+                x-model="orgsData.editFormData.phone"
+                placeholder="{{ __('organizations.phone_placeholder') }}" />
+
+            <x-forms.select
+                label="{{ __('organizations.default_locale') }}"
+                name="edit_default_locale"
+                x-model="orgsData.editFormData.default_locale">
+                <option value="ar">{{ __('organizations.arabic') }}</option>
+                <option value="en">{{ __('organizations.english') }}</option>
+            </x-forms.select>
+
+            <x-forms.select
+                label="{{ __('organizations.currency') }}"
+                name="edit_currency"
+                x-model="orgsData.editFormData.currency">
+                <option value="SAR">{{ __('organizations.sar') }}</option>
+                <option value="USD">{{ __('organizations.usd') }}</option>
+                <option value="EUR">{{ __('organizations.eur') }}</option>
+                <option value="GBP">{{ __('organizations.gbp') }}</option>
+                <option value="AED">{{ __('organizations.aed') }}</option>
+            </x-forms.select>
+        </form>
+
+        <x-slot name="footer">
+            <x-ui.button type="button" variant="secondary" @click="closeModal('edit-org-modal')">
+                {{ __('common.cancel') }}
+            </x-ui.button>
+            <x-ui.button type="button" icon="fas fa-save" @click="orgsData.updateOrg()">
+                {{ __('common.save') }}
+            </x-ui.button>
+        </x-slot>
+    </x-ui.modal>
+
 </div>
 
 @endsection
@@ -224,6 +283,15 @@ function orgsManager(serverOrgs) {
         searchQuery: '',
         filterStatus: '',
         sortBy: 'name',
+        editFormData: {
+            org_id: null,
+            name: '',
+            description: '',
+            email: '',
+            phone: '',
+            default_locale: 'ar',
+            currency: 'SAR'
+        },
 
         init() {
             // Initialize with server data - counts are now provided by backend
@@ -280,10 +348,63 @@ function orgsManager(serverOrgs) {
         },
 
         editOrg(org) {
-            // TODO: Implement edit functionality
-            // For now, just show notification
-            window.notify('{{ __('common.edit') }}: ' + org.name, 'info');
-            console.log('Edit org:', org);
+            // Populate edit form with org data
+            this.editFormData = {
+                org_id: org.org_id,
+                name: org.name || '',
+                description: org.description || '',
+                email: org.email || '',
+                phone: org.phone || '',
+                default_locale: org.default_locale || 'ar',
+                currency: org.currency || 'SAR'
+            };
+            // Open the edit modal
+            openModal('edit-org-modal');
+        },
+
+        async updateOrg() {
+            try {
+                // Validate form
+                if (!this.editFormData.name || this.editFormData.name.trim().length < 3) {
+                    window.notify('{{ __('organizations.name_min_length') }}', 'warning');
+                    return;
+                }
+
+                window.notify('{{ __('organizations.updating') }}', 'info');
+
+                const response = await fetch(`/api/orgs/${this.editFormData.org_id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: this.editFormData.name,
+                        default_locale: this.editFormData.default_locale,
+                        currency: this.editFormData.currency
+                    })
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.message || '{{ __('organizations.update_failed') }}');
+                }
+
+                // Update org in local array
+                const index = this.allOrgs.findIndex(o => o.org_id === this.editFormData.org_id);
+                if (index !== -1) {
+                    this.allOrgs[index] = { ...this.allOrgs[index], ...data.org };
+                    this.filterOrgs();
+                }
+
+                window.notify(data.message || '{{ __('organizations.updated_successfully') }}', 'success');
+                closeModal('edit-org-modal');
+            } catch (error) {
+                console.error('Error updating organization:', error);
+                window.notify(error.message || '{{ __('organizations.unexpected_error') }}', 'error');
+            }
         },
 
         async deleteOrg(orgId) {

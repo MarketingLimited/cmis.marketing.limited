@@ -360,6 +360,75 @@ class RestoreController extends Controller
     }
 
     /**
+     * Send verification code for full restore
+     */
+    public function sendVerificationCode(Request $request, string $org, string $restore)
+    {
+        $restore = BackupRestore::where('org_id', $org)
+            ->findOrFail($restore);
+
+        if ($restore->type !== 'full') {
+            return $this->error(__('backup.verification_not_required'), 400);
+        }
+
+        $user = auth()->user();
+        if (!$user || !$user->email) {
+            return $this->error(__('backup.user_email_required'), 400);
+        }
+
+        // Generate a 6-digit verification code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store the code in cache for 10 minutes
+        $cacheKey = "restore_verification_{$restore->id}";
+        cache()->put($cacheKey, [
+            'code' => $code,
+            'user_id' => $user->id,
+            'expires_at' => now()->addMinutes(10),
+        ], now()->addMinutes(10));
+
+        // Send email notification
+        try {
+            \Illuminate\Support\Facades\Mail::send('emails.backup.verification-code', [
+                'user' => $user,
+                'code' => $code,
+                'restore' => $restore,
+                'expiresIn' => 10,
+            ], function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject(__('backup.verification_code_subject'));
+            });
+
+            // Log the action
+            BackupAuditLog::create([
+                'org_id' => $org,
+                'action' => 'verification_code_sent',
+                'entity_id' => $restore->id,
+                'entity_type' => 'backup_restore',
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'details' => [
+                    'restore_code' => $restore->restore_code,
+                    'email' => $user->email,
+                ],
+            ]);
+
+            return $this->success([
+                'message' => __('backup.verification_code_sent'),
+                'email' => substr($user->email, 0, 3) . '***' . substr($user->email, strpos($user->email, '@')),
+            ], __('backup.verification_code_sent'));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification code', [
+                'restore_id' => $restore->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->serverError(__('backup.code_send_failed'));
+        }
+    }
+
+    /**
      * Process restore
      */
     public function process(Request $request, string $org, string $restore)
@@ -382,7 +451,30 @@ class RestoreController extends Controller
                 ]);
             }
 
-            // TODO: Verify email code in production
+            // Verify the verification code from cache
+            $cacheKey = "restore_verification_{$restore->id}";
+            $storedData = cache()->get($cacheKey);
+
+            if (!$storedData) {
+                return back()->withErrors([
+                    'verification_code' => __('backup.verification_code_expired'),
+                ]);
+            }
+
+            if ($storedData['code'] !== $request->verification_code) {
+                return back()->withErrors([
+                    'verification_code' => __('backup.verification_code_invalid'),
+                ]);
+            }
+
+            if ($storedData['user_id'] !== auth()->id()) {
+                return back()->withErrors([
+                    'verification_code' => __('backup.verification_code_invalid'),
+                ]);
+            }
+
+            // Clear the used code
+            cache()->forget($cacheKey);
         } elseif ($restore->type === 'merge') {
             $request->validate([
                 'org_name_confirmation' => 'required',
