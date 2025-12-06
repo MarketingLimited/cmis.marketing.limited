@@ -112,6 +112,161 @@ class MetaAssetsService
         }
     }
 
+    // =========================================================================
+    // DATABASE-FIRST CACHING STRATEGY
+    // =========================================================================
+    // When users re-authenticate, we check database first to avoid redundant API calls.
+    // Fresh assets (< 6 hours old) are returned from DB; only new/stale assets are fetched.
+    // =========================================================================
+
+    /**
+     * Hours before asset data is considered stale and needs refresh
+     */
+    private const DB_FRESHNESS_HOURS = 6;
+
+    /**
+     * Get existing fresh assets from database by type.
+     * Returns assets that were synced within the freshness threshold.
+     *
+     * @param string $assetType The asset type (page, instagram, ad_account, etc.)
+     * @param int $freshHours Hours to consider data fresh (default: 6)
+     * @return array<string, array> Map of platform_asset_id => asset_data
+     */
+    protected function getExistingFreshAssets(string $assetType, int $freshHours = self::DB_FRESHNESS_HOURS): array
+    {
+        if (!$this->repository) {
+            return [];
+        }
+
+        try {
+            $assets = $this->repository->getByPlatformAndType('meta', $assetType);
+            $freshAssets = [];
+
+            foreach ($assets as $asset) {
+                // Check if asset is fresh (synced within threshold)
+                if ($asset->last_synced_at && $asset->last_synced_at->isAfter(now()->subHours($freshHours))) {
+                    $freshAssets[$asset->platform_asset_id] = $asset->asset_data ?? [];
+                }
+            }
+
+            Log::debug('Got fresh assets from database', [
+                'asset_type' => $assetType,
+                'total_in_db' => $assets->count(),
+                'fresh_count' => count($freshAssets),
+                'freshness_hours' => $freshHours,
+            ]);
+
+            return $freshAssets;
+        } catch (\Exception $e) {
+            Log::warning('Failed to get existing assets from database', [
+                'asset_type' => $assetType,
+                'error' => $e->getMessage(),
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Get IDs of assets that exist in database (for comparison with API results)
+     *
+     * @param string $assetType The asset type
+     * @return array<string> List of platform_asset_ids that exist in DB
+     */
+    protected function getExistingAssetIds(string $assetType): array
+    {
+        if (!$this->repository) {
+            return [];
+        }
+
+        try {
+            $assets = $this->repository->getByPlatformAndType('meta', $assetType);
+            return $assets->pluck('platform_asset_id')->toArray();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Check if any assets need fetching from API.
+     * Returns true if we have no fresh data or if this is a new connection.
+     *
+     * @param string $connectionId The connection ID
+     * @param string $assetType The asset type
+     * @return bool True if API call is needed
+     */
+    protected function shouldFetchFromApi(string $connectionId, string $assetType): bool
+    {
+        // Always fetch if no repository configured (no DB caching)
+        if (!$this->repository) {
+            return true;
+        }
+
+        try {
+            // Check if we have any fresh assets for this asset type
+            $freshAssets = $this->getExistingFreshAssets($assetType);
+
+            // If no fresh assets, we need to fetch from API
+            if (empty($freshAssets)) {
+                Log::debug('No fresh assets in DB, will fetch from API', [
+                    'connection_id' => $connectionId,
+                    'asset_type' => $assetType,
+                ]);
+                return true;
+            }
+
+            // We have fresh data, no need to call API
+            Log::info('Using fresh assets from database (skipping API call)', [
+                'connection_id' => $connectionId,
+                'asset_type' => $assetType,
+                'fresh_count' => count($freshAssets),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            // On error, default to fetching from API
+            return true;
+        }
+    }
+
+    /**
+     * Merge API results with existing database data.
+     * Only fetches details for NEW assets; returns DB data for known assets.
+     *
+     * @param array $apiAssetIds IDs discovered from API (lightweight call)
+     * @param string $assetType The asset type
+     * @param callable $fetchDetailsCallback Callback to fetch details for new assets
+     * @return array Combined array of all assets (DB + new from API)
+     */
+    protected function mergeWithExistingAssets(
+        array $apiAssetIds,
+        string $assetType,
+        callable $fetchDetailsCallback
+    ): array {
+        $freshDbAssets = $this->getExistingFreshAssets($assetType);
+        $knownIds = array_keys($freshDbAssets);
+
+        // Find NEW asset IDs (in API but not in fresh DB data)
+        $newAssetIds = array_diff($apiAssetIds, $knownIds);
+
+        Log::info('Smart caching: merging API with DB assets', [
+            'asset_type' => $assetType,
+            'api_ids' => count($apiAssetIds),
+            'fresh_in_db' => count($knownIds),
+            'new_to_fetch' => count($newAssetIds),
+            'api_calls_saved' => count($knownIds),
+        ]);
+
+        // Start with existing fresh assets from DB
+        $allAssets = array_values($freshDbAssets);
+
+        // Only fetch details for NEW assets
+        if (!empty($newAssetIds)) {
+            $newAssets = $fetchDetailsCallback($newAssetIds);
+            $allAssets = array_merge($allAssets, $newAssets);
+        }
+
+        return $allAssets;
+    }
+
     /**
      * Extract asset ID from asset data
      */
@@ -291,12 +446,34 @@ class MetaAssetsService
      * Fetch ALL user assets with pagination (pages + instagram).
      * Uses field expansion to get Instagram details embedded in the pages response.
      * Follows paging.next cursor to get ALL pages.
+     *
+     * DATABASE-FIRST STRATEGY:
+     * 1. Check if we have fresh page/instagram data in database (< 6 hours old)
+     * 2. If fresh data exists, return it without API calls
+     * 3. If no fresh data, fetch from API and persist
      */
     private function getAllUserAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_user_assets');
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
+            // DATABASE-FIRST: Check if we have fresh page data
+            $freshPages = $this->getExistingFreshAssets('page');
+            $freshInstagram = $this->getExistingFreshAssets('instagram');
+
+            // If we have fresh pages data, return from DB without API calls
+            if (!empty($freshPages)) {
+                Log::info('DATABASE-FIRST: Returning fresh user assets from database (0 API calls)', [
+                    'pages' => count($freshPages),
+                    'instagram' => count($freshInstagram),
+                ]);
+
+                return [
+                    'pages' => array_values($freshPages),
+                    'instagram' => array_values($freshInstagram),
+                ];
+            }
+
             Log::info('Fetching ALL user assets from Meta API (with pagination and field expansion)');
 
             try {
@@ -620,12 +797,37 @@ class MetaAssetsService
      * 1. Single /me/businesses call with embedded owned_ad_accounts and client_ad_accounts
      * 2. Batch API fallback if field expansion doesn't work
      * 3. Single /me/adaccounts call for personal accounts
+     *
+     * DATABASE-FIRST STRATEGY:
+     * 1. Check if we have fresh ad account data in database (< 6 hours old)
+     * 2. If fresh data exists, return it without API calls
+     * 3. If no fresh data, fetch from API and persist
      */
     private function getAllAdAccountAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_adaccount_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
+            // DATABASE-FIRST: Check if we have fresh ad account data
+            $freshAdAccounts = $this->getExistingFreshAssets('ad_account');
+            $freshPixels = $this->getExistingFreshAssets('pixel');
+            $freshConversions = $this->getExistingFreshAssets('custom_conversion');
+
+            // If we have fresh ad account data, return from DB without API calls
+            if (!empty($freshAdAccounts)) {
+                Log::info('DATABASE-FIRST: Returning fresh ad account assets from database (0 API calls)', [
+                    'ad_accounts' => count($freshAdAccounts),
+                    'pixels' => count($freshPixels),
+                    'custom_conversions' => count($freshConversions),
+                ]);
+
+                return [
+                    'ad_accounts' => array_values($freshAdAccounts),
+                    'pixels' => array_values($freshPixels),
+                    'custom_conversions' => array_values($freshConversions),
+                ];
+            }
+
             Log::info('Fetching ALL ad account assets with Batch API optimization');
 
             try {
@@ -1046,12 +1248,40 @@ class MetaAssetsService
      * Fetch ALL business assets with pagination (businesses + catalogs + whatsapp).
      * This is the core method that minimizes API calls by using field expansion.
      * All business-related data is fetched together and cached.
+     *
+     * DATABASE-FIRST STRATEGY:
+     * 1. Check if we have fresh data in database (< 6 hours old)
+     * 2. If fresh data exists, return it without API calls
+     * 3. If no fresh data, fetch from API and persist
      */
     private function getAllBusinessAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_business_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
+            // DATABASE-FIRST: Check if we have fresh business data
+            $freshBusinesses = $this->getExistingFreshAssets('business');
+            $freshPages = $this->getExistingFreshAssets('page');
+            $freshCatalogs = $this->getExistingFreshAssets('catalog');
+
+            // If we have fresh data for all key asset types, return from DB without API calls
+            if (!empty($freshBusinesses) && !empty($freshPages)) {
+                Log::info('DATABASE-FIRST: Returning fresh business assets from database (0 API calls)', [
+                    'businesses' => count($freshBusinesses),
+                    'pages' => count($freshPages),
+                    'catalogs' => count($freshCatalogs),
+                ]);
+
+                return [
+                    'businesses' => array_values($freshBusinesses),
+                    'catalogs' => array_values($freshCatalogs),
+                    'whatsapp' => array_values($this->getExistingFreshAssets('whatsapp')),
+                    'offline_event_sets' => array_values($this->getExistingFreshAssets('offline_event_set')),
+                    'pages' => array_values($freshPages),
+                    'instagram' => array_values($this->getExistingFreshAssets('instagram')),
+                ];
+            }
+
             Log::info('Fetching ALL business assets from Meta API (with pagination and field expansion)');
 
             $usedFallback = false;
