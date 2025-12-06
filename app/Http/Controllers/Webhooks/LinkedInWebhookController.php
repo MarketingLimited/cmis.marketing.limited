@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Integration;
 use App\Models\Leads\Lead;
+use App\Models\Platform\WebhookEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -37,18 +38,35 @@ class LinkedInWebhookController extends Controller
      */
     public function handleLeadGenForm(Request $request): JsonResponse
     {
+        $webhookEvent = null;
+
         try {
             // Verify LinkedIn signature
-            if (!$this->verifyLinkedInSignature($request)) {
+            $signatureValid = $this->verifyLinkedInSignature($request);
+
+            $payload = $request->all();
+
+            // Store webhook event for audit and reliable processing
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'linkedin',
+                payload: $payload,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $request->header('X-LinkedIn-Signature'),
+                signatureValid: $signatureValid,
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
+
+            if (!$signatureValid) {
                 Log::warning('LinkedIn webhook signature verification failed', [
                     'ip' => $request->ip(),
                     'headers' => $request->headers->all(),
                 ]);
 
+                $webhookEvent->markFailed('Invalid signature', 'INVALID_SIGNATURE');
                 return $this->unauthorized('Invalid webhook signature');
             }
-
-            $payload = $request->all();
 
             Log::info('LinkedIn Lead Gen Form webhook received', [
                 'payload' => $payload,
@@ -62,6 +80,7 @@ class LinkedInWebhookController extends Controller
                     'payload' => $payload,
                 ]);
 
+                $webhookEvent->markIgnored('No lead data found in payload');
                 return $this->success(null, 'Webhook received but no actionable data');
             }
 
@@ -73,6 +92,7 @@ class LinkedInWebhookController extends Controller
                     'form_id' => $leadData['form_id'] ?? null,
                 ]);
 
+                $webhookEvent->markIgnored('No matching integration for form_id: ' . ($leadData['form_id'] ?? 'null'));
                 return $this->success(null, 'Webhook received but no matching integration');
             }
 
@@ -97,6 +117,9 @@ class LinkedInWebhookController extends Controller
                 // SyncLeadToCRMJob::dispatch($lead);
             }
 
+            // Mark webhook event as processed with org context
+            $webhookEvent->markProcessed($integration->org_id, $integration->integration_id);
+
             return $this->success([
                 'lead_id' => $lead->id,
                 'processed' => true,
@@ -108,6 +131,11 @@ class LinkedInWebhookController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'payload' => $request->all(),
             ]);
+
+            // Mark webhook event as failed
+            if ($webhookEvent) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
 
             // Return 200 to LinkedIn to prevent retries for processing errors
             return $this->success(null, 'Webhook received');
@@ -122,14 +150,31 @@ class LinkedInWebhookController extends Controller
      */
     public function handleCampaignNotification(Request $request): JsonResponse
     {
+        $webhookEvent = null;
+
         try {
             // Verify LinkedIn signature
-            if (!$this->verifyLinkedInSignature($request)) {
-                Log::warning('LinkedIn campaign webhook signature verification failed');
-                return $this->unauthorized('Invalid webhook signature');
-            }
+            $signatureValid = $this->verifyLinkedInSignature($request);
 
             $payload = $request->all();
+
+            // Store webhook event for audit and reliable processing
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'linkedin',
+                payload: $payload,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $request->header('X-LinkedIn-Signature'),
+                signatureValid: $signatureValid,
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
+
+            if (!$signatureValid) {
+                Log::warning('LinkedIn campaign webhook signature verification failed');
+                $webhookEvent->markFailed('Invalid signature', 'INVALID_SIGNATURE');
+                return $this->unauthorized('Invalid webhook signature');
+            }
 
             Log::info('LinkedIn campaign notification received', [
                 'payload' => $payload,
@@ -140,12 +185,20 @@ class LinkedInWebhookController extends Controller
             // - Budget alerts
             // - Performance alerts
 
+            // Mark webhook event as processed
+            $webhookEvent->markProcessed();
+
             return $this->success(null, 'Campaign notification processed');
 
         } catch (\Exception $e) {
             Log::error('LinkedIn campaign webhook failed', [
                 'error' => $e->getMessage(),
             ]);
+
+            // Mark webhook event as failed
+            if ($webhookEvent) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
 
             return $this->success(null, 'Webhook received');
         }

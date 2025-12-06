@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop if exists first (for fresh migrations)
+        Schema::dropIfExists('cmis.announcement_views');
+        Schema::dropIfExists('cmis.announcement_dismissals');
+        Schema::dropIfExists('cmis.announcements');
+
         // Create announcements table
         Schema::create('cmis.announcements', function (Blueprint $table) {
             $table->uuid('announcement_id')->primary()->default(DB::raw('gen_random_uuid()'));

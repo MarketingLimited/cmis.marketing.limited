@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Integration;
+use App\Models\Platform\WebhookEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,18 @@ class WebhookController extends Controller
             $data = $request->all();
             Log::info('Meta webhook received', ['data' => $data]);
 
+            // Store webhook event for audit and reliable processing
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'meta',
+                payload: $data,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $request->header('X-Hub-Signature-256'),
+                signatureValid: true, // Already verified above
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
+
             foreach ($data['entry'] ?? [] as $entry) {
                 // Handle messaging events
                 if (isset($entry['messaging'])) {
@@ -70,9 +83,18 @@ class WebhookController extends Controller
                 }
             }
 
+            // Mark webhook event as processed
+            $webhookEvent->markProcessed();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error("Meta webhook error: {$e->getMessage()}");
+
+            // Mark webhook event as failed (will retry based on max_attempts)
+            if (isset($webhookEvent)) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
+
             return response()->json(['success' => false], 500);
         }
     }
@@ -113,6 +135,18 @@ class WebhookController extends Controller
             $data = $request->all();
             Log::info('WhatsApp webhook received', ['data' => $data]);
 
+            // Store webhook event for audit and reliable processing
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'whatsapp',
+                payload: $data,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $request->header('X-Hub-Signature-256'),
+                signatureValid: true, // Already verified above
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
+
             foreach ($data['entry'] ?? [] as $entry) {
                 foreach ($entry['changes'] ?? [] as $change) {
                     if ($change['field'] === 'messages') {
@@ -121,9 +155,18 @@ class WebhookController extends Controller
                 }
             }
 
+            // Mark webhook event as processed
+            $webhookEvent->markProcessed();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error("WhatsApp webhook error: {$e->getMessage()}");
+
+            // Mark webhook event as failed
+            if (isset($webhookEvent)) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
+
             return response()->json(['success' => false], 500);
         }
     }
@@ -136,13 +179,30 @@ class WebhookController extends Controller
      */
     public function handleTikTokWebhook(Request $request): JsonResponse
     {
+        $webhookEvent = null;
+
         try {
             $data = $request->all();
             Log::info('TikTok webhook received', ['data' => $data]);
 
             // Verify signature
             $signature = $request->header('X-TikTok-Signature');
-            if (!$this->verifyTikTokSignature($request->getContent(), $signature)) {
+            $signatureValid = $this->verifyTikTokSignature($request->getContent(), $signature);
+
+            // Store webhook event for audit (before processing, includes signature status)
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'tiktok',
+                payload: $data,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $signature,
+                signatureValid: $signatureValid,
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
+
+            if (!$signatureValid) {
+                $webhookEvent->markFailed('Invalid signature', 'INVALID_SIGNATURE');
                 return response()->json(['success' => false, 'error' => 'Invalid signature'], 401);
             }
 
@@ -157,9 +217,18 @@ class WebhookController extends Controller
                     break;
             }
 
+            // Mark webhook event as processed
+            $webhookEvent->markProcessed();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error("TikTok webhook error: {$e->getMessage()}");
+
+            // Mark webhook event as failed
+            if ($webhookEvent) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
+
             return response()->json(['success' => false], 500);
         }
     }
@@ -178,12 +247,36 @@ class WebhookController extends Controller
                 'ip' => $request->ip(),
                 'headers' => $request->headers->all(),
             ]);
+
+            // Store failed signature event for audit
+            WebhookEvent::createFromRequest(
+                platform: 'twitter',
+                payload: $request->all(),
+                headers: $request->headers->all(),
+                signature: $request->header('X-Twitter-Webhooks-Signature'),
+                signatureValid: false,
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            )->markFailed('Invalid signature', 'INVALID_SIGNATURE');
+
             return $this->unauthorized('Invalid webhook signature');
         }
 
         try {
             $data = $request->all();
             Log::info('Twitter webhook received', ['data' => $data]);
+
+            // Store webhook event for audit and reliable processing
+            $webhookEvent = WebhookEvent::createFromRequest(
+                platform: 'twitter',
+                payload: $data,
+                headers: $request->headers->all(),
+                rawPayload: config('webhook.store_raw') ? $request->getContent() : null,
+                signature: $request->header('X-Twitter-Webhooks-Signature'),
+                signatureValid: true, // Already verified above
+                sourceIp: $request->ip(),
+                userAgent: $request->userAgent()
+            );
 
             // Process tweet events
             if (isset($data['tweet_create_events'])) {
@@ -199,9 +292,18 @@ class WebhookController extends Controller
                 }
             }
 
+            // Mark webhook event as processed
+            $webhookEvent->markProcessed();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error("Twitter webhook error: {$e->getMessage()}");
+
+            // Mark webhook event as failed
+            if (isset($webhookEvent)) {
+                $webhookEvent->markFailed($e->getMessage());
+            }
+
             return response()->json(['success' => false], 500);
         }
     }

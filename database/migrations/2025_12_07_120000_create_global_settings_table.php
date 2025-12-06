@@ -12,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop if exists for fresh migrations
+        Schema::dropIfExists('cmis.global_settings');
+
         Schema::create('cmis.global_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('key', 100)->unique();

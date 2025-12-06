@@ -21,6 +21,8 @@ use App\Jobs\AuditProfileConnectionSyncJob;
 use App\Jobs\Platform\SyncPlatformAssetsJob;
 use App\Jobs\Platform\VerifyAssetAccessJob;
 use App\Jobs\Platform\CleanupStaleAssetsJob;
+use App\Jobs\Platform\FlushBatchRequestsJob;
+use App\Jobs\Platform\ProcessWebhookEventsJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -336,6 +338,96 @@ class Kernel extends ConsoleKernel
             })
             ->onFailure(function () {
                 Log::error('❌ Stale assets cleanup failed');
+            });
+
+        // ==========================================
+        // ⚡ API Batch Optimization (NEW)
+        // ==========================================
+        // Collect & Batch Strategy: Queue requests, batch by platform
+        // Expected: 70-95% reduction in API calls
+
+        // Meta batch flush every 5 minutes (90% API reduction via Field Expansion + Batch API)
+        $schedule->job(new FlushBatchRequestsJob('meta', 100), 'platform-batch')
+            ->everyFiveMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Meta batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush Meta batch requests');
+            });
+
+        // Google batch flush every 10 minutes (70% reduction via SearchStream)
+        $schedule->job(new FlushBatchRequestsJob('google', 100), 'platform-batch')
+            ->everyTenMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Google batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush Google batch requests');
+            });
+
+        // TikTok batch flush every 10 minutes (bulk endpoints)
+        $schedule->job(new FlushBatchRequestsJob('tiktok', 100), 'platform-batch')
+            ->everyTenMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ TikTok batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush TikTok batch requests');
+            });
+
+        // LinkedIn batch flush every 30 minutes (conservative due to rate limits)
+        $schedule->job(new FlushBatchRequestsJob('linkedin', 50), 'platform-batch')
+            ->everyThirtyMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ LinkedIn batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush LinkedIn batch requests');
+            });
+
+        // Twitter batch flush every 5 minutes (batch user lookup)
+        $schedule->job(new FlushBatchRequestsJob('twitter', 100), 'platform-batch')
+            ->everyFiveMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Twitter batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush Twitter batch requests');
+            });
+
+        // Snapchat batch flush every 10 minutes (org-level fetch with includes)
+        $schedule->job(new FlushBatchRequestsJob('snapchat', 100), 'platform-batch')
+            ->everyTenMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::info('✅ Snapchat batch requests flushed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to flush Snapchat batch requests');
+            });
+
+        // Process webhook events every minute (reliable delivery from DB)
+        $schedule->job(new ProcessWebhookEventsJob(50), 'webhooks')
+            ->everyMinute()
+            ->withoutOverlapping(5)
+            ->onOneServer()
+            ->onSuccess(function () {
+                Log::debug('✅ Webhook events processed');
+            })
+            ->onFailure(function () {
+                Log::error('❌ Failed to process webhook events');
             });
 
         // ==========================================
