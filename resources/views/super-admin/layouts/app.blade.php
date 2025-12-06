@@ -300,6 +300,83 @@
                     <i class="fas fa-cog w-5 text-center"></i>
                     <span>{{ __('super_admin.nav.settings') }}</span>
                 </a>
+
+                <!-- Marketing Website Section -->
+                <div class="mt-6 mb-2">
+                    <h3 class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ __('super_admin.nav.marketing_website') ?? 'Marketing Website' }}</h3>
+                </div>
+
+                <a href="{{ route('super-admin.website.dashboard') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.dashboard') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-globe w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.website_dashboard') ?? 'Website Dashboard' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.pages.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.pages.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-file-alt w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.pages') ?? 'Pages' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.hero.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.hero.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-images w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.hero_slides') ?? 'Hero Slides' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.features.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.features.*') || request()->routeIs('super-admin.website.feature-categories.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-star w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.features') ?? 'Features' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.testimonials.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.testimonials.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-quote-left w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.testimonials') ?? 'Testimonials' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.case-studies.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.case-studies.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-briefcase w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.case_studies') ?? 'Case Studies' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.faqs.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.faqs.*') || request()->routeIs('super-admin.website.faq-categories.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-question-circle w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.faqs') ?? 'FAQs' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.team.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.team.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-user-friends w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.team') ?? 'Team' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.partners.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.partners.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-handshake w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.partners') ?? 'Partners' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.blog.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.blog.*') || request()->routeIs('super-admin.website.blog-categories.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-blog w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.blog') ?? 'Blog' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.navigation.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.navigation.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-bars w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.navigation') ?? 'Navigation' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.website.settings.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.website.settings.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-sliders-h w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.website_settings') ?? 'Website Settings' }}</span>
+                </a>
             </nav>
 
             <!-- User Section -->

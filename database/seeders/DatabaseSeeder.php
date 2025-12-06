@@ -84,9 +84,20 @@ class DatabaseSeeder extends Seeder
         //     ]);
         // }
 
+        // Level 5: Marketing Website Data (cmis_website schema)
+        $this->command->newLine();
+        $this->command->info('🌐 Seeding marketing website data...');
+        try {
+            $this->call([
+                Website\WebsiteSeeder::class,
+            ]);
+        } catch (\Exception $e) {
+            $this->command->warn('⚠️  Website data seeding skipped: ' . $e->getMessage());
+        }
+
         $this->command->newLine();
         $this->command->info('✅ Database seeding completed successfully!');
-        $this->command->info('📊 Seeded 90+ tables with comprehensive, interconnected demo data!');
+        $this->command->info('📊 Seeded 100+ tables with comprehensive, interconnected demo data!');
         $this->command->newLine();
     }
 }

@@ -39,6 +39,12 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api'])
                 ->prefix('api')
                 ->group(base_path('routes/api-backup.php'));
+
+            // Marketing Website Routes (2025-12-07)
+            // Public-facing marketing pages - must be loaded AFTER other routes
+            // to avoid catch-all slug route conflicts
+            Route::middleware(['web'])
+                ->group(base_path('routes/marketing.php'));
         }
     )
     ->withSchedule(function (Schedule $schedule): void {

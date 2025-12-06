@@ -16,6 +16,21 @@ use App\Http\Controllers\SuperAdmin\SuperAdminBillingController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAssetController;
 use App\Http\Controllers\SuperAdmin\SuperAdminFeatureFlagController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSettingsController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminWebsiteDashboardController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminPageController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminHeroController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminFeatureController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminFeatureCategoryController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminTestimonialController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminCaseStudyController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminFaqController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminFaqCategoryController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminTeamController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminPartnerController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminBlogController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminBlogCategoryController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminNavigationController;
+use App\Http\Controllers\SuperAdmin\Website\SuperAdminWebsiteSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -251,5 +266,196 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::get('/active-queries', [SuperAdminSystemController::class, 'activeQueries'])->name('active-queries');
         Route::post('/cancel-query/{pid}', [SuperAdminSystemController::class, 'cancelQuery'])->name('cancel-query');
         Route::post('/terminate-connection/{pid}', [SuperAdminSystemController::class, 'terminateConnection'])->name('terminate-connection');
+    });
+
+    // =====================================================
+    // Marketing Website Management (2025-12-07)
+    // =====================================================
+    Route::prefix('website')->name('website.')->group(function () {
+        // Dashboard
+        Route::get('/', [SuperAdminWebsiteDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/stats', [SuperAdminWebsiteDashboardController::class, 'stats'])->name('stats');
+
+        // CMS Pages
+        Route::prefix('pages')->name('pages.')->group(function () {
+            Route::get('/', [SuperAdminPageController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminPageController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminPageController::class, 'store'])->name('store');
+            Route::get('/{page}', [SuperAdminPageController::class, 'show'])->name('show');
+            Route::get('/{page}/edit', [SuperAdminPageController::class, 'edit'])->name('edit');
+            Route::put('/{page}', [SuperAdminPageController::class, 'update'])->name('update');
+            Route::delete('/{page}', [SuperAdminPageController::class, 'destroy'])->name('destroy');
+            Route::post('/{page}/toggle-publish', [SuperAdminPageController::class, 'togglePublish'])->name('toggle-publish');
+            Route::post('/reorder', [SuperAdminPageController::class, 'reorder'])->name('reorder');
+        });
+
+        // Hero Slides
+        Route::prefix('hero')->name('hero.')->group(function () {
+            Route::get('/', [SuperAdminHeroController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminHeroController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminHeroController::class, 'store'])->name('store');
+            Route::get('/{slide}', [SuperAdminHeroController::class, 'show'])->name('show');
+            Route::get('/{slide}/edit', [SuperAdminHeroController::class, 'edit'])->name('edit');
+            Route::put('/{slide}', [SuperAdminHeroController::class, 'update'])->name('update');
+            Route::delete('/{slide}', [SuperAdminHeroController::class, 'destroy'])->name('destroy');
+            Route::post('/{slide}/toggle-active', [SuperAdminHeroController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/reorder', [SuperAdminHeroController::class, 'reorder'])->name('reorder');
+        });
+
+        // Feature Categories
+        Route::prefix('feature-categories')->name('feature-categories.')->group(function () {
+            Route::get('/', [SuperAdminFeatureCategoryController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminFeatureCategoryController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminFeatureCategoryController::class, 'store'])->name('store');
+            Route::get('/{category}', [SuperAdminFeatureCategoryController::class, 'show'])->name('show');
+            Route::get('/{category}/edit', [SuperAdminFeatureCategoryController::class, 'edit'])->name('edit');
+            Route::put('/{category}', [SuperAdminFeatureCategoryController::class, 'update'])->name('update');
+            Route::delete('/{category}', [SuperAdminFeatureCategoryController::class, 'destroy'])->name('destroy');
+            Route::post('/reorder', [SuperAdminFeatureCategoryController::class, 'reorder'])->name('reorder');
+        });
+
+        // Features
+        Route::prefix('features')->name('features.')->group(function () {
+            Route::get('/', [SuperAdminFeatureController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminFeatureController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminFeatureController::class, 'store'])->name('store');
+            Route::get('/{feature}', [SuperAdminFeatureController::class, 'show'])->name('show');
+            Route::get('/{feature}/edit', [SuperAdminFeatureController::class, 'edit'])->name('edit');
+            Route::put('/{feature}', [SuperAdminFeatureController::class, 'update'])->name('update');
+            Route::delete('/{feature}', [SuperAdminFeatureController::class, 'destroy'])->name('destroy');
+            Route::post('/{feature}/toggle-active', [SuperAdminFeatureController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{feature}/toggle-featured', [SuperAdminFeatureController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminFeatureController::class, 'reorder'])->name('reorder');
+        });
+
+        // Testimonials
+        Route::prefix('testimonials')->name('testimonials.')->group(function () {
+            Route::get('/', [SuperAdminTestimonialController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminTestimonialController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminTestimonialController::class, 'store'])->name('store');
+            Route::get('/{testimonial}', [SuperAdminTestimonialController::class, 'show'])->name('show');
+            Route::get('/{testimonial}/edit', [SuperAdminTestimonialController::class, 'edit'])->name('edit');
+            Route::put('/{testimonial}', [SuperAdminTestimonialController::class, 'update'])->name('update');
+            Route::delete('/{testimonial}', [SuperAdminTestimonialController::class, 'destroy'])->name('destroy');
+            Route::post('/{testimonial}/toggle-active', [SuperAdminTestimonialController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{testimonial}/toggle-featured', [SuperAdminTestimonialController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminTestimonialController::class, 'reorder'])->name('reorder');
+        });
+
+        // Case Studies
+        Route::prefix('case-studies')->name('case-studies.')->group(function () {
+            Route::get('/', [SuperAdminCaseStudyController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminCaseStudyController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminCaseStudyController::class, 'store'])->name('store');
+            Route::get('/{caseStudy}', [SuperAdminCaseStudyController::class, 'show'])->name('show');
+            Route::get('/{caseStudy}/edit', [SuperAdminCaseStudyController::class, 'edit'])->name('edit');
+            Route::put('/{caseStudy}', [SuperAdminCaseStudyController::class, 'update'])->name('update');
+            Route::delete('/{caseStudy}', [SuperAdminCaseStudyController::class, 'destroy'])->name('destroy');
+            Route::post('/{caseStudy}/toggle-publish', [SuperAdminCaseStudyController::class, 'togglePublish'])->name('toggle-publish');
+            Route::post('/{caseStudy}/toggle-featured', [SuperAdminCaseStudyController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminCaseStudyController::class, 'reorder'])->name('reorder');
+        });
+
+        // FAQ Categories
+        Route::prefix('faq-categories')->name('faq-categories.')->group(function () {
+            Route::get('/', [SuperAdminFaqCategoryController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminFaqCategoryController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminFaqCategoryController::class, 'store'])->name('store');
+            Route::get('/{category}', [SuperAdminFaqCategoryController::class, 'show'])->name('show');
+            Route::get('/{category}/edit', [SuperAdminFaqCategoryController::class, 'edit'])->name('edit');
+            Route::put('/{category}', [SuperAdminFaqCategoryController::class, 'update'])->name('update');
+            Route::delete('/{category}', [SuperAdminFaqCategoryController::class, 'destroy'])->name('destroy');
+            Route::post('/reorder', [SuperAdminFaqCategoryController::class, 'reorder'])->name('reorder');
+        });
+
+        // FAQ Items
+        Route::prefix('faqs')->name('faqs.')->group(function () {
+            Route::get('/', [SuperAdminFaqController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminFaqController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminFaqController::class, 'store'])->name('store');
+            Route::get('/{faq}', [SuperAdminFaqController::class, 'show'])->name('show');
+            Route::get('/{faq}/edit', [SuperAdminFaqController::class, 'edit'])->name('edit');
+            Route::put('/{faq}', [SuperAdminFaqController::class, 'update'])->name('update');
+            Route::delete('/{faq}', [SuperAdminFaqController::class, 'destroy'])->name('destroy');
+            Route::post('/{faq}/toggle-active', [SuperAdminFaqController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{faq}/toggle-featured', [SuperAdminFaqController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminFaqController::class, 'reorder'])->name('reorder');
+        });
+
+        // Team Members
+        Route::prefix('team')->name('team.')->group(function () {
+            Route::get('/', [SuperAdminTeamController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminTeamController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminTeamController::class, 'store'])->name('store');
+            Route::get('/{member}', [SuperAdminTeamController::class, 'show'])->name('show');
+            Route::get('/{member}/edit', [SuperAdminTeamController::class, 'edit'])->name('edit');
+            Route::put('/{member}', [SuperAdminTeamController::class, 'update'])->name('update');
+            Route::delete('/{member}', [SuperAdminTeamController::class, 'destroy'])->name('destroy');
+            Route::post('/{member}/toggle-active', [SuperAdminTeamController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{member}/toggle-featured', [SuperAdminTeamController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminTeamController::class, 'reorder'])->name('reorder');
+        });
+
+        // Partners
+        Route::prefix('partners')->name('partners.')->group(function () {
+            Route::get('/', [SuperAdminPartnerController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminPartnerController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminPartnerController::class, 'store'])->name('store');
+            Route::get('/{partner}', [SuperAdminPartnerController::class, 'show'])->name('show');
+            Route::get('/{partner}/edit', [SuperAdminPartnerController::class, 'edit'])->name('edit');
+            Route::put('/{partner}', [SuperAdminPartnerController::class, 'update'])->name('update');
+            Route::delete('/{partner}', [SuperAdminPartnerController::class, 'destroy'])->name('destroy');
+            Route::post('/{partner}/toggle-active', [SuperAdminPartnerController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{partner}/toggle-featured', [SuperAdminPartnerController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::post('/reorder', [SuperAdminPartnerController::class, 'reorder'])->name('reorder');
+        });
+
+        // Blog Categories
+        Route::prefix('blog-categories')->name('blog-categories.')->group(function () {
+            Route::get('/', [SuperAdminBlogCategoryController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminBlogCategoryController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminBlogCategoryController::class, 'store'])->name('store');
+            Route::get('/{category}', [SuperAdminBlogCategoryController::class, 'show'])->name('show');
+            Route::get('/{category}/edit', [SuperAdminBlogCategoryController::class, 'edit'])->name('edit');
+            Route::put('/{category}', [SuperAdminBlogCategoryController::class, 'update'])->name('update');
+            Route::delete('/{category}', [SuperAdminBlogCategoryController::class, 'destroy'])->name('destroy');
+            Route::post('/reorder', [SuperAdminBlogCategoryController::class, 'reorder'])->name('reorder');
+        });
+
+        // Blog Posts
+        Route::prefix('blog')->name('blog.')->group(function () {
+            Route::get('/', [SuperAdminBlogController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminBlogController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminBlogController::class, 'store'])->name('store');
+            Route::get('/{post}', [SuperAdminBlogController::class, 'show'])->name('show');
+            Route::get('/{post}/edit', [SuperAdminBlogController::class, 'edit'])->name('edit');
+            Route::put('/{post}', [SuperAdminBlogController::class, 'update'])->name('update');
+            Route::delete('/{post}', [SuperAdminBlogController::class, 'destroy'])->name('destroy');
+            Route::post('/{post}/toggle-publish', [SuperAdminBlogController::class, 'togglePublish'])->name('toggle-publish');
+            Route::post('/{post}/toggle-featured', [SuperAdminBlogController::class, 'toggleFeatured'])->name('toggle-featured');
+        });
+
+        // Navigation Menus
+        Route::prefix('navigation')->name('navigation.')->group(function () {
+            Route::get('/', [SuperAdminNavigationController::class, 'index'])->name('index');
+            Route::get('/menus/{menu}', [SuperAdminNavigationController::class, 'showMenu'])->name('menu');
+            Route::post('/menus/{menu}/items', [SuperAdminNavigationController::class, 'storeItem'])->name('items.store');
+            Route::put('/items/{item}', [SuperAdminNavigationController::class, 'updateItem'])->name('items.update');
+            Route::delete('/items/{item}', [SuperAdminNavigationController::class, 'destroyItem'])->name('items.destroy');
+            Route::post('/items/{item}/toggle-active', [SuperAdminNavigationController::class, 'toggleItemActive'])->name('items.toggle-active');
+            Route::post('/menus/{menu}/reorder', [SuperAdminNavigationController::class, 'reorderItems'])->name('items.reorder');
+        });
+
+        // Website Settings
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [SuperAdminWebsiteSettingsController::class, 'index'])->name('index');
+            Route::post('/', [SuperAdminWebsiteSettingsController::class, 'update'])->name('update');
+            Route::get('/seo', [SuperAdminWebsiteSettingsController::class, 'seo'])->name('seo');
+            Route::post('/seo', [SuperAdminWebsiteSettingsController::class, 'updateSeo'])->name('seo.update');
+            Route::get('/social', [SuperAdminWebsiteSettingsController::class, 'social'])->name('social');
+            Route::post('/social', [SuperAdminWebsiteSettingsController::class, 'updateSocial'])->name('social.update');
+            Route::get('/analytics', [SuperAdminWebsiteSettingsController::class, 'analytics'])->name('analytics');
+            Route::post('/analytics', [SuperAdminWebsiteSettingsController::class, 'updateAnalytics'])->name('analytics.update');
+        });
     });
 });

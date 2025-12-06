@@ -930,6 +930,29 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{account}/sync', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'sync'])->name('sync');
                 Route::post('/{connection}/import', [App\Http\Controllers\Settings\AdAccountSettingsController::class, 'import'])->name('import');
             });
+
+            // ==================== Webhook Configuration ====================
+            Route::prefix('webhooks')->name('webhooks.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'store'])->name('store');
+                Route::get('/{webhook}', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'show'])->name('show');
+                Route::get('/{webhook}/edit', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'edit'])->name('edit');
+                Route::put('/{webhook}', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'update'])->name('update');
+                Route::delete('/{webhook}', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'destroy'])->name('destroy');
+
+                // Webhook actions
+                Route::post('/{webhook}/verify', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'verify'])->name('verify');
+                Route::post('/{webhook}/test', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'test'])->name('test');
+                Route::post('/{webhook}/toggle', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'toggleActive'])->name('toggle');
+                Route::post('/{webhook}/regenerate-token', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'regenerateVerifyToken'])->name('regenerate-token');
+                Route::post('/{webhook}/regenerate-secret', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'regenerateSecretKey'])->name('regenerate-secret');
+
+                // Webhook logs & stats
+                Route::get('/{webhook}/logs', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'logs'])->name('logs');
+                Route::get('/{webhook}/stats', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'stats'])->name('stats');
+                Route::post('/{webhook}/logs/{log}/retry', [App\Http\Controllers\Settings\WebhookConfigurationController::class, 'retryDelivery'])->name('logs.retry');
+            });
         });
 
         // ==================== Organization Backup & Restore ====================
