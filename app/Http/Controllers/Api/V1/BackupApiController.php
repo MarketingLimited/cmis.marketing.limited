@@ -145,7 +145,7 @@ class BackupApiController extends Controller
      *
      * GET /api/v1/backup/{id}/download
      */
-    public function download(Request $request, string $id): JsonResponse|mixed
+    public function download(Request $request, string $id)
     {
         $orgId = $this->getOrgId($request);
 
