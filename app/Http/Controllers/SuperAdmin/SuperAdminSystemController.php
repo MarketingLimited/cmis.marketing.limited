@@ -63,6 +63,8 @@ class SuperAdminSystemController extends Controller
         $level = $request->get('level');
         $search = $request->get('search');
         $date = $request->get('date', 'today');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
         if (!file_exists($logFile)) {
             if ($request->expectsJson()) {
@@ -73,7 +75,7 @@ class SuperAdminSystemController extends Controller
 
         // Read log file and parse entries
         $logs = $this->tailFile($logFile, 5000); // Read more to filter
-        $entries = $this->parseLogEntriesFormatted($logs, $level, $search, $date);
+        $entries = $this->parseLogEntriesFormatted($logs, $level, $search, $date, $dateFrom, $dateTo);
 
         // Reverse to show newest first
         $entries = array_reverse($entries);
@@ -632,7 +634,7 @@ class SuperAdminSystemController extends Controller
      *
      * Returns entries with: id, level, date, message, stack, context, file, line
      */
-    protected function parseLogEntriesFormatted(string $logs, ?string $level, ?string $search, string $date): array
+    protected function parseLogEntriesFormatted(string $logs, ?string $level, ?string $search, string $date, ?string $dateFrom = null, ?string $dateTo = null): array
     {
         $entries = [];
         // Match log entries with stack traces
@@ -655,6 +657,27 @@ class SuperAdminSystemController extends Controller
             case 'week':
                 $filterDate = now()->subDays(7)->startOfDay();
                 $filterDateEnd = now()->endOfDay();
+                break;
+            case 'month':
+                $filterDate = now()->subDays(30)->startOfDay();
+                $filterDateEnd = now()->endOfDay();
+                break;
+            case 'custom':
+                // Parse custom date range
+                if ($dateFrom) {
+                    try {
+                        $filterDate = \Carbon\Carbon::parse($dateFrom);
+                    } catch (\Exception $e) {
+                        $filterDate = now()->subDays(7)->startOfDay();
+                    }
+                }
+                if ($dateTo) {
+                    try {
+                        $filterDateEnd = \Carbon\Carbon::parse($dateTo);
+                    } catch (\Exception $e) {
+                        $filterDateEnd = now()->endOfDay();
+                    }
+                }
                 break;
         }
 

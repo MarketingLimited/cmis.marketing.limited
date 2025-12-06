@@ -71,12 +71,52 @@
             <!-- Date Filter -->
             <div class="w-full lg:w-48">
                 <select x-model="filters.date"
-                        @change="loadLogs()"
+                        @change="onDateFilterChange()"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     <option value="today">{{ __('super_admin.system.today') }}</option>
                     <option value="yesterday">{{ __('super_admin.system.yesterday') }}</option>
                     <option value="week">{{ __('super_admin.system.last_7_days') }}</option>
+                    <option value="month">{{ __('super_admin.system.last_30_days') }}</option>
+                    <option value="custom">{{ __('super_admin.system.custom_range') }}</option>
                 </select>
+            </div>
+        </div>
+
+        <!-- Custom Date Range (shown when "custom" is selected) -->
+        <div x-show="filters.date === 'custom'"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col lg:flex-row gap-4 items-end">
+                <!-- From DateTime -->
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ __('super_admin.system.from_date') }}
+                    </label>
+                    <input type="datetime-local"
+                           x-model="filters.date_from"
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <!-- To DateTime -->
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ __('super_admin.system.to_date') }}
+                    </label>
+                    <input type="datetime-local"
+                           x-model="filters.date_to"
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <!-- Apply Button -->
+                <div>
+                    <button @click="loadLogs()"
+                            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        {{ __('super_admin.system.apply_filter') }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -200,7 +240,9 @@ function logsViewer() {
         filters: {
             search: '',
             level: '',
-            date: 'today'
+            date: 'today',
+            date_from: '',
+            date_to: ''
         },
         pagination: {
             current_page: 1,
@@ -209,13 +251,52 @@ function logsViewer() {
             total: 0
         },
 
+        init() {
+            // Set default custom date range (last 7 days) for when user selects custom
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            // Format for datetime-local input: YYYY-MM-DDTHH:mm
+            this.filters.date_to = this.formatDateTimeLocal(now);
+            this.filters.date_from = this.formatDateTimeLocal(weekAgo);
+        },
+
+        formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        onDateFilterChange() {
+            // Only auto-load for preset options, custom requires clicking Apply
+            if (this.filters.date !== 'custom') {
+                this.pagination.current_page = 1;
+                this.loadLogs();
+            }
+        },
+
         async loadLogs() {
             this.loading = true;
             try {
                 const params = new URLSearchParams({
                     page: this.pagination.current_page,
-                    ...this.filters
+                    search: this.filters.search,
+                    level: this.filters.level,
+                    date: this.filters.date
                 });
+
+                // Add custom date range if selected
+                if (this.filters.date === 'custom') {
+                    if (this.filters.date_from) {
+                        params.append('date_from', this.filters.date_from);
+                    }
+                    if (this.filters.date_to) {
+                        params.append('date_to', this.filters.date_to);
+                    }
+                }
 
                 const response = await fetch(`{{ route('super-admin.system.logs') }}?${params}`, {
                     headers: {
