@@ -118,8 +118,14 @@ if (app()->environment('local', 'testing', 'development')) {
 // Public Routes - Home page redirects appropriately
 Route::get('/', function () {
     if (auth()->check()) {
-        // If user has active org, go to that org's dashboard; otherwise, choose org
         $user = auth()->user();
+
+        // Super admins go to portal selection
+        if ($user->is_super_admin) {
+            return redirect()->route('portal.select');
+        }
+
+        // Regular users: if they have an active org, go to that org's dashboard; otherwise, choose org
         $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
 
         if ($orgId) {
@@ -132,7 +138,7 @@ Route::get('/', function () {
 
 // HI-004: Explicit /home route for post-login redirects
 Route::get('/home', function () {
-    return redirect()->route('home');
+    return redirect('/');
 })->name('home.explicit');
 
 // HI-007: Organization create alias (old URL pattern)
@@ -142,6 +148,15 @@ Route::get('/organizations/create', function () {
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
+
+    // ==================== Portal Selection (Super Admin) ====================
+    Route::get('/portal-select', function () {
+        // Only super admins should access this page
+        if (!auth()->user()->is_super_admin) {
+            return redirect('/orgs');
+        }
+        return view('auth.portal-select');
+    })->name('portal.select');
 
     // ==================== User Onboarding (No org context needed) ====================
     Route::prefix('onboarding')->name('onboarding.')->group(function () {

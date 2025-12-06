@@ -28,6 +28,20 @@ return [
         'feature_flags' => 'مفاتيح الميزات',
         'database' => 'قاعدة البيانات',
         'settings' => 'الإعدادات',
+        // Marketing Website Navigation
+        'marketing_website' => 'موقع التسويق',
+        'website_dashboard' => 'لوحة الموقع',
+        'pages' => 'الصفحات',
+        'hero_slides' => 'شرائح البطل',
+        'features' => 'الميزات',
+        'testimonials' => 'الشهادات',
+        'case_studies' => 'دراسات الحالة',
+        'faqs' => 'الأسئلة الشائعة',
+        'team' => 'الفريق',
+        'partners' => 'الشركاء',
+        'blog' => 'المدونة',
+        'navigation' => 'التنقل',
+        'website_settings' => 'إعدادات الموقع',
     ],
 
     // Dashboard
@@ -825,6 +839,7 @@ return [
         'yes' => 'نعم',
         'no' => 'لا',
         'processing' => 'جاري المعالجة...',
+        'view_all' => 'عرض الكل',
     ],
 
     // Pagination
@@ -1237,7 +1252,10 @@ return [
     // Marketing Website Management
     'website' => [
         'title' => 'موقع التسويق',
+        'subtitle' => 'إدارة المحتوى التسويقي العام',
         'description' => 'إدارة الصفحات العامة والمدونة ومحتوى الموقع',
+        'dashboard_title' => 'لوحة الموقع',
+        'dashboard_subtitle' => 'نظرة عامة على محتوى موقع التسويق',
 
         // Navigation
         'nav_dashboard' => 'لوحة الموقع',
@@ -1257,6 +1275,35 @@ return [
         'nav_settings' => 'إعدادات الموقع',
 
         // Dashboard Stats
+        'view_live_site' => 'عرض الموقع المباشر',
+        'published_pages' => 'الصفحات المنشورة',
+        'blog_posts' => 'مقالات المدونة',
+        'features' => 'الميزات',
+        'testimonials' => 'الشهادات',
+        'hero_slides' => 'شرائح البطل',
+        'case_studies' => 'دراسات الحالة',
+        'faqs' => 'الأسئلة الشائعة',
+        'team_members' => 'أعضاء الفريق',
+        'partners' => 'الشركاء',
+        'pages' => 'الصفحات',
+        'blog' => 'المدونة',
+        'navigation' => 'التنقل',
+        'settings' => 'الإعدادات',
+
+        // Dashboard Content
+        'recent_blog_posts' => 'أحدث مقالات المدونة',
+        'no_blog_posts' => 'لا توجد مقالات بعد',
+        'create_first_post' => 'إنشاء أول مقال',
+        'quick_actions' => 'إجراءات سريعة',
+        'new_page' => 'صفحة جديدة',
+        'new_blog_post' => 'مقال جديد',
+        'new_hero_slide' => 'شريحة بطل جديدة',
+        'new_testimonial' => 'شهادة جديدة',
+        'new_feature' => 'ميزة جديدة',
+        'new_faq' => 'سؤال جديد',
+        'content_management' => 'إدارة المحتوى',
+
+        // Stats (kept for backward compatibility)
         'stat_pages' => 'الصفحات',
         'stat_blog_posts' => 'مقالات المدونة',
         'stat_testimonials' => 'الشهادات',

@@ -28,6 +28,20 @@ return [
         'feature_flags' => 'Feature Flags',
         'database' => 'Database',
         'settings' => 'Settings',
+        // Marketing Website Navigation
+        'marketing_website' => 'Marketing Website',
+        'website_dashboard' => 'Website Dashboard',
+        'pages' => 'Pages',
+        'hero_slides' => 'Hero Slides',
+        'features' => 'Features',
+        'testimonials' => 'Testimonials',
+        'case_studies' => 'Case Studies',
+        'faqs' => 'FAQs',
+        'team' => 'Team',
+        'partners' => 'Partners',
+        'blog' => 'Blog',
+        'navigation' => 'Navigation',
+        'website_settings' => 'Website Settings',
     ],
 
     // Dashboard
@@ -825,6 +839,7 @@ return [
         'yes' => 'Yes',
         'no' => 'No',
         'processing' => 'Processing...',
+        'view_all' => 'View All',
     ],
 
     // Pagination
@@ -1230,7 +1245,36 @@ return [
         'confirm_delete' => 'Are you sure you want to delete this item?',
         'no_items' => 'No items found',
 
-        // Stats
+        // Dashboard Stats
+        'view_live_site' => 'View Live Site',
+        'published_pages' => 'Published Pages',
+        'blog_posts' => 'Blog Posts',
+        'features' => 'Features',
+        'testimonials' => 'Testimonials',
+        'hero_slides' => 'Hero Slides',
+        'case_studies' => 'Case Studies',
+        'faqs' => 'FAQs',
+        'team_members' => 'Team Members',
+        'partners' => 'Partners',
+        'pages' => 'Pages',
+        'blog' => 'Blog',
+        'navigation' => 'Navigation',
+        'settings' => 'Settings',
+
+        // Dashboard Content
+        'recent_blog_posts' => 'Recent Blog Posts',
+        'no_blog_posts' => 'No blog posts yet',
+        'create_first_post' => 'Create First Post',
+        'quick_actions' => 'Quick Actions',
+        'new_page' => 'New Page',
+        'new_blog_post' => 'New Blog Post',
+        'new_hero_slide' => 'New Hero Slide',
+        'new_testimonial' => 'New Testimonial',
+        'new_feature' => 'New Feature',
+        'new_faq' => 'New FAQ',
+        'content_management' => 'Content Management',
+
+        // Stats (kept for backward compatibility)
         'stat_pages' => 'Pages',
         'stat_blog_posts' => 'Blog Posts',
         'stat_testimonials' => 'Testimonials',

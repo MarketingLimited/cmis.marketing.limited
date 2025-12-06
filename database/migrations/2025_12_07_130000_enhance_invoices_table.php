@@ -75,57 +75,77 @@ return new class extends Migration
             $$;
         ");
 
-        // Create payments table for tracking individual payments
-        Schema::create('cmis.payments', function (Blueprint $table) {
-            $table->uuid('payment_id')->primary();
-            $table->uuid('org_id');
-            $table->uuid('invoice_id')->nullable();
-            $table->decimal('amount', 10, 2);
-            $table->string('currency', 3)->default('USD');
-            $table->string('status', 50)->default('pending'); // pending, completed, failed, refunded
-            $table->string('payment_method', 50)->nullable(); // credit_card, bank_transfer, paypal, etc.
-            $table->string('payment_gateway', 50)->nullable(); // stripe, paypal, etc.
-            $table->string('transaction_id', 255)->nullable();
-            $table->string('gateway_response_code', 50)->nullable();
-            $table->text('gateway_response_message')->nullable();
-            $table->jsonb('metadata')->nullable();
-            $table->timestamp('paid_at')->nullable();
-            $table->timestamp('refunded_at')->nullable();
-            $table->decimal('refund_amount', 10, 2)->nullable();
-            $table->text('refund_reason')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        // Create payments table for tracking individual payments (if it doesn't exist)
+        if (!Schema::hasTable('cmis.payments')) {
+            Schema::create('cmis.payments', function (Blueprint $table) {
+                $table->uuid('payment_id')->primary();
+                $table->uuid('org_id');
+                $table->uuid('invoice_id')->nullable();
+                $table->decimal('amount', 10, 2);
+                $table->string('currency', 3)->default('USD');
+                $table->string('status', 50)->default('pending'); // pending, completed, failed, refunded
+                $table->string('payment_method', 50)->nullable(); // credit_card, bank_transfer, paypal, etc.
+                $table->string('payment_gateway', 50)->nullable(); // stripe, paypal, etc.
+                $table->string('transaction_id', 255)->nullable();
+                $table->string('gateway_response_code', 50)->nullable();
+                $table->text('gateway_response_message')->nullable();
+                $table->jsonb('metadata')->nullable();
+                $table->timestamp('paid_at')->nullable();
+                $table->timestamp('refunded_at')->nullable();
+                $table->decimal('refund_amount', 10, 2)->nullable();
+                $table->text('refund_reason')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
 
-        // Add indexes and foreign keys for payments
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_org_id ON cmis.payments(org_id)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON cmis.payments(invoice_id)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_status ON cmis.payments(status)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_paid_at ON cmis.payments(paid_at)');
+            // Add indexes and foreign keys for payments
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_org_id ON cmis.payments(org_id)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON cmis.payments(invoice_id)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_status ON cmis.payments(status)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_payments_paid_at ON cmis.payments(paid_at)');
 
-        DB::statement("
-            ALTER TABLE cmis.payments
-            ADD CONSTRAINT fk_payments_invoice
-            FOREIGN KEY (invoice_id) REFERENCES cmis.invoices(invoice_id)
-            ON DELETE SET NULL
-        ");
+            DB::statement("
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_payments_invoice') THEN
+                        ALTER TABLE cmis.payments
+                        ADD CONSTRAINT fk_payments_invoice
+                        FOREIGN KEY (invoice_id) REFERENCES cmis.invoices(invoice_id)
+                        ON DELETE SET NULL;
+                    END IF;
+                END
+                $$;
+            ");
 
-        DB::statement("
-            ALTER TABLE cmis.payments
-            ADD CONSTRAINT fk_payments_org
-            FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id)
-            ON DELETE CASCADE
-        ");
+            DB::statement("
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_payments_org') THEN
+                        ALTER TABLE cmis.payments
+                        ADD CONSTRAINT fk_payments_org
+                        FOREIGN KEY (org_id) REFERENCES cmis.orgs(org_id)
+                        ON DELETE CASCADE;
+                    END IF;
+                END
+                $$;
+            ");
 
-        // Enable RLS on payments
-        DB::statement('ALTER TABLE cmis.payments ENABLE ROW LEVEL SECURITY');
-        DB::statement('ALTER TABLE cmis.payments FORCE ROW LEVEL SECURITY');
+            // Enable RLS on payments
+            DB::statement('ALTER TABLE cmis.payments ENABLE ROW LEVEL SECURITY');
+            DB::statement('ALTER TABLE cmis.payments FORCE ROW LEVEL SECURITY');
 
-        DB::statement("
-            CREATE POLICY payments_org_isolation ON cmis.payments
-            FOR ALL
-            USING (org_id::text = current_setting('app.current_org_id', true))
-        ");
+            DB::statement("
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'payments_org_isolation') THEN
+                        CREATE POLICY payments_org_isolation ON cmis.payments
+                        FOR ALL
+                        USING (org_id::text = current_setting('app.current_org_id', true));
+                    END IF;
+                END
+                $$;
+            ");
+        }
     }
 
     /**

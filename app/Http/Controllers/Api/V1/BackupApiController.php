@@ -10,7 +10,6 @@ use App\Jobs\Backup\ScheduledBackupJob;
 use App\Models\Backup\BackupSchedule;
 use App\Models\Backup\OrganizationBackup;
 use App\Models\Backup\BackupRestore;
-use App\Apps\Backup\Services\BackupOrchestrator;
 use App\Apps\Backup\Services\Limits\PlanLimitsService;
 use App\Apps\Backup\Services\Restore\SchemaReconcilerService;
 use Illuminate\Http\Request;
@@ -29,14 +28,10 @@ class BackupApiController extends Controller
     use ApiResponse;
 
     protected PlanLimitsService $planLimits;
-    protected BackupOrchestrator $orchestrator;
 
-    public function __construct(
-        PlanLimitsService $planLimits,
-        BackupOrchestrator $orchestrator
-    ) {
+    public function __construct(PlanLimitsService $planLimits)
+    {
         $this->planLimits = $planLimits;
-        $this->orchestrator = $orchestrator;
     }
 
     /**

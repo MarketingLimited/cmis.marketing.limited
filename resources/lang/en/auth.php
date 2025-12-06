@@ -58,6 +58,16 @@ return [
     'forgot_password_link' => 'Forgot your password?',
     'login_errors' => 'There are errors in the entered data',
 
+    // Portal Selection (Super Admin)
+    'portal_select_title' => 'Choose Your Portal',
+    'portal_select_subtitle' => 'Welcome back, :name! Where would you like to go?',
+    'portal_super_admin_title' => 'Super Admin Dashboard',
+    'portal_super_admin_desc' => 'Manage system settings, users, organizations, and platform configurations.',
+    'portal_app_title' => 'CMIS Application',
+    'portal_app_desc' => 'Access your organizations, campaigns, and marketing tools.',
+    'portal_go_to' => 'Go to portal',
+    'portal_logout' => 'Sign out',
+
     // Password Reset Email
     'password_reset_email_title' => 'Password Reset Request',
     'password_reset_email_greeting' => 'Hello',

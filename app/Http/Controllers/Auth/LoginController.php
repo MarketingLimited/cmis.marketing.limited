@@ -57,12 +57,13 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        // Redirect super admins to super admin dashboard
+        // Redirect super admins to portal selection page
         if ($user->is_super_admin) {
-            return redirect()->intended('/super-admin/dashboard');
+            return redirect()->intended(route('portal.select'));
         }
 
-        return redirect()->intended('/dashboard');
+        // Normal users go directly to organizations
+        return redirect()->intended('/orgs');
     }
 
     /**

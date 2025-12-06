@@ -30,7 +30,7 @@
                     <i class="fas fa-file-alt text-blue-600 dark:text-blue-400"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['pages'] ?? 0 }}</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['pages']['published'] ?? 0 }}</p>
                     <p class="text-sm text-slate-600 dark:text-slate-400">{{ __('super_admin.website.published_pages') }}</p>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     <i class="fas fa-newspaper text-green-600 dark:text-green-400"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['blog_posts'] ?? 0 }}</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['blog']['published'] ?? 0 }}</p>
                     <p class="text-sm text-slate-600 dark:text-slate-400">{{ __('super_admin.website.blog_posts') }}</p>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     <i class="fas fa-star text-purple-600 dark:text-purple-400"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['features'] ?? 0 }}</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['features']['active'] ?? 0 }}</p>
                     <p class="text-sm text-slate-600 dark:text-slate-400">{{ __('super_admin.website.features') }}</p>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                     <i class="fas fa-quote-right text-yellow-600 dark:text-yellow-400"></i>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['testimonials'] ?? 0 }}</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['testimonials']['active'] ?? 0 }}</p>
                     <p class="text-sm text-slate-600 dark:text-slate-400">{{ __('super_admin.website.testimonials') }}</p>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                     <i class="fas fa-images text-indigo-600 dark:text-indigo-400"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['hero_slides'] ?? 0 }}</p>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['hero_slides']['active'] ?? 0 }}</p>
                     <p class="text-xs text-slate-600 dark:text-slate-400">{{ __('super_admin.website.hero_slides') }}</p>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                     <i class="fas fa-briefcase text-cyan-600 dark:text-cyan-400"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['case_studies'] ?? 0 }}</p>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['case_studies']['published'] ?? 0 }}</p>
                     <p class="text-xs text-slate-600 dark:text-slate-400">{{ __('super_admin.website.case_studies') }}</p>
                 </div>
             </div>
@@ -111,7 +111,7 @@
                     <i class="fas fa-question-circle text-orange-600 dark:text-orange-400"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['faqs'] ?? 0 }}</p>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['faqs']['active'] ?? 0 }}</p>
                     <p class="text-xs text-slate-600 dark:text-slate-400">{{ __('super_admin.website.faqs') }}</p>
                 </div>
             </div>
@@ -124,7 +124,7 @@
                     <i class="fas fa-users text-pink-600 dark:text-pink-400"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['team_members'] ?? 0 }}</p>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['team']['active'] ?? 0 }}</p>
                     <p class="text-xs text-slate-600 dark:text-slate-400">{{ __('super_admin.website.team_members') }}</p>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                     <i class="fas fa-handshake text-teal-600 dark:text-teal-400"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['partners'] ?? 0 }}</p>
+                    <p class="text-xl font-bold text-slate-900 dark:text-white">{{ $stats['partners']['active'] ?? 0 }}</p>
                     <p class="text-xs text-slate-600 dark:text-slate-400">{{ __('super_admin.website.partners') }}</p>
                 </div>
             </div>

@@ -58,6 +58,16 @@ return [
     'forgot_password_link' => 'نسيت كلمة المرور؟',
     'login_errors' => 'يوجد أخطاء في البيانات المدخلة',
 
+    // Portal Selection (Super Admin)
+    'portal_select_title' => 'اختر البوابة',
+    'portal_select_subtitle' => 'مرحباً بعودتك، :name! إلى أين تريد الذهاب؟',
+    'portal_super_admin_title' => 'لوحة تحكم المشرف العام',
+    'portal_super_admin_desc' => 'إدارة إعدادات النظام والمستخدمين والمؤسسات وتكوينات المنصة.',
+    'portal_app_title' => 'تطبيق CMIS',
+    'portal_app_desc' => 'الوصول إلى مؤسساتك وحملاتك وأدوات التسويق.',
+    'portal_go_to' => 'الذهاب للبوابة',
+    'portal_logout' => 'تسجيل الخروج',
+
     // Password Reset Email
     'password_reset_email_title' => 'طلب إعادة تعيين كلمة المرور',
     'password_reset_email_greeting' => 'مرحباً',
