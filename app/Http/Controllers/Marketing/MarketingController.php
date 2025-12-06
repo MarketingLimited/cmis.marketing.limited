@@ -25,9 +25,32 @@ class MarketingController extends Controller
 {
     /**
      * Display the homepage.
+     *
+     * Authenticated users are redirected to their dashboard/app.
+     * Public visitors see the marketing homepage.
      */
     public function home(Request $request)
     {
+        // Redirect authenticated users to the app (not the marketing site)
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            // Super admins go to portal selection
+            if ($user->is_super_admin) {
+                return redirect()->route('portal.select');
+            }
+
+            // Regular users: if they have an active org, go to that org's dashboard
+            $orgId = $user->active_org_id ?? $user->current_org_id ?? $user->org_id;
+
+            if ($orgId) {
+                return redirect()->route('orgs.dashboard.index', ['org' => $orgId]);
+            }
+
+            // No org yet, go to org selection/creation
+            return redirect()->route('orgs.index');
+        }
+
         // Get active hero slides
         $heroSlides = Cache::remember('marketing.hero_slides', 3600, function () {
             return HeroSlide::where('is_active', true)
