@@ -1511,6 +1511,12 @@ class MetaAssetsService
      * Get Threads accounts.
      * Note: Threads API requires separate OAuth with threads_* scopes.
      * This method performs a quick test first to fail fast if scopes aren't available.
+     *
+     * OPTIMIZED with TWO-PHASE INCREMENTAL SYNC:
+     * 1. DATABASE-FIRST: Check for fresh Threads data in DB
+     * 2. PHASE 1: Get Instagram IDs (already have from getInstagramAccounts)
+     * 3. PHASE 2: Check DB for existing Threads data
+     * 4. PHASE 3: Batch fetch only NEW Threads accounts (50 per batch)
      */
     public function getThreadsAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
     {
@@ -1521,10 +1527,34 @@ class MetaAssetsService
         }
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+            // DATABASE-FIRST: Check for fresh Threads data
+            $freshThreads = $this->getExistingFreshAssets('threads');
+
+            // Get Instagram accounts (already optimized with two-phase sync)
+            $instagramAccounts = $this->getInstagramAccounts($connectionId, $accessToken, false);
+
+            if (empty($instagramAccounts)) {
+                Log::debug('No Instagram accounts found, skipping Threads');
+                return array_values($freshThreads);
+            }
+
+            // Check if we have fresh data for all Instagram IDs
+            $allIgIds = array_column($instagramAccounts, 'id');
+            $freshIgIds = array_column($freshThreads, 'instagram_id');
+            $newIgIds = array_diff($allIgIds, $freshIgIds);
+
+            // If all Threads data is fresh, return from DB without API calls
+            if (empty($newIgIds) && !empty($freshThreads)) {
+                Log::info('DATABASE-FIRST: Returning fresh Threads accounts from database (0 API calls)', [
+                    'threads_count' => count($freshThreads),
+                ]);
+                return array_values($freshThreads);
+            }
+
             // Quick test if Threads API is accessible with this token (5s timeout)
             // Threads requires separate OAuth with threads_* scopes
             try {
-                $testResponse = Http::timeout(5)->get(
+                $testResponse = Http::connectTimeout(5)->timeout(5)->get(
                     self::THREADS_BASE_URL . '/v1.0/me',
                     ['access_token' => $accessToken]
                 );
@@ -1533,63 +1563,136 @@ class MetaAssetsService
                     Log::debug('Threads API not accessible - requires separate OAuth', [
                         'status' => $testResponse->status(),
                     ]);
-                    return [];
+                    // Return fresh data from DB if available
+                    return array_values($freshThreads);
                 }
             } catch (\Exception $e) {
                 Log::debug('Threads API unavailable - fast fail', [
                     'error' => $e->getMessage(),
                 ]);
-                return [];
+                return array_values($freshThreads);
             }
 
-            // Test passed - token has threads_* scopes, proceed with fetching accounts
-            Log::info('Threads API accessible, fetching accounts');
+            // Test passed - token has threads_* scopes, proceed with batch fetching
+            Log::info('Threads API accessible, batch fetching NEW accounts', [
+                'total_instagram' => count($instagramAccounts),
+                'fresh_in_db' => count($freshThreads),
+                'new_to_fetch' => count($newIgIds),
+            ]);
 
-            $threadsAccounts = [];
-            $instagramAccounts = $this->getInstagramAccounts($connectionId, $accessToken, false);
-
+            // Build Instagram ID to data map for new IDs only
+            $igDataMap = [];
             foreach ($instagramAccounts as $ig) {
-                $igId = $ig['id'] ?? null;
-                if (!$igId) continue;
-
-                try {
-                    $response = Http::timeout(10)->get(
-                        self::THREADS_BASE_URL . "/v1.0/{$igId}",
-                        [
-                            'access_token' => $accessToken,
-                            'fields' => 'id,username,name,threads_profile_picture_url,threads_biography',
-                        ]
-                    );
-
-                    if ($response->successful()) {
-                        $threadsData = $response->json();
-                        if (!empty($threadsData['id'])) {
-                            $threadsAccounts[] = [
-                                'id' => $threadsData['id'],
-                                'username' => $threadsData['username'] ?? $ig['username'] ?? null,
-                                'name' => $threadsData['name'] ?? $ig['name'] ?? 'Threads Account',
-                                'profile_picture' => $threadsData['threads_profile_picture_url'] ?? $ig['profile_picture'] ?? null,
-                                'biography' => $threadsData['threads_biography'] ?? null,
-                                'connected_instagram' => $ig['username'] ?? null,
-                                'instagram_id' => $igId,
-                            ];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::debug('Failed to fetch Threads account', [
-                        'instagram_id' => $igId,
-                        'error' => $e->getMessage(),
-                    ]);
+                if (in_array($ig['id'] ?? '', $newIgIds)) {
+                    $igDataMap[$ig['id']] = $ig;
                 }
             }
 
-            Log::info('Threads accounts fetched', ['count' => count($threadsAccounts)]);
+            // Batch fetch Threads accounts using Threads API batch endpoint
+            $newThreadsAccounts = $this->batchFetchThreadsAccounts(array_keys($igDataMap), $igDataMap, $accessToken);
 
-            // Persist to database for three-tier caching
-            $this->persistAssets($connectionId, 'threads', $threadsAccounts);
+            // Merge fresh DB data + new API data
+            $allThreadsAccounts = array_merge(array_values($freshThreads), $newThreadsAccounts);
 
-            return $threadsAccounts;
+            // Deduplicate by ID
+            $allThreadsAccounts = $this->deduplicateById($allThreadsAccounts);
+
+            Log::info('Threads accounts fetched via TWO-PHASE INCREMENTAL SYNC', [
+                'total' => count($allThreadsAccounts),
+                'from_db' => count($freshThreads),
+                'new_fetched' => count($newThreadsAccounts),
+            ]);
+
+            // Persist NEW data to database for future caching
+            if (!empty($newThreadsAccounts)) {
+                $this->persistAssets($connectionId, 'threads', $newThreadsAccounts);
+            }
+
+            return $allThreadsAccounts;
         });
+    }
+
+    /**
+     * Batch fetch Threads accounts using Threads API batch endpoint.
+     * Fetches 50 Threads accounts per batch request.
+     *
+     * @param array $igIds Instagram IDs to fetch Threads data for
+     * @param array $igDataMap Map of Instagram ID to Instagram data
+     * @param string $accessToken The access token with threads_* scopes
+     * @return array Array of Threads account data
+     */
+    protected function batchFetchThreadsAccounts(array $igIds, array $igDataMap, string $accessToken): array
+    {
+        if (empty($igIds)) {
+            return [];
+        }
+
+        $threadsAccounts = [];
+        $fields = 'id,username,name,threads_profile_picture_url,threads_biography';
+        $chunks = array_chunk($igIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $igId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => "{$igId}?" . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->asForm()
+                    ->post(self::THREADS_BASE_URL . '/v1.0/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $index => $batchResponse) {
+                        $igId = $chunk[$index] ?? null;
+                        $ig = $igDataMap[$igId] ?? [];
+
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $threadsData = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (!empty($threadsData['id'])) {
+                                $threadsAccounts[] = [
+                                    'id' => $threadsData['id'],
+                                    'username' => $threadsData['username'] ?? $ig['username'] ?? null,
+                                    'name' => $threadsData['name'] ?? $ig['name'] ?? 'Threads Account',
+                                    'profile_picture' => $threadsData['threads_profile_picture_url'] ?? $ig['profile_picture'] ?? null,
+                                    'biography' => $threadsData['threads_biography'] ?? null,
+                                    'connected_instagram' => $ig['username'] ?? null,
+                                    'instagram_id' => $igId,
+                                ];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Threads batch fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched Threads accounts', [
+            'requested' => count($igIds),
+            'fetched' => count($threadsAccounts),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return $threadsAccounts;
     }
 
     /**
