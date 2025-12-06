@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Jobs\Backup\DeleteBackupFilesJob;
 use App\Jobs\Backup\ProcessBackupJob;
 use App\Jobs\Backup\ProcessRestoreJob;
 use App\Jobs\Backup\ScheduledBackupJob;
@@ -183,7 +184,8 @@ class BackupApiController extends Controller
         // Soft delete
         $backup->delete();
 
-        // TODO: Schedule file deletion after retention period
+        // Schedule file deletion after retention period
+        DeleteBackupFilesJob::dispatchWithRetention($backup, auth()->id());
 
         return $this->deleted(__('backup.backup_deleted'));
     }

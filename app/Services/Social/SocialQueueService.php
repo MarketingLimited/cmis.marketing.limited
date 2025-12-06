@@ -379,16 +379,61 @@ class SocialQueueService
      */
     public function calculateOptimalTimes(string $orgId, string $platform): array
     {
-        // TODO: Implement engagement-based analysis
-        // This would analyze historical post performance and suggest best times
+        try {
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$orgId]);
 
-        // For now, return platform-specific defaults
+            // Analyze historical post performance by hour of day
+            $hourlyEngagement = DB::table('cmis.social_posts')
+                ->select(DB::raw("EXTRACT(HOUR FROM published_at) as hour"),
+                    DB::raw('AVG(COALESCE(engagement_cache, 0)) as avg_engagement'),
+                    DB::raw('COUNT(*) as post_count'))
+                ->where('org_id', $orgId)
+                ->where('platform', $platform)
+                ->where('status', 'published')
+                ->whereNotNull('published_at')
+                ->whereNull('deleted_at')
+                ->where('published_at', '>=', now()->subMonths(3)) // Last 3 months
+                ->groupBy(DB::raw("EXTRACT(HOUR FROM published_at)"))
+                ->having(DB::raw('COUNT(*)'), '>=', 3) // At least 3 posts for statistical significance
+                ->orderByDesc('avg_engagement')
+                ->limit(5)
+                ->get();
+
+            // If we have enough historical data, use it
+            if ($hourlyEngagement->count() >= 3) {
+                $optimalTimes = [];
+                foreach ($hourlyEngagement as $row) {
+                    $hour = (int) $row->hour;
+                    $optimalTimes[] = sprintf('%02d:00', $hour);
+                }
+
+                Log::info('Calculated optimal times from engagement data', [
+                    'org_id' => $orgId,
+                    'platform' => $platform,
+                    'times' => $optimalTimes,
+                    'data_points' => $hourlyEngagement->sum('post_count'),
+                ]);
+
+                return $optimalTimes;
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to calculate optimal times from data', [
+                'org_id' => $orgId,
+                'platform' => $platform,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Fall back to platform-specific defaults based on industry research
         $defaults = [
             'facebook' => ['09:00', '13:00', '18:00'],
             'instagram' => ['09:00', '12:00', '19:00'],
             'twitter' => ['08:00', '12:00', '17:00', '21:00'],
             'linkedin' => ['08:00', '12:00', '17:00'],
             'tiktok' => ['07:00', '12:00', '19:00'],
+            'pinterest' => ['20:00', '21:00', '14:00'],
+            'youtube' => ['14:00', '15:00', '16:00'],
+            'tumblr' => ['18:00', '21:00', '22:00'],
         ];
 
         return $defaults[$platform] ?? ['09:00', '12:00', '18:00'];

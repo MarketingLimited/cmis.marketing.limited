@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Platform\SyncAudienceJob;
 use App\Models\Audience\Audience;
 use App\Models\Core\Org;
 use Illuminate\Http\Request;
@@ -243,12 +244,28 @@ class AudienceWebController extends Controller
 
         $this->setRlsContext($user, $org);
 
-        $audience = Audience::where('org_id', $org)->findOrFail($audience);
+        $audienceModel = Audience::where('org_id', $org)->findOrFail($audience);
 
-        // TODO: Implement platform sync via platform services
-        // This will use Meta/Google/TikTok/etc. API to push audience
+        // Validate platform is connected
+        $connectedPlatforms = DB::table('cmis_platform.ad_accounts')
+            ->where('org_id', $org)
+            ->where('platform', $platform)
+            ->where('is_active', true)
+            ->exists();
 
-        return back()->with('info', __('audiences.sync_started', ['platform' => $platform]));
+        if (!$connectedPlatforms) {
+            return back()->with('error', __('audiences.platform_not_connected', ['platform' => ucfirst($platform)]));
+        }
+
+        // Queue sync job for platform
+        SyncAudienceJob::dispatch(
+            $org,
+            $audienceModel->audience_id,
+            $platform,
+            $user->user_id
+        );
+
+        return back()->with('info', __('audiences.sync_started', ['platform' => ucfirst($platform)]));
     }
 
     /**

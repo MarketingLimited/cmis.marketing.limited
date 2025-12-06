@@ -4,12 +4,14 @@ namespace App\Jobs\Social;
 
 use App\Models\Social\BrandKnowledgeConfig;
 use App\Services\Social\KnowledgeBaseConversionService;
+use App\Services\NotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Build Knowledge Base Job
@@ -72,11 +74,24 @@ class BuildKnowledgeBaseJob implements ShouldQueue
                 'strategy' => $result['strategy'],
             ]);
 
-            // TODO: Send notification to user
-            // if ($this->userId) {
-            //     $user = User::find($this->userId);
-            //     $user->notify(new KnowledgeBaseReady($result));
-            // }
+            // Send notification to user
+            if ($this->userId) {
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyJobCompletion(
+                    $this->userId,
+                    'knowledge_base_build',
+                    [
+                        'org_id' => $this->orgId,
+                        'profile_group_id' => $this->profileGroupId,
+                        'posts_added' => $result['posts_added'],
+                        'core_dimensions' => $result['core_dimensions'],
+                        'strategy' => $result['strategy'],
+                        'message' => __('notifications.knowledge_base_ready', [
+                            'count' => $result['posts_added'],
+                        ]),
+                    ]
+                );
+            }
 
         } catch (\Exception $e) {
             Log::error('Knowledge base build job failed', [
@@ -100,7 +115,22 @@ class BuildKnowledgeBaseJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
-        // TODO: Notify user of failure
+        // Notify user of failure
+        if ($this->userId) {
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyJobFailure(
+                $this->userId,
+                'knowledge_base_build',
+                $exception->getMessage(),
+                [
+                    'org_id' => $this->orgId,
+                    'profile_group_id' => $this->profileGroupId,
+                    'message' => __('notifications.knowledge_base_failed', [
+                        'error' => Str::limit($exception->getMessage(), 100),
+                    ]),
+                ]
+            );
+        }
     }
 
     /**

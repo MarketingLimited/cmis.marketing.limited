@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Jobs\AI\GenerateEmbeddingsJob;
+use App\Jobs\Analytics\GenerateReportJob;
+use App\Jobs\Platform\SyncPlatformDataJob;
+use App\Jobs\Bulk\ProcessBulkOperationJob;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -13,6 +17,13 @@ use Illuminate\Support\Facades\Log;
  */
 class JobStatusService
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(?NotificationService $notificationService = null)
+    {
+        $this->notificationService = $notificationService ?? app(NotificationService::class);
+    }
+
     /**
      * Record job start
      */
@@ -214,8 +225,166 @@ class JobStatusService
      */
     protected function redispatchJob($job): void
     {
-        // TODO: Implement job re-dispatch based on job type
         Log::info('Re-dispatching job', ['job_id' => $job->id, 'type' => $job->job_type]);
+
+        $metadata = json_decode($job->metadata ?? '{}', true);
+
+        try {
+            match ($job->job_type) {
+                'embedding_generation' => $this->redispatchEmbeddingJob($job, $metadata),
+                'report_generation' => $this->redispatchReportJob($job, $metadata),
+                'platform_sync' => $this->redispatchPlatformSyncJob($job, $metadata),
+                'bulk_operation' => $this->redispatchBulkOperationJob($job, $metadata),
+                default => $this->handleUnknownJobType($job),
+            };
+
+            // Update job status to retrying
+            DB::table('cmis_operations.job_status')
+                ->where('id', $job->id)
+                ->update([
+                    'status' => 'retrying',
+                    'retry_count' => DB::raw('COALESCE(retry_count, 0) + 1'),
+                    'last_retry_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+            Log::info('Job re-dispatched successfully', [
+                'job_id' => $job->id,
+                'type' => $job->job_type,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to re-dispatch job', [
+                'job_id' => $job->id,
+                'type' => $job->job_type,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Mark as failed again with new error
+            DB::table('cmis_operations.job_status')
+                ->where('id', $job->id)
+                ->update([
+                    'status' => 'failed',
+                    'error_message' => 'Re-dispatch failed: ' . $e->getMessage(),
+                    'updated_at' => now(),
+                ]);
+        }
+    }
+
+    /**
+     * Re-dispatch an embedding generation job
+     */
+    protected function redispatchEmbeddingJob($job, array $metadata): void
+    {
+        $entityType = $metadata['entity_type'] ?? null;
+        $entityId = $metadata['entity_id'] ?? null;
+
+        if (!$entityType || !$entityId) {
+            throw new \Exception('Missing entity_type or entity_id in job metadata');
+        }
+
+        if (class_exists(GenerateEmbeddingsJob::class)) {
+            GenerateEmbeddingsJob::dispatch(
+                $entityType,
+                $entityId,
+                $job->org_id,
+                $job->user_id
+            )->onQueue('embeddings');
+        } else {
+            Log::warning('GenerateEmbeddingsJob class not found, skipping dispatch', [
+                'job_id' => $job->id,
+            ]);
+        }
+    }
+
+    /**
+     * Re-dispatch a report generation job
+     */
+    protected function redispatchReportJob($job, array $metadata): void
+    {
+        $reportType = $metadata['report_type'] ?? null;
+        $reportConfig = $metadata['config'] ?? [];
+
+        if (!$reportType) {
+            throw new \Exception('Missing report_type in job metadata');
+        }
+
+        if (class_exists(GenerateReportJob::class)) {
+            GenerateReportJob::dispatch(
+                $reportType,
+                $reportConfig,
+                $job->org_id,
+                $job->user_id
+            )->onQueue('reports');
+        } else {
+            Log::warning('GenerateReportJob class not found, skipping dispatch', [
+                'job_id' => $job->id,
+            ]);
+        }
+    }
+
+    /**
+     * Re-dispatch a platform sync job
+     */
+    protected function redispatchPlatformSyncJob($job, array $metadata): void
+    {
+        $integrationId = $metadata['integration_id'] ?? null;
+        $syncType = $metadata['sync_type'] ?? 'full';
+
+        if (!$integrationId) {
+            throw new \Exception('Missing integration_id in job metadata');
+        }
+
+        if (class_exists(SyncPlatformDataJob::class)) {
+            SyncPlatformDataJob::dispatch(
+                $integrationId,
+                $syncType,
+                $job->org_id,
+                $job->user_id
+            )->onQueue('platform-sync');
+        } else {
+            Log::warning('SyncPlatformDataJob class not found, skipping dispatch', [
+                'job_id' => $job->id,
+            ]);
+        }
+    }
+
+    /**
+     * Re-dispatch a bulk operation job
+     */
+    protected function redispatchBulkOperationJob($job, array $metadata): void
+    {
+        $operationType = $metadata['operation_type'] ?? null;
+        $operationData = $metadata['operation_data'] ?? [];
+
+        if (!$operationType) {
+            throw new \Exception('Missing operation_type in job metadata');
+        }
+
+        if (class_exists(ProcessBulkOperationJob::class)) {
+            ProcessBulkOperationJob::dispatch(
+                $operationType,
+                $operationData,
+                $job->org_id,
+                $job->user_id
+            )->onQueue('bulk-operations');
+        } else {
+            Log::warning('ProcessBulkOperationJob class not found, skipping dispatch', [
+                'job_id' => $job->id,
+            ]);
+        }
+    }
+
+    /**
+     * Handle unknown job type
+     */
+    protected function handleUnknownJobType($job): void
+    {
+        Log::warning('Cannot re-dispatch unknown job type', [
+            'job_id' => $job->id,
+            'type' => $job->job_type,
+        ]);
+
+        throw new \Exception("Unknown job type: {$job->job_type}");
     }
 
     /**
@@ -223,10 +392,57 @@ class JobStatusService
      */
     protected function notifyUserOfFailure(string $jobId, string $errorMessage): void
     {
-        // TODO: Implement user notification (in-app notification, email, etc.)
-        Log::info('User should be notified of job failure', [
-            'job_id' => $jobId,
-            'error' => $errorMessage
-        ]);
+        $job = DB::table('cmis_operations.job_status')
+            ->where('id', $jobId)
+            ->first();
+
+        if (!$job || !$job->user_id) {
+            Log::warning('Cannot notify user - job or user_id not found', ['job_id' => $jobId]);
+            return;
+        }
+
+        try {
+            $this->notificationService->notifyJobFailure(
+                $job->user_id,
+                $jobId,
+                $job->job_type,
+                $errorMessage,
+                ['org_id' => $job->org_id]
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to send job failure notification', [
+                'job_id' => $jobId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Notify user of job completion
+     */
+    public function notifyUserOfCompletion(string $jobId): void
+    {
+        $job = DB::table('cmis_operations.job_status')
+            ->where('id', $jobId)
+            ->first();
+
+        if (!$job || !$job->user_id) {
+            return;
+        }
+
+        try {
+            $this->notificationService->notifyJobCompletion(
+                $job->user_id,
+                $jobId,
+                $job->job_type,
+                $job->result ? json_decode($job->result, true) : null,
+                ['org_id' => $job->org_id]
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to send job completion notification', [
+                'job_id' => $jobId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

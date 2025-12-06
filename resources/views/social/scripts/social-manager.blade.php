@@ -2096,6 +2096,112 @@ function socialManager() {
             } finally {
                 this.isDeletingFailed = false;
             }
+        },
+
+        // ============================================
+        // Media Library Methods
+        // ============================================
+
+        /**
+         * Load media files from the media library
+         */
+        async loadMediaLibrary() {
+            console.log('[CMIS Social] Loading media library...');
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/social/media-library`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('[CMIS Social] Media library response:', result);
+
+                if (result.success && result.data?.files) {
+                    this.mediaLibraryFiles = result.data.files;
+                    console.log('[CMIS Social] Loaded', this.mediaLibraryFiles.length, 'media files');
+                } else {
+                    this.mediaLibraryFiles = [];
+                    console.log('[CMIS Social] No media files found');
+                }
+            } catch (error) {
+                console.error('[CMIS Social] Failed to load media library:', error);
+                this.mediaLibraryFiles = [];
+                if (window.notify) {
+                    window.notify('{{ __('social.media_library_load_failed') }}', 'error');
+                }
+            }
+        },
+
+        /**
+         * Select a media file from the library
+         * @param {Object} media - The media object from the library
+         */
+        selectLibraryMedia(media) {
+            console.log('[CMIS Social] Selected library media:', media);
+
+            // Add to uploadedMedia array for the post
+            this.uploadedMedia.push({
+                file: null, // No file object for library media
+                preview: media.url,
+                url: media.url,
+                thumbnail_url: media.thumbnail_url,
+                type: media.type || 'image',
+                asset_id: media.id,
+                file_name: media.file_name,
+                fromLibrary: true
+            });
+
+            // Close the media library modal
+            this.showMediaLibrary = false;
+
+            if (window.notify) {
+                window.notify('{{ __('social.media_added_success') }}', 'success');
+            }
+        },
+
+        /**
+         * Delete a media asset from the library
+         * @param {string} assetId - The asset ID to delete
+         */
+        async deleteLibraryMedia(assetId) {
+            if (!confirm('{{ __('social.confirm_delete_media') }}')) return;
+
+            try {
+                const response = await fetch(`/orgs/${this.orgId}/social/media-library/${assetId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Remove from the current list
+                    this.mediaLibraryFiles = this.mediaLibraryFiles.filter(m => m.id !== assetId);
+                    if (window.notify) {
+                        window.notify('{{ __('social.media_deleted_success') }}', 'success');
+                    }
+                } else {
+                    throw new Error(result.message || 'Failed to delete media');
+                }
+            } catch (error) {
+                console.error('[CMIS Social] Failed to delete media:', error);
+                if (window.notify) {
+                    window.notify('{{ __('social.media_delete_failed') }}', 'error');
+                }
+            }
         }
     };
 }

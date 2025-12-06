@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backup;
 
+use App\Apps\Backup\Services\Storage\CloudStorageTestService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Backup\BackupSetting;
@@ -212,11 +213,8 @@ class BackupSettingsController extends Controller
             ];
         }
 
-        // TODO: Implement actual Google Drive API test
-        return [
-            'connected' => false,
-            'message' => __('backup.storage_google_not_implemented'),
-        ];
+        $testService = new CloudStorageTestService();
+        return $testService->testGoogleDrive($settings->storage_credentials['google']);
     }
 
     /**
@@ -231,11 +229,8 @@ class BackupSettingsController extends Controller
             ];
         }
 
-        // TODO: Implement actual OneDrive API test
-        return [
-            'connected' => false,
-            'message' => __('backup.storage_onedrive_not_implemented'),
-        ];
+        $testService = new CloudStorageTestService();
+        return $testService->testOneDrive($settings->storage_credentials['onedrive']);
     }
 
     /**
@@ -250,10 +245,7 @@ class BackupSettingsController extends Controller
             ];
         }
 
-        // TODO: Implement actual Dropbox API test
-        return [
-            'connected' => false,
-            'message' => __('backup.storage_dropbox_not_implemented'),
-        ];
+        $testService = new CloudStorageTestService();
+        return $testService->testDropbox($settings->storage_credentials['dropbox']);
     }
 }

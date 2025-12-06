@@ -171,6 +171,13 @@ return [
     'content_required' => 'Content required',
     'media_required' => 'Media required',
 
+    // Media Library
+    'media_library_load_failed' => 'Failed to load media library',
+    'media_added_success' => 'Media added to post',
+    'media_deleted_success' => 'Media deleted successfully',
+    'media_delete_failed' => 'Failed to delete media',
+    'confirm_delete_media' => 'Are you sure you want to delete this media?',
+
     // Empty States
     'no_posts' => 'No posts',
     'no_scheduled_posts' => 'No scheduled posts',

@@ -339,28 +339,116 @@ function analyticsManager(serverData) {
         },
 
         async fetchAnalytics() {
-            // TODO: Implement API call to fetch analytics data based on filters
-            // This would call endpoints like:
-            // - GET /api/analytics/summary?start={start}&end={end}&org={org}&platform={platform}
-            // - GET /api/analytics/metrics?start={start}&end={end}
-            // - GET /api/analytics/platforms?start={start}&end={end}
+            this.loading = true;
 
             try {
                 window.notify('{{ __('analytics.loading_data') }}', 'info');
 
-                // For now, just reprocess with current data
-                this.processServerData();
+                // Build query params
+                const params = new URLSearchParams({
+                    start_date: this.dateRange.start,
+                    end_date: this.dateRange.end,
+                });
+
+                if (this.selectedPlatform !== 'all') {
+                    params.append('platform', this.selectedPlatform);
+                }
+
+                // Fetch analytics summary and KPIs in parallel
+                const [summaryResponse, kpisResponse] = await Promise.all([
+                    fetch(`/api/analytics/summary?${params}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    }),
+                    fetch(`/api/analytics/kpis?${params}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                ]);
+
+                const summaryData = await summaryResponse.json();
+                const kpisData = await kpisResponse.json();
+
+                // Process summary data if available
+                if (summaryData.success && summaryData.data) {
+                    this.updateFromSummary(summaryData.data);
+                }
+
+                // Process KPI data if available
+                if (kpisData.success && kpisData.data) {
+                    this.updateFromKpis(kpisData.data);
+                }
+
+                // Re-render charts with new data
                 this.renderCharts();
 
-                console.log('Filters:', {
-                    dateRange: this.dateRange,
-                    org: this.selectedOrg,
-                    platform: this.selectedPlatform
-                });
+                window.notify('{{ __('analytics.data_loaded') }}', 'success');
             } catch (error) {
                 console.error('Error fetching analytics:', error);
                 window.notify('{{ __('analytics.error_loading') }}', 'error');
+
+                // Fall back to server data if API fails
+                this.processServerData();
+                this.renderCharts();
+            } finally {
+                this.loading = false;
             }
+        },
+
+        updateFromSummary(data) {
+            // Update platform performance from API data
+            if (data.platforms && Array.isArray(data.platforms)) {
+                this.platformPerformance = data.platforms.map(p => ({
+                    name: p.name || p.platform,
+                    icon: this.getPlatformIcon(p.name || p.platform),
+                    spend: p.spend || 0,
+                    clicks: p.clicks || 0,
+                    ctr: p.ctr || 0,
+                    roas: p.roas || 0
+                }));
+            }
+
+            // Update trends if available
+            if (data.trends) {
+                this.trends = data.trends;
+            }
+        },
+
+        updateFromKpis(data) {
+            // Update KPI values from API response
+            if (data.kpis) {
+                this.kpis = {
+                    totalSpend: data.kpis.total_spend || this.kpis.totalSpend,
+                    spendChange: data.kpis.spend_change || this.kpis.spendChange,
+                    impressions: data.kpis.impressions || this.kpis.impressions,
+                    impressionsChange: data.kpis.impressions_change || this.kpis.impressionsChange,
+                    clicks: data.kpis.clicks || this.kpis.clicks,
+                    clicksChange: data.kpis.clicks_change || this.kpis.clicksChange,
+                    conversions: data.kpis.conversions || this.kpis.conversions,
+                    conversionsChange: data.kpis.conversions_change || this.kpis.conversionsChange,
+                    ctr: data.kpis.ctr || this.kpis.ctr,
+                    cpc: data.kpis.cpc || this.kpis.cpc,
+                    roas: data.kpis.roas || this.kpis.roas
+                };
+            }
+        },
+
+        getPlatformIcon(platform) {
+            const icons = {
+                'meta': 'fab fa-meta',
+                'facebook': 'fab fa-meta',
+                'google': 'fab fa-google',
+                'tiktok': 'fab fa-tiktok',
+                'linkedin': 'fab fa-linkedin',
+                'twitter': 'fab fa-x-twitter',
+                'x': 'fab fa-x-twitter',
+                'snapchat': 'fab fa-snapchat'
+            };
+            return icons[platform?.toLowerCase()] || 'fas fa-chart-line';
         },
 
         renderCharts() {
@@ -419,44 +507,94 @@ function analyticsManager(serverData) {
             return value.toLocaleString('ar-SA');
         },
 
-        exportToPDF() {
-            // TODO: Implement PDF export with API call
-            // POST /api/analytics/export/pdf with filters
-            // const response = await fetch('/api/analytics/export/pdf', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            //     },
-            //     body: JSON.stringify({
-            //         dateRange: this.dateRange,
-            //         org: this.selectedOrg,
-            //         platform: this.selectedPlatform
-            //     })
-            // });
-            // Then download the PDF file
-            window.notify('{{ __('analytics.export_pdf') }}...', 'info');
-            console.log('PDF Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
+        async exportToPDF() {
+            window.notify('{{ __('reports.preparing_pdf') }}', 'info');
+            try {
+                const response = await fetch('/api/analytics/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/pdf'
+                    },
+                    body: JSON.stringify({
+                        format: 'pdf',
+                        start_date: this.dateRange.start,
+                        end_date: this.dateRange.end,
+                        platform: this.selectedPlatform !== 'all' ? this.selectedPlatform : null,
+                        report_type: 'analytics_overview'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || '{{ __('reports.export_failed') }}');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `analytics_report_${new Date().toISOString().slice(0,10)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                window.notify('{{ __('reports.export_complete') }}', 'success');
+            } catch (error) {
+                console.error('PDF Export error:', error);
+                window.notify(error.message || '{{ __('reports.export_failed') }}', 'error');
+            }
         },
 
-        exportToExcel() {
-            // TODO: Implement Excel export with API call
-            // POST /api/analytics/export/excel with filters
-            // const response = await fetch('/api/analytics/export/excel', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            //     },
-            //     body: JSON.stringify({
-            //         dateRange: this.dateRange,
-            //         org: this.selectedOrg,
-            //         platform: this.selectedPlatform
-            //     })
-            // });
-            // Then download the Excel file
-            window.notify('{{ __('analytics.export_excel') }}...', 'info');
-            console.log('Excel Export filters:', this.dateRange, this.selectedOrg, this.selectedPlatform);
+        async exportToExcel() {
+            window.notify('{{ __('reports.preparing_excel') }}', 'info');
+            try {
+                const response = await fetch('/api/analytics/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    },
+                    body: JSON.stringify({
+                        format: 'csv',
+                        start_date: this.dateRange.start,
+                        end_date: this.dateRange.end,
+                        platform: this.selectedPlatform !== 'all' ? this.selectedPlatform : null,
+                        report_type: 'analytics_overview'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('{{ __('reports.export_failed') }}');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `analytics_report_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                window.notify('{{ __('reports.export_complete') }}', 'success');
+            } catch (error) {
+                console.error('Excel Export error:', error);
+                window.notify('{{ __('reports.export_failed') }}', 'error');
+            }
+        },
+
+        getPeriodDays() {
+            // Extract number of days from dateRange
+            if (this.dateRange === 'last7days') return 7;
+            if (this.dateRange === 'last30days') return 30;
+            if (this.dateRange === 'last90days') return 90;
+            if (this.dateRange === 'last365days') return 365;
+            return 30; // default
         }
     };
 }

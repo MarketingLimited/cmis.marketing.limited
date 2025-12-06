@@ -64,6 +64,9 @@ return [
     'updated_successfully' => 'Audience updated successfully',
     'deleted_successfully' => 'Audience deleted successfully',
     'sync_started' => 'Sync to :platform started',
+    'sync_completed' => ':name synced to :platform successfully',
+    'sync_failed' => 'Sync to :platform failed: :error',
+    'platform_not_connected' => ':platform is not connected. Please connect your ad account first.',
 
     // Create Form
     'audience_details' => 'Audience Details',

@@ -527,6 +527,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/posts-scheduled', [App\Http\Controllers\Social\SocialPostController::class, 'getScheduledPosts'])->name('posts.scheduled');
             Route::post('/posts/{post}/reschedule', [App\Http\Controllers\Social\SocialPostController::class, 'reschedule'])->name('posts.reschedule');
             Route::get('/media-library', [App\Http\Controllers\Social\MediaLibraryController::class, 'index'])->name('media-library');
+            Route::get('/media-library/{asset}', [App\Http\Controllers\Social\MediaLibraryController::class, 'show'])->name('media-library.show');
+            Route::delete('/media-library/{asset}', [App\Http\Controllers\Social\MediaLibraryController::class, 'destroy'])->name('media-library.destroy');
             Route::post('/media/upload', [App\Http\Controllers\Social\MediaLibraryController::class, 'upload'])->name('media.upload');
 
             // Video Processing

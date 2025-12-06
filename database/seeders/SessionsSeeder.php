@@ -4,32 +4,65 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SessionsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * Total rows: 1
+     *
+     * Creates a demo session for the first available user.
+     * This is useful for development/testing environments.
      */
     public function run(): void
     {
-        // Disable foreign key checks
-        DB::statement('SET CONSTRAINTS ALL DEFERRED');
+        // Find the first available user to create a session for
+        $user = DB::table('cmis.users')
+            ->whereNull('deleted_at')
+            ->first();
 
-        // Chunk 1
-        DB::table('cmis.sessions')->insert(
-            array (
-  0 => 
-  array (
-    'id' => 'QO1nkBQpCi7bYWcVAntzewXhB0Jbyn5PkbpdE0Dv',
-    'user_id' => 'd76b3d33-4d67-4dd6-9df9-845a18ba3435',
-    'ip_address' => '162.158.28.211',
-    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
-    'payload' => 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiQ1JiTE1XT2VsblRGTGd6TDlxTDhJYmNINkszMUxsN3JPOFhpVzVHQSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDQ6Imh0dHBzOi8vY21pcy5rYXphYXouY29tL25vdGlmaWNhdGlvbnMvbGF0ZXN0IjtzOjU6InJvdXRlIjtzOjIwOiJub3RpZmljYXRpb25zLmxhdGVzdCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MzoidXJsIjthOjA6e31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czozNjoiZDc2YjNkMzMtNGQ2Ny00ZGQ2LTlkZjktODQ1YTE4YmEzNDM1Ijt9',
-    'last_activity' => '1763075441',
-  ),
-)
-        );
+        if (!$user) {
+            $this->command->warn('⚠️  SessionsSeeder: No users found, skipping session creation.');
+            return;
+        }
 
+        // Generate a unique session ID
+        $sessionId = Str::random(40);
+
+        // Check if session already exists for this user
+        $existingSession = DB::table('cmis.sessions')
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if ($existingSession) {
+            $this->command->info('ℹ️  SessionsSeeder: User already has a session, skipping.');
+            return;
+        }
+
+        // Build the session payload with proper Laravel session format
+        $payload = base64_encode(serialize([
+            '_token' => Str::random(40),
+            '_previous' => [
+                'url' => config('app.url') . '/dashboard',
+                'route' => 'dashboard',
+            ],
+            '_flash' => [
+                'old' => [],
+                'new' => [],
+            ],
+            'url' => [],
+            'login_web_59ba36addc2b2f9401580f014c7f58ea4e30989d' => $user->id,
+        ]));
+
+        DB::table('cmis.sessions')->insert([
+            'id' => $sessionId,
+            'user_id' => $user->id,
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'Mozilla/5.0 (Development Session)',
+            'payload' => $payload,
+            'last_activity' => time(),
+        ]);
+
+        $this->command->info("✅ SessionsSeeder: Created demo session for user: {$user->email}");
     }
 }

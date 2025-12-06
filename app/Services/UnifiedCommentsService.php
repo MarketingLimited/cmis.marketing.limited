@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Services\Connectors\ConnectorFactory;
+use App\Services\Connectors\Providers\TikTokConnector;
+use App\Services\Connectors\Providers\TwitterConnector;
+use App\Services\Connectors\Providers\LinkedInConnector;
+use App\Services\Connectors\Providers\YouTubeConnector;
 use App\Models\Core\Integration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -235,8 +239,27 @@ class UnifiedCommentsService
      */
     protected function replyToTikTokComment($comment, string $replyText, $integration): array
     {
-        // TikTok API implementation
-        return ['success' => false, 'error' => 'TikTok comments not implemented yet'];
+        try {
+            $integrationModel = Integration::find($integration->integration_id);
+            if (!$integrationModel) {
+                return ['success' => false, 'error' => 'Integration not found'];
+            }
+
+            $connector = app(TikTokConnector::class);
+            $result = $connector->replyToComment(
+                $integrationModel,
+                $comment->platform_comment_id,
+                $replyText
+            );
+
+            return [
+                'success' => $result['success'] ?? true,
+                'platform_comment_id' => $result['comment_id'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to reply to TikTok comment: ' . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -244,8 +267,27 @@ class UnifiedCommentsService
      */
     protected function replyToTwitterComment($comment, string $replyText, $integration): array
     {
-        // Twitter API v2 implementation
-        return ['success' => false, 'error' => 'Twitter comments not implemented yet'];
+        try {
+            $integrationModel = Integration::find($integration->integration_id);
+            if (!$integrationModel) {
+                return ['success' => false, 'error' => 'Integration not found'];
+            }
+
+            $connector = app(TwitterConnector::class);
+            $result = $connector->replyToComment(
+                $integrationModel,
+                $comment->platform_comment_id,
+                $replyText
+            );
+
+            return [
+                'success' => $result['success'] ?? true,
+                'platform_comment_id' => $result['comment_id'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to reply to Twitter comment: ' . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -253,8 +295,27 @@ class UnifiedCommentsService
      */
     protected function replyToLinkedInComment($comment, string $replyText, $integration): array
     {
-        // LinkedIn API implementation
-        return ['success' => false, 'error' => 'LinkedIn comments not implemented yet'];
+        try {
+            $integrationModel = Integration::find($integration->integration_id);
+            if (!$integrationModel) {
+                return ['success' => false, 'error' => 'Integration not found'];
+            }
+
+            $connector = app(LinkedInConnector::class);
+            $result = $connector->replyToComment(
+                $integrationModel,
+                $comment->platform_comment_id,
+                $replyText
+            );
+
+            return [
+                'success' => $result['success'] ?? true,
+                'platform_comment_id' => $result['comment_id'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to reply to LinkedIn comment: ' . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -262,8 +323,27 @@ class UnifiedCommentsService
      */
     protected function replyToYouTubeComment($comment, string $replyText, $integration): array
     {
-        // YouTube Data API implementation
-        return ['success' => false, 'error' => 'YouTube comments not implemented yet'];
+        try {
+            $integrationModel = Integration::find($integration->integration_id);
+            if (!$integrationModel) {
+                return ['success' => false, 'error' => 'Integration not found'];
+            }
+
+            $connector = app(YouTubeConnector::class);
+            $result = $connector->replyToComment(
+                $integrationModel,
+                $comment->platform_comment_id,
+                $replyText
+            );
+
+            return [
+                'success' => $result['success'] ?? true,
+                'platform_comment_id' => $result['comment_id'] ?? null,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to reply to YouTube comment: ' . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**

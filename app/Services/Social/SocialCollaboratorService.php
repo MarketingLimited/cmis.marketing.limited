@@ -315,28 +315,196 @@ class SocialCollaboratorService
     /**
      * Search Instagram users by username
      *
-     * This is a helper method that could be expanded to search
-     * for users beyond the Business Discovery API limits.
+     * Searches through:
+     * 1. Past collaborators
+     * 2. Mentioned users in posts
+     * 3. Saved collaborator suggestions
+     * 4. Instagram Business Discovery API (if credentials available)
      *
      * @param string $orgId
      * @param string $query
-     * @return array Search results
+     * @return array Search results with user data
      */
     public function searchUsers(string $orgId, string $query): array
     {
-        // TODO: Implement user search functionality
-        // This could integrate with Instagram's search API or
-        // return cached results from past collaborators
-
-        $suggestions = $this->getSuggestions($orgId);
-
-        // Filter suggestions by query
         $query = strtolower(ltrim($query, '@'));
-        $filtered = array_filter($suggestions, function ($username) use ($query) {
-            return stripos($username, $query) !== false;
+        $results = [];
+
+        try {
+            DB::statement("SELECT set_config('app.current_org_id', ?, false)", [$orgId]);
+
+            // 1. Search saved collaborator suggestions
+            $savedSuggestions = DB::table('cmis.collaborator_suggestions')
+                ->where('org_id', $orgId)
+                ->whereNull('deleted_at')
+                ->where('username', 'ilike', "%{$query}%")
+                ->orderByDesc('use_count')
+                ->limit(10)
+                ->get();
+
+            foreach ($savedSuggestions as $suggestion) {
+                $results[$suggestion->username] = [
+                    'username' => $suggestion->username,
+                    'display_name' => $suggestion->display_name ?? $suggestion->username,
+                    'profile_url' => $suggestion->profile_url,
+                    'avatar_url' => $suggestion->avatar_url,
+                    'followers' => $suggestion->followers_count ?? null,
+                    'source' => 'saved',
+                    'use_count' => $suggestion->use_count,
+                ];
+            }
+
+            // 2. Search past collaborators from posts
+            $pastCollaborators = $this->getSuggestions($orgId);
+            foreach ($pastCollaborators as $username) {
+                if (stripos($username, $query) !== false && !isset($results[$username])) {
+                    $results[$username] = [
+                        'username' => $username,
+                        'display_name' => $username,
+                        'profile_url' => "https://instagram.com/{$username}",
+                        'avatar_url' => null,
+                        'followers' => null,
+                        'source' => 'past_collab',
+                        'use_count' => 0,
+                    ];
+                }
+            }
+
+            // 3. Search mentions from post content
+            $mentions = $this->searchMentionsInPosts($orgId, $query);
+            foreach ($mentions as $username) {
+                if (!isset($results[$username])) {
+                    $results[$username] = [
+                        'username' => $username,
+                        'display_name' => $username,
+                        'profile_url' => "https://instagram.com/{$username}",
+                        'avatar_url' => null,
+                        'followers' => null,
+                        'source' => 'mention',
+                        'use_count' => 0,
+                    ];
+                }
+            }
+
+            // 4. Try Instagram Business Discovery API for the exact username
+            if (strlen($query) >= 3 && count($results) < 5) {
+                $apiResult = $this->lookupUserViaApi($orgId, $query);
+                if ($apiResult && !isset($results[$apiResult['username']])) {
+                    $results[$apiResult['username']] = $apiResult;
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::warning('User search failed', [
+                'org_id' => $orgId,
+                'query' => $query,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Sort by use_count (most used first), then by source priority
+        $sorted = array_values($results);
+        usort($sorted, function ($a, $b) {
+            // Saved suggestions first
+            if ($a['source'] === 'saved' && $b['source'] !== 'saved') return -1;
+            if ($b['source'] === 'saved' && $a['source'] !== 'saved') return 1;
+            // Then by use count
+            return ($b['use_count'] ?? 0) - ($a['use_count'] ?? 0);
         });
 
-        return array_values($filtered);
+        return array_slice($sorted, 0, 15);
+    }
+
+    /**
+     * Search for mentions in post content
+     *
+     * @param string $orgId
+     * @param string $query
+     * @return array Usernames found in mentions
+     */
+    protected function searchMentionsInPosts(string $orgId, string $query): array
+    {
+        $posts = DB::table('cmis.social_posts')
+            ->where('org_id', $orgId)
+            ->where('platform', 'instagram')
+            ->where('content', 'ilike', "%@%{$query}%")
+            ->whereNull('deleted_at')
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->pluck('content');
+
+        $mentions = [];
+        foreach ($posts as $content) {
+            if (preg_match_all('/@([a-zA-Z0-9_.]+)/', $content, $matches)) {
+                foreach ($matches[1] as $username) {
+                    if (stripos($username, $query) !== false && !in_array($username, $mentions)) {
+                        $mentions[] = $username;
+                    }
+                }
+            }
+        }
+
+        return array_slice($mentions, 0, 10);
+    }
+
+    /**
+     * Lookup user via Instagram Business Discovery API
+     *
+     * @param string $orgId
+     * @param string $username
+     * @return array|null User data or null if not found
+     */
+    protected function lookupUserViaApi(string $orgId, string $username): ?array
+    {
+        try {
+            // Get Instagram connection
+            $connection = PlatformConnection::where('org_id', $orgId)
+                ->where('platform', 'instagram')
+                ->where('status', 'active')
+                ->first();
+
+            if (!$connection) {
+                return null;
+            }
+
+            $accessToken = decrypt($connection->access_token);
+            $igUserId = $connection->metadata['instagram_business_account_id'] ?? null;
+
+            if (!$igUserId) {
+                return null;
+            }
+
+            // Use Business Discovery API
+            $response = Http::get("https://graph.facebook.com/v18.0/{$igUserId}", [
+                'fields' => "business_discovery.username({$username}){id,username,name,profile_picture_url,followers_count,biography}",
+                'access_token' => $accessToken,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $discovery = $data['business_discovery'] ?? null;
+
+                if ($discovery) {
+                    return [
+                        'username' => $discovery['username'],
+                        'display_name' => $discovery['name'] ?? $discovery['username'],
+                        'profile_url' => "https://instagram.com/{$discovery['username']}",
+                        'avatar_url' => $discovery['profile_picture_url'] ?? null,
+                        'followers' => $discovery['followers_count'] ?? null,
+                        'bio' => $discovery['biography'] ?? null,
+                        'source' => 'api',
+                        'use_count' => 0,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug('Instagram API lookup failed', [
+                'username' => $username,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
     }
 
     /**

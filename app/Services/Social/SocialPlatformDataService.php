@@ -5,6 +5,7 @@ namespace App\Services\Social;
 use App\Models\Platform\PlatformConnection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -147,37 +148,226 @@ class SocialPlatformDataService
      * Get trending hashtags for a platform
      *
      * @param string $platform Platform name
-     * @return array Trending hashtags
+     * @param string|null $orgId Organization ID for API access
+     * @return array Trending hashtags with metadata
      */
-    public function getTrendingHashtags(string $platform): array
+    public function getTrendingHashtags(string $platform, ?string $orgId = null): array
     {
-        // TODO: Implement real trending hashtags API integration
-        // For now, return platform-specific sample hashtags
+        $cacheKey = "trending_hashtags_{$platform}_" . ($orgId ?? 'default');
 
-        $sampleHashtags = [
+        // Try to get cached data (cache for 1 hour)
+        return Cache::remember($cacheKey, 3600, function () use ($platform, $orgId) {
+            // Try to fetch real trending data if we have API access
+            if ($orgId) {
+                try {
+                    $trendingData = $this->fetchTrendingFromApi($platform, $orgId);
+                    if (!empty($trendingData)) {
+                        return $trendingData;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch trending hashtags from API', [
+                        'platform' => $platform,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Fall back to curated industry hashtags
+            return $this->getDefaultTrendingHashtags($platform);
+        });
+    }
+
+    /**
+     * Fetch trending hashtags from platform API
+     *
+     * @param string $platform
+     * @param string $orgId
+     * @return array
+     */
+    protected function fetchTrendingFromApi(string $platform, string $orgId): array
+    {
+        $connection = PlatformConnection::where('org_id', $orgId)
+            ->where('platform', $platform)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$connection) {
+            return [];
+        }
+
+        return match ($platform) {
+            'twitter' => $this->fetchTwitterTrends($connection),
+            'tiktok' => $this->fetchTikTokTrends($connection),
+            default => [],
+        };
+    }
+
+    /**
+     * Fetch Twitter/X trending topics
+     */
+    protected function fetchTwitterTrends(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = decrypt($connection->access_token);
+
+            // Twitter API v2 - Get trending topics (requires elevated access)
+            $response = Http::withToken($accessToken)
+                ->get('https://api.twitter.com/2/trends/by/woeid/1'); // WOEID 1 = Worldwide
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $hashtags = [];
+
+                foreach ($data['data'] ?? [] as $trend) {
+                    if (str_starts_with($trend['name'] ?? '', '#')) {
+                        $hashtags[] = [
+                            'tag' => $trend['name'],
+                            'volume' => $trend['tweet_count'] ?? null,
+                            'trending' => true,
+                        ];
+                    }
+                }
+
+                if (count($hashtags) > 0) {
+                    return array_slice($hashtags, 0, 20);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug('Twitter trends fetch failed', ['error' => $e->getMessage()]);
+        }
+
+        return [];
+    }
+
+    /**
+     * Fetch TikTok trending hashtags
+     */
+    protected function fetchTikTokTrends(PlatformConnection $connection): array
+    {
+        try {
+            $accessToken = decrypt($connection->access_token);
+
+            // TikTok Research API - Trending hashtags
+            $response = Http::withToken($accessToken)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post('https://open.tiktokapis.com/v2/research/hashtag/list/', [
+                    'fields' => ['id', 'name', 'video_count'],
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $hashtags = [];
+
+                foreach ($data['data']['hashtags'] ?? [] as $hashtag) {
+                    $hashtags[] = [
+                        'tag' => '#' . $hashtag['name'],
+                        'volume' => $hashtag['video_count'] ?? null,
+                        'trending' => true,
+                    ];
+                }
+
+                if (count($hashtags) > 0) {
+                    return array_slice($hashtags, 0, 20);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::debug('TikTok trends fetch failed', ['error' => $e->getMessage()]);
+        }
+
+        return [];
+    }
+
+    /**
+     * Get default trending hashtags by platform
+     *
+     * @param string $platform
+     * @return array
+     */
+    protected function getDefaultTrendingHashtags(string $platform): array
+    {
+        $defaults = [
             'instagram' => [
-                '#viral', '#instagood', '#photooftheday', '#love',
-                '#fashion', '#marketing', '#photography', '#art'
+                ['tag' => '#viral', 'volume' => null, 'trending' => false],
+                ['tag' => '#instagood', 'volume' => null, 'trending' => false],
+                ['tag' => '#photooftheday', 'volume' => null, 'trending' => false],
+                ['tag' => '#love', 'volume' => null, 'trending' => false],
+                ['tag' => '#fashion', 'volume' => null, 'trending' => false],
+                ['tag' => '#marketing', 'volume' => null, 'trending' => false],
+                ['tag' => '#photography', 'volume' => null, 'trending' => false],
+                ['tag' => '#art', 'volume' => null, 'trending' => false],
+                ['tag' => '#reels', 'volume' => null, 'trending' => false],
+                ['tag' => '#explore', 'volume' => null, 'trending' => false],
             ],
             'twitter' => [
-                '#trending', '#breaking', '#news', '#tech',
-                '#business', '#innovation', '#digital', '#AI'
+                ['tag' => '#trending', 'volume' => null, 'trending' => false],
+                ['tag' => '#breaking', 'volume' => null, 'trending' => false],
+                ['tag' => '#news', 'volume' => null, 'trending' => false],
+                ['tag' => '#tech', 'volume' => null, 'trending' => false],
+                ['tag' => '#business', 'volume' => null, 'trending' => false],
+                ['tag' => '#innovation', 'volume' => null, 'trending' => false],
+                ['tag' => '#digital', 'volume' => null, 'trending' => false],
+                ['tag' => '#AI', 'volume' => null, 'trending' => false],
             ],
             'tiktok' => [
-                '#fyp', '#viral', '#trending', '#foryou',
-                '#challenge', '#duet', '#trend', '#tiktok'
+                ['tag' => '#fyp', 'volume' => null, 'trending' => false],
+                ['tag' => '#viral', 'volume' => null, 'trending' => false],
+                ['tag' => '#trending', 'volume' => null, 'trending' => false],
+                ['tag' => '#foryou', 'volume' => null, 'trending' => false],
+                ['tag' => '#challenge', 'volume' => null, 'trending' => false],
+                ['tag' => '#duet', 'volume' => null, 'trending' => false],
+                ['tag' => '#trend', 'volume' => null, 'trending' => false],
+                ['tag' => '#tiktok', 'volume' => null, 'trending' => false],
             ],
             'linkedin' => [
-                '#leadership', '#business', '#innovation', '#networking',
-                '#career', '#professional', '#growth', '#success'
+                ['tag' => '#leadership', 'volume' => null, 'trending' => false],
+                ['tag' => '#business', 'volume' => null, 'trending' => false],
+                ['tag' => '#innovation', 'volume' => null, 'trending' => false],
+                ['tag' => '#networking', 'volume' => null, 'trending' => false],
+                ['tag' => '#career', 'volume' => null, 'trending' => false],
+                ['tag' => '#professional', 'volume' => null, 'trending' => false],
+                ['tag' => '#growth', 'volume' => null, 'trending' => false],
+                ['tag' => '#success', 'volume' => null, 'trending' => false],
             ],
             'facebook' => [
-                '#community', '#smallbusiness', '#local', '#events',
-                '#support', '#together', '#family', '#friends'
+                ['tag' => '#community', 'volume' => null, 'trending' => false],
+                ['tag' => '#smallbusiness', 'volume' => null, 'trending' => false],
+                ['tag' => '#local', 'volume' => null, 'trending' => false],
+                ['tag' => '#events', 'volume' => null, 'trending' => false],
+                ['tag' => '#support', 'volume' => null, 'trending' => false],
+                ['tag' => '#together', 'volume' => null, 'trending' => false],
+                ['tag' => '#family', 'volume' => null, 'trending' => false],
+                ['tag' => '#friends', 'volume' => null, 'trending' => false],
+            ],
+            'tumblr' => [
+                ['tag' => '#aesthetic', 'volume' => null, 'trending' => false],
+                ['tag' => '#art', 'volume' => null, 'trending' => false],
+                ['tag' => '#photography', 'volume' => null, 'trending' => false],
+                ['tag' => '#creative', 'volume' => null, 'trending' => false],
+                ['tag' => '#original', 'volume' => null, 'trending' => false],
+                ['tag' => '#artists', 'volume' => null, 'trending' => false],
             ],
         ];
 
-        return $sampleHashtags[$platform] ?? ['#trending', '#viral'];
+        return $defaults[$platform] ?? [
+            ['tag' => '#trending', 'volume' => null, 'trending' => false],
+            ['tag' => '#viral', 'volume' => null, 'trending' => false],
+        ];
+    }
+
+    /**
+     * Get simple hashtag list for backward compatibility
+     *
+     * @param string $platform
+     * @param string|null $orgId
+     * @return array Simple array of hashtag strings
+     */
+    public function getTrendingHashtagsList(string $platform, ?string $orgId = null): array
+    {
+        $hashtags = $this->getTrendingHashtags($platform, $orgId);
+
+        return array_map(function ($item) {
+            return is_array($item) ? $item['tag'] : $item;
+        }, $hashtags);
     }
 
     /**

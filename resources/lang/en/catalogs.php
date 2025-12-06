@@ -102,8 +102,9 @@ return [
     'catalog_updated' => 'Catalog updated successfully',
     'catalog_deleted' => 'Catalog deleted successfully',
     'sync_started' => 'Catalog sync started',
-    'sync_completed' => 'Catalog sync completed: :count products updated',
+    'sync_completed' => ':count products synced to :platform',
     'sync_error' => 'Catalog sync failed: :error',
+    'sync_failed' => 'Sync to :platform failed: :error',
     'import_success' => ':count products imported successfully',
     'confirm_delete' => 'Are you sure you want to delete this catalog?',
 

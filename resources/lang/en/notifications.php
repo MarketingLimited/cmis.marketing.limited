@@ -48,4 +48,12 @@ return [
     'all_marked_read' => 'All notifications marked as read',
     'deleted_success' => 'Notification deleted',
 
+    // Job Notifications
+    'historical_import_completed' => ':count posts imported from :platform successfully',
+    'historical_import_failed' => 'Historical import failed: :error',
+    'knowledge_base_ready' => 'Knowledge base built with :count posts analyzed',
+    'knowledge_base_failed' => 'Knowledge base build failed: :error',
+    'job_completed' => 'Job completed successfully',
+    'job_failed' => 'Job failed: :error',
+
 ];

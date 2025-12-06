@@ -601,78 +601,191 @@ function socialSchedulerManager() {
             window.notify('معاينة المنشور #' + id, 'info');
         },
 
-        editPost(id) {
-            // TODO: Implement edit functionality
-            // Fetch post data: GET /api/social/posts/{id}
-            // Open composer modal with loaded data
-            // Update: PUT /api/social/posts/{id}
-            window.notify('تحرير المنشور #' + id, 'info');
+        async editPost(id) {
+            try {
+                window.notify('{{ __('channels.loading_post') }}', 'info');
+
+                const response = await fetch(`/api/social/posts/${id}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const post = result.data;
+                    // Populate composer with post data
+                    this.composerForm = {
+                        id: post.id,
+                        platforms: post.platforms || [],
+                        content: post.content || '',
+                        charCount: (post.content || '').length,
+                        scheduleDate: post.scheduled_date || '',
+                        scheduleTime: post.scheduled_time || ''
+                    };
+                    this.showComposerModal = true;
+                } else {
+                    throw new Error(result.message || '{{ __('channels.load_failed') }}');
+                }
+            } catch (error) {
+                console.error('Error loading post:', error);
+                window.notify(error.message || '{{ __('channels.load_failed') }}', 'error');
+            }
         },
 
-        reschedulePost(id) {
-            // TODO: Implement reschedule functionality
-            // PUT /api/social/posts/{id}/reschedule
-            // Update scheduled_date and scheduled_time
-            window.notify('إعادة جدولة المنشور #' + id, 'info');
+        async reschedulePost(id) {
+            const newDate = prompt('{{ __('channels.enter_new_date') }} (YYYY-MM-DD):');
+            const newTime = prompt('{{ __('channels.enter_new_time') }} (HH:MM):');
+
+            if (!newDate || !newTime) return;
+
+            try {
+                window.notify('{{ __('channels.rescheduling') }}', 'info');
+
+                const response = await fetch(`/api/social/posts/${id}/reschedule`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        scheduled_date: newDate,
+                        scheduled_time: newTime
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    window.notify('{{ __('channels.reschedule_success') }}', 'success');
+                    await this.fetchData();
+                } else {
+                    throw new Error(result.message || '{{ __('channels.reschedule_failed') }}');
+                }
+            } catch (error) {
+                console.error('Error rescheduling post:', error);
+                window.notify(error.message || '{{ __('channels.reschedule_failed') }}', 'error');
+            }
         },
 
         async deletePost(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
+            if (!confirm('{{ __('channels.confirm_delete_post') }}')) return;
 
             try {
-                // TODO: Implement actual API call
-                // DELETE /api/social/posts/{id}
-                // const response = await fetch(`/api/social/posts/${id}`, {
-                //     method: 'DELETE',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
-                //
-                // if (!response.ok) throw new Error('Failed to delete');
+                window.notify('{{ __('channels.deleting_post') }}', 'info');
 
-                window.notify('جاري حذف المنشور...', 'info');
+                const response = await fetch(`/api/social/posts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                // Remove from local array for now
-                this.scheduledPosts = this.scheduledPosts.filter(p => p.id !== id);
+                const result = await response.json();
 
-                window.notify('تم حذف المنشور', 'success');
+                if (response.ok && result.success) {
+                    // Remove from local array
+                    this.scheduledPosts = this.scheduledPosts.filter(p => p.id !== id);
+                    window.notify('{{ __('channels.delete_success') }}', 'success');
+                } else {
+                    throw new Error(result.message || '{{ __('channels.delete_failed') }}');
+                }
             } catch (error) {
                 console.error('Error deleting post:', error);
-                window.notify('فشل حذف المنشور', 'error');
+                window.notify(error.message || '{{ __('channels.delete_failed') }}', 'error');
             }
         },
 
-        editDraft(id) {
-            // TODO: Load draft data and populate composer
-            // GET /api/social/posts/drafts/{id}
-            window.notify('تحرير المسودة #' + id, 'info');
+        async editDraft(id) {
+            try {
+                window.notify('{{ __('channels.loading_draft') }}', 'info');
+
+                const response = await fetch(`/api/social/posts/drafts/${id}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const draft = result.data;
+                    this.composerForm = {
+                        id: draft.id,
+                        isDraft: true,
+                        platforms: draft.platforms || [],
+                        content: draft.content || '',
+                        charCount: (draft.content || '').length,
+                        scheduleDate: '',
+                        scheduleTime: ''
+                    };
+                    this.showComposerModal = true;
+                } else {
+                    throw new Error(result.message || '{{ __('channels.load_draft_failed') }}');
+                }
+            } catch (error) {
+                console.error('Error loading draft:', error);
+                window.notify(error.message || '{{ __('channels.load_draft_failed') }}', 'error');
+            }
         },
 
         async deleteDraft(id) {
-            if (!confirm('هل أنت متأكد من حذف هذه المسودة؟')) return;
+            if (!confirm('{{ __('channels.confirm_delete_draft') }}')) return;
 
             try {
-                // TODO: Implement actual API call
-                // DELETE /api/social/posts/drafts/{id}
+                window.notify('{{ __('channels.deleting_draft') }}', 'info');
 
-                window.notify('جاري حذف المسودة...', 'info');
+                const response = await fetch(`/api/social/posts/drafts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                // Remove from local array for now
-                this.drafts = this.drafts.filter(d => d.id !== id);
+                const result = await response.json();
 
-                window.notify('تم حذف المسودة', 'success');
+                if (response.ok && result.success) {
+                    this.drafts = this.drafts.filter(d => d.id !== id);
+                    window.notify('{{ __('channels.draft_deleted') }}', 'success');
+                } else {
+                    throw new Error(result.message || '{{ __('channels.draft_delete_failed') }}');
+                }
             } catch (error) {
                 console.error('Error deleting draft:', error);
-                window.notify('فشل حذف المسودة', 'error');
+                window.notify(error.message || '{{ __('channels.draft_delete_failed') }}', 'error');
             }
         },
 
-        viewAnalytics(id) {
-            // TODO: Navigate to analytics page or open modal
-            // GET /api/social/posts/{id}/analytics
-            window.notify('عرض إحصائيات المنشور #' + id, 'info');
+        async viewAnalytics(id) {
+            try {
+                window.notify('{{ __('channels.loading_analytics') }}', 'info');
+
+                const response = await fetch(`/api/social/posts/${id}/analytics`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Display analytics in modal or navigate to analytics page
+                    this.postAnalytics = result.data;
+                    this.showAnalyticsModal = true;
+                } else {
+                    throw new Error(result.message || '{{ __('channels.analytics_load_failed') }}');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                window.notify(error.message || '{{ __('channels.analytics_load_failed') }}', 'error');
+            }
         },
 
         selectDate(date) {
@@ -695,68 +808,90 @@ function socialSchedulerManager() {
 
         async schedulePost() {
             if (this.composerForm.platforms.length === 0) {
-                window.notify('الرجاء اختيار منصة واحدة على الأقل', 'warning');
+                window.notify('{{ __('channels.select_platform') }}', 'warning');
                 return;
             }
             if (!this.composerForm.content) {
-                window.notify('الرجاء إدخال محتوى المنشور', 'warning');
+                window.notify('{{ __('channels.enter_content') }}', 'warning');
                 return;
             }
 
             try {
-                window.notify('جاري جدولة المنشور...', 'info');
+                window.notify('{{ __('channels.scheduling_post') }}', 'info');
 
-                // TODO: Implement actual API call with CSRF token
-                // const response = await fetch('/api/social/posts/schedule', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     },
-                //     body: JSON.stringify({
-                //         platforms: this.composerForm.platforms,
-                //         content: this.composerForm.content,
-                //         scheduled_date: this.composerForm.scheduleDate,
-                //         scheduled_time: this.composerForm.scheduleTime,
-                //         media: [] // Add media attachments if available
-                //     })
-                // });
-                //
-                // if (!response.ok) {
-                //     const error = await response.json();
-                //     throw new Error(error.message || 'Failed to schedule post');
-                // }
+                const endpoint = this.composerForm.id
+                    ? `/api/social/posts/${this.composerForm.id}`
+                    : '/api/social/posts/schedule';
+                const method = this.composerForm.id ? 'PUT' : 'POST';
 
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        platforms: this.composerForm.platforms,
+                        content: this.composerForm.content,
+                        scheduled_date: this.composerForm.scheduleDate,
+                        scheduled_time: this.composerForm.scheduleTime,
+                        media: this.composerForm.media || []
+                    })
+                });
 
-                window.notify('تم جدولة المنشور بنجاح!', 'success');
-                this.showComposerModal = false;
-                this.composerForm = { platforms: [], content: '', charCount: 0, scheduleDate: '', scheduleTime: '' };
-                await this.fetchData();
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    window.notify('{{ __('channels.schedule_success') }}', 'success');
+                    this.showComposerModal = false;
+                    this.composerForm = { platforms: [], content: '', charCount: 0, scheduleDate: '', scheduleTime: '' };
+                    await this.fetchData();
+                } else {
+                    throw new Error(result.message || '{{ __('channels.schedule_failed') }}');
+                }
             } catch (error) {
                 console.error('Error scheduling post:', error);
-                window.notify(error.message || 'فشل جدولة المنشور', 'error');
+                window.notify(error.message || '{{ __('channels.schedule_failed') }}', 'error');
             }
         },
 
         async saveDraft() {
             try {
-                window.notify('جاري حفظ المسودة...', 'info');
+                window.notify('{{ __('channels.saving_draft') }}', 'info');
 
-                // TODO: Implement actual API call
-                // POST /api/social/posts/drafts with same data structure as schedule
-                // but without scheduled_date and scheduled_time
+                const endpoint = this.composerForm.id && this.composerForm.isDraft
+                    ? `/api/social/posts/drafts/${this.composerForm.id}`
+                    : '/api/social/posts/save-draft';
+                const method = this.composerForm.id && this.composerForm.isDraft ? 'PUT' : 'POST';
 
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        platforms: this.composerForm.platforms,
+                        content: this.composerForm.content,
+                        media: this.composerForm.media || []
+                    })
+                });
 
-                window.notify('تم حفظ المسودة', 'success');
-                this.showComposerModal = false;
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    window.notify('{{ __('channels.draft_saved') }}', 'success');
+                    this.showComposerModal = false;
+                    this.composerForm = { platforms: [], content: '', charCount: 0, scheduleDate: '', scheduleTime: '' };
+                    await this.fetchData();
+                } else {
+                    throw new Error(result.message || '{{ __('channels.draft_save_failed') }}');
+                }
             } catch (error) {
                 console.error('Error saving draft:', error);
-                window.notify('فشل حفظ المسودة', 'error');
+                window.notify(error.message || '{{ __('channels.draft_save_failed') }}', 'error');
             }
         },
 

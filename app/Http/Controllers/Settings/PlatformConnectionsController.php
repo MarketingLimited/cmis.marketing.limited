@@ -8,6 +8,7 @@ use App\Jobs\SyncMetaIntegrationRecords;
 use App\Models\Integration;
 use App\Models\Platform\PlatformConnection;
 use App\Models\Social\IntegrationQueueSettings;
+use App\Services\OAuth\TumblrOAuthService;
 use App\Services\Profile\ProfileSoftDeleteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -4969,10 +4970,20 @@ class PlatformConnectionsController extends Controller
      */
     public function authorizeTumblr(Request $request, string $org)
     {
-        // TODO: Implement OAuth 1.0a flow for Tumblr
-        // This requires additional OAuth 1.0a library as it uses a different flow than OAuth 2.0
-        return redirect()->route('orgs.settings.platform-connections.index', $org)
-            ->with('error', __('settings.tumblr_oauth_integration_coming_soon_oauth_10a_req'));
+        try {
+            $tumblrOAuth = new TumblrOAuthService();
+            $result = $tumblrOAuth->getAuthorizationUrl($org);
+
+            return redirect($result['url']);
+        } catch (\Exception $e) {
+            Log::error('Tumblr OAuth initiation failed', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('orgs.settings.platform-connections.index', $org)
+                ->with('error', __('settings.tumblr_oauth_initiation_failed') . ': ' . $e->getMessage());
+        }
     }
 
     /**
@@ -4980,9 +4991,69 @@ class PlatformConnectionsController extends Controller
      */
     public function callbackTumblr(Request $request)
     {
-        // TODO: Implement OAuth 1.0a callback for Tumblr
-        return redirect()->route('orgs.settings.platform-connections.index', 'default')
-            ->with('error', __('settings.tumblr_oauth_callback_not_yet_implemented'));
+        $oauthToken = $request->get('oauth_token');
+        $oauthVerifier = $request->get('oauth_verifier');
+
+        if (!$oauthToken || !$oauthVerifier) {
+            Log::warning('Tumblr OAuth callback missing parameters', [
+                'has_token' => !empty($oauthToken),
+                'has_verifier' => !empty($oauthVerifier),
+            ]);
+
+            return redirect()->route('orgs.settings.platform-connections.index', 'default')
+                ->with('error', __('settings.tumblr_oauth_callback_missing_params'));
+        }
+
+        try {
+            $tumblrOAuth = new TumblrOAuthService();
+            $tokens = $tumblrOAuth->getAccessToken($oauthToken, $oauthVerifier);
+
+            $orgId = $tokens['org_id'];
+            $accessToken = $tokens['access_token'];
+            $accessTokenSecret = $tokens['access_token_secret'];
+
+            // Get user info
+            $userInfo = $tumblrOAuth->getUserInfo($accessToken, $accessTokenSecret);
+
+            // Store the connection
+            PlatformConnection::updateOrCreate(
+                [
+                    'org_id' => $orgId,
+                    'platform' => 'tumblr',
+                    'platform_account_id' => $userInfo['name'] ?? $accessToken,
+                ],
+                [
+                    'platform_account_name' => $userInfo['name'] ?? 'Tumblr User',
+                    'access_token' => encrypt($accessToken),
+                    'refresh_token' => encrypt($accessTokenSecret), // Store secret as refresh_token
+                    'token_expires_at' => null, // OAuth 1.0a tokens don't expire
+                    'scopes' => ['read', 'write'],
+                    'status' => 'active',
+                    'metadata' => [
+                        'user_info' => $userInfo,
+                        'blogs' => $userInfo['blogs'] ?? [],
+                        'oauth_version' => '1.0a',
+                        'connected_at' => now()->toISOString(),
+                    ],
+                ]
+            );
+
+            Log::info('Tumblr account connected successfully', [
+                'org_id' => $orgId,
+                'username' => $userInfo['name'] ?? 'unknown',
+            ]);
+
+            return redirect()->route('orgs.settings.platform-connections.index', $orgId)
+                ->with('success', __('settings.tumblr_account_connected_successfully'));
+
+        } catch (\Exception $e) {
+            Log::error('Tumblr OAuth callback failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('orgs.settings.platform-connections.index', 'default')
+                ->with('error', __('settings.tumblr_oauth_callback_failed') . ': ' . $e->getMessage());
+        }
     }
 
     /**

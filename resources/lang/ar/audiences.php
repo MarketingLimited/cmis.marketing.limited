@@ -64,6 +64,9 @@ return [
     'updated_successfully' => 'تم تحديث الجمهور بنجاح',
     'deleted_successfully' => 'تم حذف الجمهور بنجاح',
     'sync_started' => 'بدأت المزامنة مع :platform',
+    'sync_completed' => 'تمت مزامنة :name إلى :platform بنجاح',
+    'sync_failed' => 'فشلت المزامنة مع :platform: :error',
+    'platform_not_connected' => ':platform غير متصل. يرجى ربط حسابك الإعلاني أولاً.',
 
     // Create Form
     'audience_details' => 'تفاصيل الجمهور',

@@ -102,8 +102,9 @@ return [
     'catalog_updated' => 'تم تحديث الكتالوج بنجاح',
     'catalog_deleted' => 'تم حذف الكتالوج بنجاح',
     'sync_started' => 'بدأت مزامنة الكتالوج',
-    'sync_completed' => 'اكتملت مزامنة الكتالوج: تم تحديث :count منتج',
+    'sync_completed' => 'تمت مزامنة :count منتج إلى :platform',
     'sync_error' => 'فشلت مزامنة الكتالوج: :error',
+    'sync_failed' => 'فشلت المزامنة إلى :platform: :error',
     'import_success' => 'تم استيراد :count منتج بنجاح',
     'confirm_delete' => 'هل أنت متأكد من حذف هذا الكتالوج؟',
 

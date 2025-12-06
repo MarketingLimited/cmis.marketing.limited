@@ -25,13 +25,196 @@ class MediaLibraryController extends Controller
      */
     public function index(Request $request, string $org)
     {
-        // TODO: Implement media library functionality
-        // For now, return empty array to prevent errors
-        return $this->success([
-            'files' => [],
-            'total' => 0,
-            'message' => 'Media library feature coming soon'
-        ], 'Media library retrieved successfully');
+        try {
+            // Set RLS context for multi-tenancy
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
+
+            // Build query with filters
+            $query = MediaAsset::where('org_id', $org)
+                ->whereNull('deleted_at');
+
+            // Filter by media type if specified
+            if ($request->has('type') && in_array($request->type, ['image', 'video'])) {
+                $query->where('media_type', $request->type);
+            }
+
+            // Filter by analysis status if specified
+            if ($request->has('analyzed')) {
+                if ($request->analyzed === 'true' || $request->analyzed === '1') {
+                    $query->where('is_analyzed', true);
+                } elseif ($request->analyzed === 'false' || $request->analyzed === '0') {
+                    $query->where('is_analyzed', false);
+                }
+            }
+
+            // Search by filename
+            if ($request->has('search') && $request->search) {
+                $query->where('file_name', 'ilike', '%' . $request->search . '%');
+            }
+
+            // Order by most recent first
+            $query->orderBy('created_at', 'desc');
+
+            // Paginate results
+            $perPage = min((int) ($request->per_page ?? 24), 100);
+            $assets = $query->paginate($perPage);
+
+            // Transform for frontend consumption
+            $files = $assets->map(function ($asset) {
+                // Generate thumbnail URL for images
+                $thumbnailUrl = $asset->original_url;
+                if ($asset->media_type === 'video' && !empty($asset->metadata['thumbnail_url'])) {
+                    $thumbnailUrl = $asset->metadata['thumbnail_url'];
+                }
+
+                return [
+                    'id' => $asset->asset_id,
+                    'url' => $asset->original_url,
+                    'thumbnail_url' => $thumbnailUrl,
+                    'type' => $asset->media_type,
+                    'file_name' => $asset->file_name,
+                    'file_size' => $asset->file_size,
+                    'file_size_human' => $asset->getFileSizeHuman(),
+                    'width' => $asset->width,
+                    'height' => $asset->height,
+                    'aspect_ratio' => $asset->aspect_ratio,
+                    'aspect_ratio_label' => $asset->getAspectRatioLabel(),
+                    'duration_seconds' => $asset->duration_seconds,
+                    'is_analyzed' => $asset->is_analyzed,
+                    'analysis_status' => $asset->analysis_status,
+                    'created_at' => $asset->created_at?->toIso8601String(),
+                    'post_id' => $asset->post_id,
+                ];
+            });
+
+            return $this->success([
+                'files' => $files,
+                'total' => $assets->total(),
+                'per_page' => $assets->perPage(),
+                'current_page' => $assets->currentPage(),
+                'last_page' => $assets->lastPage(),
+            ], 'Media library retrieved successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch media library', [
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->serverError('Failed to fetch media library: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete a media asset
+     *
+     * @param Request $request
+     * @param string $org
+     * @param string $assetId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(Request $request, string $org, string $assetId)
+    {
+        try {
+            // Set RLS context for multi-tenancy
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
+
+            $asset = MediaAsset::where('org_id', $org)
+                ->where('asset_id', $assetId)
+                ->first();
+
+            if (!$asset) {
+                return $this->notFound('Media asset not found');
+            }
+
+            // Delete from storage if exists
+            if ($asset->storage_path && Storage::disk('public')->exists($asset->storage_path)) {
+                Storage::disk('public')->delete($asset->storage_path);
+            }
+
+            // Soft delete the record
+            $asset->delete();
+
+            Log::info('Media asset deleted', [
+                'asset_id' => $assetId,
+                'org_id' => $org,
+            ]);
+
+            return $this->deleted('Media asset deleted successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to delete media asset', [
+                'asset_id' => $assetId,
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->serverError('Failed to delete media asset: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get a single media asset details
+     *
+     * @param Request $request
+     * @param string $org
+     * @param string $assetId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Request $request, string $org, string $assetId)
+    {
+        try {
+            // Set RLS context for multi-tenancy
+            $userId = auth()->id();
+            DB::statement("SELECT cmis.init_transaction_context(?, ?)", [$userId, $org]);
+
+            $asset = MediaAsset::where('org_id', $org)
+                ->where('asset_id', $assetId)
+                ->first();
+
+            if (!$asset) {
+                return $this->notFound('Media asset not found');
+            }
+
+            return $this->success([
+                'id' => $asset->asset_id,
+                'url' => $asset->original_url,
+                'storage_path' => $asset->storage_path,
+                'type' => $asset->media_type,
+                'file_name' => $asset->file_name,
+                'file_size' => $asset->file_size,
+                'file_size_human' => $asset->getFileSizeHuman(),
+                'mime_type' => $asset->mime_type,
+                'width' => $asset->width,
+                'height' => $asset->height,
+                'aspect_ratio' => $asset->aspect_ratio,
+                'aspect_ratio_label' => $asset->getAspectRatioLabel(),
+                'duration_seconds' => $asset->duration_seconds,
+                'is_analyzed' => $asset->is_analyzed,
+                'analysis_status' => $asset->analysis_status,
+                'analyzed_at' => $asset->analyzed_at?->toIso8601String(),
+                'visual_caption' => $asset->visual_caption,
+                'color_palette' => $asset->color_palette,
+                'typography' => $asset->typography,
+                'detected_objects' => $asset->detected_objects,
+                'extracted_text' => $asset->extracted_text,
+                'created_at' => $asset->created_at?->toIso8601String(),
+                'updated_at' => $asset->updated_at?->toIso8601String(),
+                'post_id' => $asset->post_id,
+            ], 'Media asset retrieved successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch media asset', [
+                'asset_id' => $assetId,
+                'org_id' => $org,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->serverError('Failed to fetch media asset: ' . $e->getMessage());
+        }
     }
 
     /**

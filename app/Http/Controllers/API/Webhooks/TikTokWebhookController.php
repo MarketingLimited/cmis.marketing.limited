@@ -5,8 +5,10 @@ namespace App\Http\Controllers\API\Webhooks;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Models\Core\Integration;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -19,6 +21,13 @@ use Illuminate\Support\Facades\Log;
 class TikTokWebhookController extends Controller
 {
     use ApiResponse;
+
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
 
     /**
      * Handle incoming TikTok webhook
@@ -165,21 +174,179 @@ class TikTokWebhookController extends Controller
     protected function handleBudgetAlert(array $payload): array
     {
         $campaignId = $payload['campaign_id'] ?? null;
-        $budgetRemaining = $payload['budget_remaining'] ?? null;
-        $budgetThreshold = $payload['threshold_percentage'] ?? null;
+        $advertiserId = $payload['advertiser_id'] ?? null;
+        $budgetRemaining = $payload['budget_remaining'] ?? 0;
+        $budgetTotal = $payload['budget_total'] ?? 0;
+        $budgetThreshold = $payload['threshold_percentage'] ?? 20;
+        $alertLevel = $payload['alert_level'] ?? 'warning';
 
         Log::warning('TikTok budget alert received', [
             'campaign_id' => $campaignId,
             'budget_remaining' => $budgetRemaining,
+            'budget_total' => $budgetTotal,
             'threshold' => $budgetThreshold,
+            'alert_level' => $alertLevel,
         ]);
 
-        // TODO: Implement budget alert notification
-        // - Send email/SMS notification to campaign owner
-        // - Create in-app notification
-        // - Update campaign budget status
+        // Find integration by advertiser ID
+        $integration = Integration::where('platform', 'tiktok')
+            ->where('is_active', true)
+            ->whereJsonContains('metadata->advertiser_id', $advertiserId)
+            ->first();
 
-        return ['processed' => true, 'alert_type' => 'budget'];
+        if (!$integration) {
+            Log::warning('Integration not found for TikTok budget alert', [
+                'advertiser_id' => $advertiserId,
+                'campaign_id' => $campaignId,
+            ]);
+            return ['processed' => false, 'reason' => 'Integration not found'];
+        }
+
+        // Get campaign details for notification
+        $campaign = DB::table('cmis_ads.ad_campaigns')
+            ->where('platform_campaign_id', $campaignId)
+            ->where('platform', 'tiktok')
+            ->first();
+
+        $campaignName = $campaign->campaign_name ?? "Campaign {$campaignId}";
+        $remainingPercentage = $budgetTotal > 0 ? round(($budgetRemaining / $budgetTotal) * 100, 1) : 0;
+
+        // Determine priority based on remaining budget
+        $priority = match (true) {
+            $remainingPercentage <= 5 => NotificationService::PRIORITY_CRITICAL,
+            $remainingPercentage <= 15 => NotificationService::PRIORITY_HIGH,
+            $remainingPercentage <= 30 => NotificationService::PRIORITY_MEDIUM,
+            default => NotificationService::PRIORITY_LOW,
+        };
+
+        // Determine notification channels based on severity
+        $channels = match (true) {
+            $remainingPercentage <= 10 => ['in_app', 'email', 'slack'],
+            $remainingPercentage <= 25 => ['in_app', 'email'],
+            default => ['in_app'],
+        };
+
+        // Get users to notify (campaign owner + admins)
+        $userIds = $this->getNotifyUserIds($integration, $campaign);
+
+        // Send notifications
+        foreach ($userIds as $userId) {
+            $this->notificationService->notify(
+                $userId,
+                NotificationService::TYPE_BUDGET_ALERT,
+                __('notifications.budget_alert_title', [
+                    'campaign' => $campaignName,
+                    'platform' => 'TikTok',
+                ]),
+                __('notifications.budget_alert_message', [
+                    'campaign' => $campaignName,
+                    'remaining' => $remainingPercentage,
+                    'amount' => number_format($budgetRemaining, 2),
+                ]),
+                [
+                    'org_id' => $integration->org_id,
+                    'priority' => $priority,
+                    'category' => 'budget',
+                    'related_entity_type' => 'campaign',
+                    'related_entity_id' => $campaign->id ?? $campaignId,
+                    'data' => [
+                        'campaign_id' => $campaignId,
+                        'campaign_name' => $campaignName,
+                        'budget_remaining' => $budgetRemaining,
+                        'budget_total' => $budgetTotal,
+                        'remaining_percentage' => $remainingPercentage,
+                        'platform' => 'tiktok',
+                    ],
+                    'action_url' => route('campaigns.show', ['id' => $campaign->id ?? $campaignId], false),
+                    'channels' => $channels,
+                ]
+            );
+        }
+
+        // Create budget alert record
+        DB::table('cmis.alerts')->insert([
+            'id' => \Illuminate\Support\Str::uuid(),
+            'org_id' => $integration->org_id,
+            'type' => 'budget_alert',
+            'severity' => $remainingPercentage <= 10 ? 'critical' : ($remainingPercentage <= 25 ? 'warning' : 'info'),
+            'title' => __('notifications.budget_alert_title', [
+                'campaign' => $campaignName,
+                'platform' => 'TikTok',
+            ]),
+            'message' => __('notifications.budget_alert_message', [
+                'campaign' => $campaignName,
+                'remaining' => $remainingPercentage,
+                'amount' => number_format($budgetRemaining, 2),
+            ]),
+            'related_entity_type' => 'campaign',
+            'related_entity_id' => $campaign->id ?? $campaignId,
+            'metadata' => json_encode([
+                'campaign_id' => $campaignId,
+                'budget_remaining' => $budgetRemaining,
+                'budget_total' => $budgetTotal,
+                'remaining_percentage' => $remainingPercentage,
+                'threshold' => $budgetThreshold,
+            ]),
+            'is_read' => false,
+            'created_at' => now(),
+        ]);
+
+        // Update campaign budget status
+        if ($campaign) {
+            DB::table('cmis_ads.ad_campaigns')
+                ->where('id', $campaign->id)
+                ->update([
+                    'budget_status' => $remainingPercentage <= 10 ? 'depleted' : ($remainingPercentage <= 25 ? 'low' : 'normal'),
+                    'budget_alert_sent_at' => now(),
+                    'updated_at' => now(),
+                ]);
+        }
+
+        // Clear budget-related caches
+        Cache::forget("campaign:budget:{$campaignId}");
+        Cache::forget("dashboard:org:{$integration->org_id}");
+
+        Log::info('TikTok budget alert processed and notifications sent', [
+            'campaign_id' => $campaignId,
+            'remaining_percentage' => $remainingPercentage,
+            'users_notified' => count($userIds),
+        ]);
+
+        return [
+            'processed' => true,
+            'alert_type' => 'budget',
+            'campaign_id' => $campaignId,
+            'remaining_percentage' => $remainingPercentage,
+            'notifications_sent' => count($userIds),
+        ];
+    }
+
+    /**
+     * Get user IDs to notify for budget alerts
+     */
+    protected function getNotifyUserIds(Integration $integration, ?object $campaign): array
+    {
+        $userIds = [];
+
+        // Campaign owner
+        if ($campaign && !empty($campaign->created_by)) {
+            $userIds[] = $campaign->created_by;
+        }
+
+        // Integration owner
+        if (!empty($integration->created_by)) {
+            $userIds[] = $integration->created_by;
+        }
+
+        // Org admins for critical alerts
+        $admins = DB::table('cmis.users')
+            ->where('org_id', $integration->org_id)
+            ->where('is_super_admin', true)
+            ->limit(3)
+            ->pluck('id')
+            ->toArray();
+
+        return array_unique(array_merge($userIds, $admins));
     }
 
     /**

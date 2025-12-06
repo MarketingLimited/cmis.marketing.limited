@@ -284,17 +284,58 @@ class MarketplaceService
      */
     public function hasPremiumAccess(string $orgId): bool
     {
-        // TODO: Implement actual subscription check
-        // For now, return true to allow all apps during development
         $org = Org::find($orgId);
 
         if (!$org) {
             return false;
         }
 
-        // Check for a subscription or premium flag
-        // This would integrate with a billing/subscription system
-        return $org->is_premium ?? true;
+        // Get the active subscription
+        $subscription = $org->subscription;
+
+        if (!$subscription) {
+            // No subscription - check if org has is_premium flag (legacy support)
+            return $org->is_premium ?? false;
+        }
+
+        // Check if subscription is valid (active or on trial)
+        if (!$subscription->isValid()) {
+            return false;
+        }
+
+        // Get the plan and check for premium access
+        $plan = $subscription->plan;
+
+        if (!$plan) {
+            return false;
+        }
+
+        // Check various indicators of premium access:
+        // 1. Plan has 'premium' or 'premium_apps' feature enabled
+        if ($plan->hasFeature('premium') || $plan->hasFeature('premium_apps')) {
+            return true;
+        }
+
+        // 2. Plan code indicates premium level (professional, enterprise, business)
+        $premiumPlanCodes = ['premium', 'professional', 'enterprise', 'business', 'unlimited'];
+        if (in_array(strtolower($plan->code), $premiumPlanCodes)) {
+            return true;
+        }
+
+        // 3. Plan name contains premium indicators
+        $planNameLower = strtolower($plan->name);
+        foreach ($premiumPlanCodes as $indicator) {
+            if (str_contains($planNameLower, $indicator)) {
+                return true;
+            }
+        }
+
+        // 4. Check if plan price is above free tier (paid plans get premium access)
+        if ($plan->price_monthly > 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

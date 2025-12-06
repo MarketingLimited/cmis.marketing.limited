@@ -592,6 +592,367 @@ class MetaConnector extends AbstractConnector
         return collect($response['data'] ?? []);
     }
 
+    /**
+     * Create an ad creative for Meta ads.
+     *
+     * @param Integration $integration
+     * @param array $creativeData Creative data including:
+     *   - name: Creative name
+     *   - object_story_spec: Story specification (page_id, link_data, etc.)
+     *   - asset_feed_spec: For dynamic creative ads
+     *   - degrees_of_freedom_spec: For Advantage+ creative
+     * @return array Result with creative_id
+     */
+    public function createAdCreative($integration, array $creativeData): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for creating ad creative');
+        }
+
+        $payload = [
+            'name' => $creativeData['name'],
+        ];
+
+        // Handle different creative types
+        if (!empty($creativeData['object_story_spec'])) {
+            $payload['object_story_spec'] = json_encode($creativeData['object_story_spec']);
+        }
+
+        if (!empty($creativeData['asset_feed_spec'])) {
+            $payload['asset_feed_spec'] = json_encode($creativeData['asset_feed_spec']);
+        }
+
+        if (!empty($creativeData['degrees_of_freedom_spec'])) {
+            $payload['degrees_of_freedom_spec'] = json_encode($creativeData['degrees_of_freedom_spec']);
+        }
+
+        // Handle image/video creative
+        if (!empty($creativeData['image_hash'])) {
+            $payload['image_hash'] = $creativeData['image_hash'];
+        }
+
+        if (!empty($creativeData['video_id'])) {
+            $payload['video_id'] = $creativeData['video_id'];
+        }
+
+        // Link specification for link ads
+        if (!empty($creativeData['link_url'])) {
+            $linkData = [
+                'link' => $creativeData['link_url'],
+                'message' => $creativeData['message'] ?? '',
+            ];
+
+            if (!empty($creativeData['image_hash'])) {
+                $linkData['image_hash'] = $creativeData['image_hash'];
+            }
+
+            if (!empty($creativeData['call_to_action'])) {
+                $linkData['call_to_action'] = $creativeData['call_to_action'];
+            }
+
+            $payload['object_story_spec'] = json_encode([
+                'page_id' => $creativeData['page_id'] ?? $integration->settings['page_id'],
+                'link_data' => $linkData,
+            ]);
+        }
+
+        $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/adcreatives", $payload);
+
+        return [
+            'success' => true,
+            'creative_id' => $response['id'],
+        ];
+    }
+
+    /**
+     * Create a lookalike audience on Meta.
+     *
+     * @param Integration $integration
+     * @param array $audienceData Audience data including:
+     *   - name: Audience name
+     *   - source_audience_id: Custom audience ID to base lookalike on
+     *   - country: Target country code (e.g., 'US')
+     *   - ratio: Lookalike ratio 0.01 to 0.20 (1% to 20%)
+     *   - optimization_goal: NONE, REACH, or SIMILARITY
+     * @return array Result with audience_id
+     */
+    public function createLookalikeAudience($integration, array $audienceData): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for creating lookalike audience');
+        }
+
+        if (empty($audienceData['source_audience_id'])) {
+            throw new \Exception('Source audience ID is required for lookalike audience');
+        }
+
+        $payload = [
+            'name' => $audienceData['name'],
+            'subtype' => 'LOOKALIKE',
+            'origin_audience_id' => $audienceData['source_audience_id'],
+            'lookalike_spec' => json_encode([
+                'type' => 'similarity',
+                'country' => $audienceData['country'] ?? 'US',
+                'ratio' => $audienceData['ratio'] ?? 0.01, // 1% default
+            ]),
+        ];
+
+        // Optional optimization goal
+        if (!empty($audienceData['optimization_goal'])) {
+            $lookalikeSpec = json_decode($payload['lookalike_spec'], true);
+            $lookalikeSpec['optimization_goal'] = $audienceData['optimization_goal'];
+            $payload['lookalike_spec'] = json_encode($lookalikeSpec);
+        }
+
+        $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/customaudiences", $payload);
+
+        return [
+            'success' => true,
+            'audience_id' => $response['id'],
+        ];
+    }
+
+    /**
+     * Create a custom audience on Meta.
+     *
+     * @param Integration $integration
+     * @param array $audienceData Audience data including:
+     *   - name: Audience name
+     *   - description: Audience description
+     *   - subtype: CUSTOM, WEBSITE, APP, OFFLINE_CONVERSION, etc.
+     *   - customer_file_source: USER_PROVIDED_ONLY, BOTH_USER_AND_PARTNER_PROVIDED
+     * @return array Result with audience_id
+     */
+    public function createCustomAudience($integration, array $audienceData): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for creating custom audience');
+        }
+
+        $payload = [
+            'name' => $audienceData['name'],
+            'subtype' => $audienceData['subtype'] ?? 'CUSTOM',
+            'description' => $audienceData['description'] ?? '',
+            'customer_file_source' => $audienceData['customer_file_source'] ?? 'USER_PROVIDED_ONLY',
+        ];
+
+        // For website custom audiences
+        if (($audienceData['subtype'] ?? '') === 'WEBSITE') {
+            $payload['rule'] = json_encode($audienceData['rule'] ?? [
+                'inclusions' => [
+                    'operator' => 'or',
+                    'rules' => [
+                        [
+                            'event_sources' => [['id' => $audienceData['pixel_id']]],
+                            'retention_seconds' => $audienceData['retention_days'] ?? 30 * 86400,
+                        ],
+                    ],
+                ],
+            ]);
+        }
+
+        $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/customaudiences", $payload);
+
+        return [
+            'success' => true,
+            'audience_id' => $response['id'],
+        ];
+    }
+
+    /**
+     * Create an ad set on Meta.
+     *
+     * @param Integration $integration
+     * @param array $adSetData Ad set data including:
+     *   - name: Ad set name
+     *   - campaign_id: Parent campaign ID
+     *   - daily_budget or lifetime_budget: Budget in cents
+     *   - billing_event: IMPRESSIONS, LINK_CLICKS, etc.
+     *   - optimization_goal: LINK_CLICKS, REACH, IMPRESSIONS, CONVERSIONS, etc.
+     *   - targeting: Targeting specification
+     *   - start_time, end_time: Schedule (optional)
+     *   - bid_amount: Bid cap in cents (optional)
+     *   - bid_strategy: LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, COST_CAP
+     * @return array Result with adset_id
+     */
+    public function createAdSet($integration, array $adSetData): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for creating ad set');
+        }
+
+        if (empty($adSetData['campaign_id'])) {
+            throw new \Exception('Campaign ID is required for creating ad set');
+        }
+
+        $payload = [
+            'name' => $adSetData['name'],
+            'campaign_id' => $adSetData['campaign_id'],
+            'status' => $adSetData['status'] ?? 'PAUSED',
+            'billing_event' => $adSetData['billing_event'] ?? 'IMPRESSIONS',
+            'optimization_goal' => $adSetData['optimization_goal'] ?? 'LINK_CLICKS',
+        ];
+
+        // Budget - either daily or lifetime
+        if (!empty($adSetData['daily_budget'])) {
+            $payload['daily_budget'] = $adSetData['daily_budget'];
+        } elseif (!empty($adSetData['lifetime_budget'])) {
+            $payload['lifetime_budget'] = $adSetData['lifetime_budget'];
+        }
+
+        // Targeting (required)
+        if (!empty($adSetData['targeting'])) {
+            $payload['targeting'] = is_string($adSetData['targeting'])
+                ? $adSetData['targeting']
+                : json_encode($adSetData['targeting']);
+        } else {
+            // Default targeting - reach everyone in US
+            $payload['targeting'] = json_encode([
+                'geo_locations' => [
+                    'countries' => ['US'],
+                ],
+            ]);
+        }
+
+        // Optional: Schedule
+        if (!empty($adSetData['start_time'])) {
+            $payload['start_time'] = $adSetData['start_time'];
+        }
+        if (!empty($adSetData['end_time'])) {
+            $payload['end_time'] = $adSetData['end_time'];
+        }
+
+        // Optional: Bid settings
+        if (!empty($adSetData['bid_amount'])) {
+            $payload['bid_amount'] = $adSetData['bid_amount'];
+        }
+        if (!empty($adSetData['bid_strategy'])) {
+            $payload['bid_strategy'] = $adSetData['bid_strategy'];
+        }
+
+        // Optional: Promoted object (for conversion campaigns)
+        if (!empty($adSetData['promoted_object'])) {
+            $payload['promoted_object'] = is_string($adSetData['promoted_object'])
+                ? $adSetData['promoted_object']
+                : json_encode($adSetData['promoted_object']);
+        }
+
+        // Optional: Attribution spec
+        if (!empty($adSetData['attribution_spec'])) {
+            $payload['attribution_spec'] = is_string($adSetData['attribution_spec'])
+                ? $adSetData['attribution_spec']
+                : json_encode($adSetData['attribution_spec']);
+        }
+
+        $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/adsets", $payload);
+
+        return [
+            'success' => true,
+            'adset_id' => $response['id'],
+        ];
+    }
+
+    /**
+     * Create an ad (links creative to ad set).
+     *
+     * @param Integration $integration
+     * @param array $adData Ad data including:
+     *   - name: Ad name
+     *   - adset_id: Ad set ID
+     *   - creative_id: Creative ID
+     *   - status: PAUSED, ACTIVE
+     * @return array Result with ad_id
+     */
+    public function createAd($integration, array $adData): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for creating ad');
+        }
+
+        if (empty($adData['adset_id']) || empty($adData['creative_id'])) {
+            throw new \Exception('Ad set ID and Creative ID are required for creating ad');
+        }
+
+        $payload = [
+            'name' => $adData['name'],
+            'adset_id' => $adData['adset_id'],
+            'creative' => json_encode(['creative_id' => $adData['creative_id']]),
+            'status' => $adData['status'] ?? 'PAUSED',
+        ];
+
+        // Optional: Tracking specs
+        if (!empty($adData['tracking_specs'])) {
+            $payload['tracking_specs'] = is_string($adData['tracking_specs'])
+                ? $adData['tracking_specs']
+                : json_encode($adData['tracking_specs']);
+        }
+
+        $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/ads", $payload);
+
+        return [
+            'success' => true,
+            'ad_id' => $response['id'],
+        ];
+    }
+
+    /**
+     * Upload an image to the ad account for use in creatives.
+     *
+     * @param Integration $integration
+     * @param string $imagePath Path to local image file or URL
+     * @return array Result with image_hash
+     */
+    public function uploadAdImage($integration, string $imagePath): array
+    {
+        $adAccountId = $integration->settings['ad_account_id'] ?? null;
+
+        if (!$adAccountId) {
+            throw new \Exception('Ad Account ID is required for uploading ad image');
+        }
+
+        // If it's a URL, download it first
+        if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+            $tempPath = sys_get_temp_dir() . '/meta_ad_image_' . uniqid() . '.jpg';
+            file_put_contents($tempPath, file_get_contents($imagePath));
+            $imagePath = $tempPath;
+            $cleanup = true;
+        } else {
+            $cleanup = false;
+        }
+
+        try {
+            $payload = [
+                'filename' => base64_encode(file_get_contents($imagePath)),
+            ];
+
+            $response = $this->makeRequest($integration, 'POST', "/act_{$adAccountId}/adimages", $payload);
+
+            // Response contains images keyed by filename
+            $images = $response['images'] ?? [];
+            $imageData = reset($images);
+
+            return [
+                'success' => true,
+                'image_hash' => $imageData['hash'] ?? null,
+                'url' => $imageData['url'] ?? null,
+            ];
+        } finally {
+            if ($cleanup && file_exists($imagePath)) {
+                @unlink($imagePath);
+            }
+        }
+    }
+
     // ========================================
     // Helper Methods
     // ========================================

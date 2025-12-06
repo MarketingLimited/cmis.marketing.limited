@@ -48,4 +48,12 @@ return [
     'all_marked_read' => 'تم تعليم جميع الإشعارات كمقروءة',
     'deleted_success' => 'تم حذف الإشعار',
 
+    // Job Notifications
+    'historical_import_completed' => 'تم استيراد :count منشور من :platform بنجاح',
+    'historical_import_failed' => 'فشل الاستيراد التاريخي: :error',
+    'knowledge_base_ready' => 'تم بناء قاعدة المعرفة مع تحليل :count منشور',
+    'knowledge_base_failed' => 'فشل بناء قاعدة المعرفة: :error',
+    'job_completed' => 'تمت المهمة بنجاح',
+    'job_failed' => 'فشلت المهمة: :error',
+
 ];

@@ -2248,6 +2248,10 @@ Route::middleware(['auth:sanctum'])->prefix('analytics')->name('analytics.')->gr
     Route::get('/demographics', [App\Http\Controllers\API\AnalyticsController::class, 'getAudienceDemographics'])->name('demographics');
     Route::post('/export', [App\Http\Controllers\API\AnalyticsController::class, 'exportReport'])->name('export');
 
+    // File Export Endpoints (PDF/Excel)
+    Route::post('/export/pdf', [App\Http\Controllers\API\AnalyticsExportController::class, 'exportPDF'])->name('export.pdf');
+    Route::post('/export/excel', [App\Http\Controllers\API\AnalyticsExportController::class, 'exportExcel'])->name('export.excel');
+
     // User Dashboard Customization (Phase 11)
     Route::prefix('user')->name('user.')->group(function () {
         Route::get('/dashboard/{dashboard_type}/config', [App\Http\Controllers\Analytics\AdvancedAnalyticsController::class, 'getDashboardConfig'])->name('dashboard.config.get');

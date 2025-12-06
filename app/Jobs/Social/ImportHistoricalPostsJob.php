@@ -4,13 +4,14 @@ namespace App\Jobs\Social;
 
 use App\Models\Integration;
 use App\Services\Social\HistoricalContentService;
+use App\Services\NotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 /**
  * Import Historical Posts Job
@@ -66,11 +67,24 @@ class ImportHistoricalPostsJob implements ShouldQueue
                 'success_posts' => $result['success_posts'],
             ]);
 
-            // TODO: Send notification to user
-            // if ($this->userId) {
-            //     $user = User::find($this->userId);
-            //     $user->notify(new HistoricalImportCompleted($result));
-            // }
+            // Send notification to user
+            if ($this->userId) {
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyJobCompletion(
+                    $this->userId,
+                    'historical_import',
+                    [
+                        'integration_id' => $this->integrationId,
+                        'platform' => $integration->platform,
+                        'imported_count' => $result['imported_count'],
+                        'success_posts' => $result['success_posts'],
+                        'message' => __('notifications.historical_import_completed', [
+                            'count' => $result['imported_count'],
+                            'platform' => ucfirst($integration->platform),
+                        ]),
+                    ]
+                );
+            }
 
         } catch (\Exception $e) {
             Log::error('Historical import job failed', [
@@ -93,6 +107,20 @@ class ImportHistoricalPostsJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
-        // TODO: Notify user of failure
+        // Notify user of failure
+        if ($this->userId) {
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyJobFailure(
+                $this->userId,
+                'historical_import',
+                $exception->getMessage(),
+                [
+                    'integration_id' => $this->integrationId,
+                    'message' => __('notifications.historical_import_failed', [
+                        'error' => Str::limit($exception->getMessage(), 100),
+                    ]),
+                ]
+            );
+        }
     }
 }

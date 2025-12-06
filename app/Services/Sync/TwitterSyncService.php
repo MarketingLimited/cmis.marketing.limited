@@ -2,18 +2,32 @@
 
 namespace App\Services\Sync;
 
+use App\Services\Connectors\Providers\TwitterConnector;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Twitter/X Platform Sync Service
  *
  * Syncs content, metrics, and engagement data from Twitter/X API v2.
- * Note: Stub implementation - full API integration pending
+ * Uses TwitterConnector for API interactions.
  */
 class TwitterSyncService extends BasePlatformSyncService
 {
     protected $platform = 'twitter';
+    protected ?TwitterConnector $connector = null;
+
+    /**
+     * Get Twitter connector instance
+     */
+    protected function getConnector(): TwitterConnector
+    {
+        if (!$this->connector) {
+            $this->connector = app(TwitterConnector::class);
+        }
+        return $this->connector;
+    }
 
     /**
      * Sync data from Twitter/X
@@ -24,13 +38,16 @@ class TwitterSyncService extends BasePlatformSyncService
             ? Carbon::parse($options['since'])
             : Carbon::now()->subDays(config('sync.lookback_days', 7));
 
-        Log::info("Starting Twitter sync (stub)", [
+        Log::info("Starting Twitter sync", [
             'org_id' => $this->orgId,
             'integration_id' => $this->integration->integration_id,
             'since' => $since->toDateTimeString(),
         ]);
 
         try {
+            // Ensure token is valid
+            $this->ensureValidToken();
+
             $postsCount = $this->syncPosts($since);
             $metricsCount = $this->syncMetrics($since);
             $commentsCount = $this->syncComments($since);
@@ -46,7 +63,6 @@ class TwitterSyncService extends BasePlatformSyncService
                     'messages' => $messagesCount,
                 ],
                 'errors' => [],
-                'stub' => true,
             ];
 
             $this->logSync('full_sync', 'success', $result);
@@ -69,112 +85,194 @@ class TwitterSyncService extends BasePlatformSyncService
     }
 
     /**
+     * Ensure access token is valid, refresh if needed
+     */
+    protected function ensureValidToken(): void
+    {
+        if ($this->integration->token_expires_at &&
+            Carbon::parse($this->integration->token_expires_at)->isPast()) {
+            $this->refreshAccessToken();
+        }
+    }
+
+    /**
      * Sync tweets from Twitter/X
-     *
-     * Note: Stub implementation - Twitter tweets API integration pending
-     *
-     * @param Carbon $since Sync posts since this date
-     * @return int Number of posts synced
      */
     protected function syncPosts(Carbon $since): int
     {
-        Log::info("Twitter posts sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $posts = $connector->syncPosts($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
+
+            Log::info("Twitter posts synced", [
+                'count' => $posts->count(),
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return $posts->count();
+        } catch (\Exception $e) {
+            Log::warning("Twitter posts sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync metrics/analytics from Twitter/X
-     *
-     * Note: Stub implementation - Twitter analytics API integration pending
-     *
-     * @param Carbon $since Sync metrics since this date
-     * @return int Number of metric records synced
      */
     protected function syncMetrics(Carbon $since): int
     {
-        Log::info("Twitter metrics sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $metrics = $connector->getAccountMetrics($this->integration);
+
+            // Store metrics in unified_metrics table
+            if ($metrics->isNotEmpty()) {
+                DB::table('cmis.unified_metrics')->updateOrInsert(
+                    [
+                        'org_id' => $this->orgId,
+                        'platform' => 'twitter',
+                        'entity_type' => 'account',
+                        'entity_id' => $this->integration->external_account_id,
+                        'date' => now()->toDateString(),
+                    ],
+                    [
+                        'followers' => $metrics->get('followers_count', 0),
+                        'following' => $metrics->get('following_count', 0),
+                        'posts_count' => $metrics->get('tweet_count', 0),
+                        'raw_metrics' => json_encode($metrics->toArray()),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+
+            Log::info("Twitter metrics synced", [
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return 1;
+        } catch (\Exception $e) {
+            Log::warning("Twitter metrics sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync replies/mentions from Twitter/X
-     *
-     * Note: Stub implementation - Twitter replies API integration pending
-     *
-     * @param Carbon $since Sync comments since this date
-     * @return int Number of comments synced
      */
     protected function syncComments(Carbon $since): int
     {
-        Log::info("Twitter comments sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $comments = $connector->syncComments($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
+
+            return $comments->count();
+        } catch (\Exception $e) {
+            Log::warning("Twitter comments sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync direct messages from Twitter/X
-     *
-     * Note: Stub implementation - Twitter DMs API integration pending
-     *
-     * @param Carbon $since Sync messages since this date
-     * @return int Number of messages synced
      */
     protected function syncMessages(Carbon $since): int
     {
-        Log::info("Twitter messages sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
-    }
+        try {
+            $connector = $this->getConnector();
+            $messages = $connector->syncMessages($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
 
-    /**
-     * Get Twitter API client
-     *
-     * Note: Stub implementation - throws exception
-     *
-     * @return mixed API client instance
-     * @throws \Exception Always throws - not yet implemented
-     */
-    protected function getApiClient()
-    {
-        throw new \Exception("Twitter API client not yet implemented (stub)");
+            Log::info("Twitter messages synced", [
+                'count' => $messages->count(),
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return $messages->count();
+        } catch (\Exception $e) {
+            Log::warning("Twitter messages sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Refresh access token
-     *
-     * Note: Stub implementation - always returns false
-     *
-     * @return bool True if token refreshed successfully
      */
     protected function refreshAccessToken(): bool
     {
-        Log::info("Twitter token refresh (stub) - not refreshed");
-        return false;
+        try {
+            $connector = $this->getConnector();
+            $this->integration = $connector->refreshToken($this->integration);
+
+            Log::info("Twitter token refreshed", [
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error("Twitter token refresh failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Get Twitter API client (via connector)
+     */
+    protected function getApiClient()
+    {
+        return $this->getConnector();
     }
 
     /**
      * Sync Twitter user profile data
-     *
-     * Note: Stub implementation - returns empty data
-     *
-     * @param mixed $integration Integration credentials
-     * @return array Profile data
      */
     public function syncProfile($integration): array
     {
-        Log::info("Twitter profile sync (stub) - no data synced");
-        return ['success' => true, 'data' => [], 'stub' => true];
+        try {
+            $connector = $this->getConnector();
+            $metrics = $connector->getAccountMetrics($integration);
+
+            return [
+                'success' => true,
+                'data' => $metrics->toArray(),
+            ];
+        } catch (\Exception $e) {
+            Log::error("Twitter profile sync failed", ['error' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**
      * Sync Twitter tweets data
-     *
-     * Note: Stub implementation - returns empty data
-     *
-     * @param mixed $integration Integration credentials
-     * @return array Tweets data
      */
     public function syncTweets($integration): array
     {
-        Log::info("Twitter tweets sync (stub) - no data synced");
-        return ['success' => true, 'data' => [], 'stub' => true];
+        try {
+            $connector = $this->getConnector();
+            $posts = $connector->syncPosts($integration);
+
+            return [
+                'success' => true,
+                'data' => $posts->toArray(),
+                'count' => $posts->count(),
+            ];
+        } catch (\Exception $e) {
+            Log::error("Twitter tweets sync failed", ['error' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 }

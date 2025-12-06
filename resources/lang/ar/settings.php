@@ -1361,4 +1361,16 @@ return [
     'deleting' => 'جارٍ الحذف...',
     'try_again' => 'حاول مرة أخرى',
 
+    // Tumblr OAuth
+    'tumblr_account_connected_successfully' => 'تم ربط حساب Tumblr بنجاح',
+    'tumblr_oauth_initiation_failed' => 'فشل في بدء تفويض Tumblr OAuth',
+    'tumblr_oauth_callback_missing_params' => 'معلمات رد اتصال Tumblr OAuth مفقودة',
+    'tumblr_oauth_callback_failed' => 'فشل رد اتصال Tumblr OAuth',
+    'tumblr_oauth_request_token_failed' => 'فشل في الحصول على رمز طلب Tumblr',
+    'tumblr_oauth_invalid_response' => 'استجابة غير صالحة من Tumblr OAuth',
+    'tumblr_oauth_session_expired' => 'انتهت صلاحية جلسة Tumblr OAuth. يرجى المحاولة مرة أخرى.',
+    'tumblr_oauth_access_token_failed' => 'فشل في الحصول على رمز وصول Tumblr',
+    'tumblr_oauth_invalid_access_response' => 'استجابة رمز وصول غير صالحة من Tumblr',
+    'tumblr_failed_to_get_user_info' => 'فشل في الحصول على معلومات مستخدم Tumblr',
+
 ];

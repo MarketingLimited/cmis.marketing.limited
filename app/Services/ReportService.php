@@ -134,18 +134,123 @@ class ReportService
     }
 
     /**
-     * Export report to Excel
+     * Export report to Excel (CSV format for compatibility)
+     *
+     * Uses CSV format which can be opened in Excel, Google Sheets, and other
+     * spreadsheet applications. Includes UTF-8 BOM for proper character encoding.
      */
     public function exportToExcel(array $reportData, string $filename = null): string
     {
         try {
-            $filename = $filename ?? 'report_' . now()->format('Y-m-d_His') . '.xlsx';
+            $filename = $filename ?? 'report_' . now()->format('Y-m-d_His') . '.csv';
             $path = storage_path('app/reports/' . $filename);
 
-            // Implement Excel export logic here
-            // You would use Laravel Excel package for this
+            // Ensure reports directory exists
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
 
-            Log::info('Report exported to Excel', ['filename' => $filename]);
+            $file = fopen($path, 'w');
+
+            // Add UTF-8 BOM for Excel compatibility
+            fputs($file, "\xEF\xBB\xBF");
+
+            // Write report data
+            if (isset($reportData['campaign'])) {
+                // Campaign report format
+                fputcsv($file, ['Campaign Report']);
+                fputcsv($file, ['Generated At', now()->format('Y-m-d H:i:s')]);
+                fputcsv($file, []);
+
+                // Campaign details
+                $campaign = $reportData['campaign'];
+                fputcsv($file, ['Campaign Name', $campaign->campaign_name ?? 'N/A']);
+                fputcsv($file, ['Status', $campaign->status ?? 'N/A']);
+                fputcsv($file, ['Budget', $campaign->budget ?? 0]);
+                fputcsv($file, []);
+
+                // Metrics
+                if (isset($reportData['metrics']) && count($reportData['metrics']) > 0) {
+                    fputcsv($file, ['Metrics']);
+                    fputcsv($file, ['Date', 'Metric Type', 'Value', 'Confidence']);
+                    foreach ($reportData['metrics'] as $metric) {
+                        fputcsv($file, [
+                            $metric->collected_at ?? '',
+                            $metric->metric_type ?? '',
+                            $metric->metric_value ?? 0,
+                            $metric->confidence_level ?? 0
+                        ]);
+                    }
+                }
+
+                // Summary
+                if (isset($reportData['summary'])) {
+                    fputcsv($file, []);
+                    fputcsv($file, ['Summary']);
+                    foreach ($reportData['summary'] as $key => $value) {
+                        if (!is_array($value)) {
+                            fputcsv($file, [ucfirst(str_replace('_', ' ', $key)), $value]);
+                        }
+                    }
+                }
+            } elseif (isset($reportData['stats'])) {
+                // Organization report format
+                fputcsv($file, ['Organization Report']);
+                fputcsv($file, ['Generated At', now()->format('Y-m-d H:i:s')]);
+                fputcsv($file, []);
+
+                // Stats
+                fputcsv($file, ['Statistics']);
+                foreach ($reportData['stats'] as $key => $value) {
+                    fputcsv($file, [ucfirst(str_replace('_', ' ', $key)), $value]);
+                }
+
+                // Campaigns
+                if (isset($reportData['campaigns']) && count($reportData['campaigns']) > 0) {
+                    fputcsv($file, []);
+                    fputcsv($file, ['Campaigns']);
+                    fputcsv($file, ['Name', 'Status', 'Created At']);
+                    foreach ($reportData['campaigns'] as $campaign) {
+                        fputcsv($file, [
+                            $campaign->campaign_name ?? 'N/A',
+                            $campaign->status ?? 'N/A',
+                            $campaign->created_at ?? ''
+                        ]);
+                    }
+                }
+            } else {
+                // Generic data export
+                fputcsv($file, ['Report']);
+                fputcsv($file, ['Generated At', now()->format('Y-m-d H:i:s')]);
+                fputcsv($file, []);
+
+                foreach ($reportData as $key => $value) {
+                    if (is_array($value) || $value instanceof \Illuminate\Support\Collection) {
+                        fputcsv($file, [ucfirst(str_replace('_', ' ', $key))]);
+                        $items = is_array($value) ? $value : $value->toArray();
+                        if (count($items) > 0) {
+                            $first = reset($items);
+                            if (is_object($first)) {
+                                $first = (array) $first;
+                            }
+                            if (is_array($first)) {
+                                fputcsv($file, array_keys($first));
+                                foreach ($items as $item) {
+                                    $item = is_object($item) ? (array) $item : $item;
+                                    fputcsv($file, array_values($item));
+                                }
+                            }
+                        }
+                        fputcsv($file, []);
+                    } elseif (!is_object($value)) {
+                        fputcsv($file, [ucfirst(str_replace('_', ' ', $key)), $value]);
+                    }
+                }
+            }
+
+            fclose($file);
+
+            Log::info('Report exported to Excel/CSV', ['filename' => $filename, 'path' => $path]);
 
             return $filename;
 

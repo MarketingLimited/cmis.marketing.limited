@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Platform\SyncCatalogJob;
 use App\Models\Core\Org;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Catalog Web Controller (Frontend UI)
@@ -152,15 +154,31 @@ class CatalogWebController extends Controller
 
         $this->setRlsContext($user, $org);
 
-        // TODO: Process import based on type
-        // - Parse file or fetch feed URL
-        // - Validate product data
-        // - Store in catalog_products table
-        // - Queue sync to platform
+        // Process import based on type
+        $importedCount = 0;
+
+        if ($validated['import_type'] === 'file' && $request->hasFile('file')) {
+            $importedCount = $this->processFileImport(
+                $org,
+                $validated['platform'],
+                $request->file('file')
+            );
+        } elseif ($validated['import_type'] === 'feed_url') {
+            $importedCount = $this->processFeedImport(
+                $org,
+                $validated['platform'],
+                $validated['feed_url']
+            );
+        }
+
+        // Queue sync to platform if products were imported
+        if ($importedCount > 0) {
+            SyncCatalogJob::dispatch($org, $validated['platform'], $user->user_id);
+        }
 
         return redirect()
             ->route('orgs.catalogs.index', ['org' => $org])
-            ->with('success', __('catalogs.import_success', ['count' => 0]));
+            ->with('success', __('catalogs.import_success', ['count' => $importedCount]));
     }
 
     /**
@@ -176,12 +194,194 @@ class CatalogWebController extends Controller
 
         $this->setRlsContext($user, $org);
 
-        // TODO: Queue sync job for platform
-        // - Get platform credentials
-        // - Fetch products for platform
-        // - Push to platform API
+        // Queue sync job for platform
+        SyncCatalogJob::dispatch($org, $catalog, $user->user_id, [
+            'force_full_sync' => $request->boolean('force_full_sync', false),
+        ]);
 
         return back()->with('info', __('catalogs.sync_started'));
+    }
+
+    /**
+     * Process file import (CSV, XML, JSON)
+     */
+    private function processFileImport(string $org, string $platform, $file): int
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $contents = file_get_contents($file->getRealPath());
+        $products = [];
+
+        switch ($extension) {
+            case 'csv':
+                $products = $this->parseCsvProducts($contents);
+                break;
+            case 'json':
+                $products = json_decode($contents, true) ?? [];
+                break;
+            case 'xml':
+                $products = $this->parseXmlProducts($contents);
+                break;
+        }
+
+        return $this->storeProducts($org, $platform, $products);
+    }
+
+    /**
+     * Process feed URL import
+     */
+    private function processFeedImport(string $org, string $platform, string $feedUrl): int
+    {
+        try {
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->get($feedUrl);
+            $contents = $response->getBody()->getContents();
+            $contentType = $response->getHeaderLine('Content-Type');
+
+            $products = [];
+
+            if (str_contains($contentType, 'json')) {
+                $products = json_decode($contents, true) ?? [];
+            } elseif (str_contains($contentType, 'xml')) {
+                $products = $this->parseXmlProducts($contents);
+            } else {
+                // Assume CSV
+                $products = $this->parseCsvProducts($contents);
+            }
+
+            return $this->storeProducts($org, $platform, $products);
+
+        } catch (\Exception $e) {
+            \Log::error('Feed import failed', [
+                'url' => $feedUrl,
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
+    }
+
+    /**
+     * Parse CSV content into products array
+     */
+    private function parseCsvProducts(string $contents): array
+    {
+        $lines = explode("\n", trim($contents));
+        if (count($lines) < 2) {
+            return [];
+        }
+
+        $headers = str_getcsv(array_shift($lines));
+        $products = [];
+
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+
+            $values = str_getcsv($line);
+            if (count($values) !== count($headers)) continue;
+
+            $product = array_combine($headers, $values);
+            $products[] = $this->normalizeProductData($product);
+        }
+
+        return $products;
+    }
+
+    /**
+     * Parse XML content into products array
+     */
+    private function parseXmlProducts(string $contents): array
+    {
+        try {
+            $xml = simplexml_load_string($contents);
+            $products = [];
+
+            // Handle common feed formats
+            $items = $xml->channel->item ?? $xml->item ?? $xml->product ?? $xml->entry ?? [];
+
+            foreach ($items as $item) {
+                $product = [
+                    'name' => (string) ($item->title ?? $item->name ?? ''),
+                    'description' => (string) ($item->description ?? ''),
+                    'price' => (float) ($item->price ?? $item->{'g:price'} ?? 0),
+                    'sku' => (string) ($item->id ?? $item->sku ?? $item->{'g:id'} ?? ''),
+                    'url' => (string) ($item->link ?? $item->url ?? ''),
+                    'image_url' => (string) ($item->image ?? $item->image_link ?? $item->{'g:image_link'} ?? ''),
+                    'brand' => (string) ($item->brand ?? $item->{'g:brand'} ?? ''),
+                    'in_stock' => true,
+                ];
+                $products[] = $product;
+            }
+
+            return $products;
+
+        } catch (\Exception $e) {
+            \Log::warning('XML parse failed', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * Normalize product data from various formats
+     */
+    private function normalizeProductData(array $product): array
+    {
+        return [
+            'name' => $product['name'] ?? $product['title'] ?? $product['product_name'] ?? '',
+            'description' => $product['description'] ?? $product['desc'] ?? '',
+            'price' => (float) ($product['price'] ?? $product['sale_price'] ?? 0),
+            'sku' => $product['sku'] ?? $product['id'] ?? $product['product_id'] ?? '',
+            'url' => $product['url'] ?? $product['link'] ?? $product['product_url'] ?? '',
+            'image_url' => $product['image_url'] ?? $product['image'] ?? $product['image_link'] ?? '',
+            'brand' => $product['brand'] ?? $product['manufacturer'] ?? '',
+            'currency' => $product['currency'] ?? 'USD',
+            'in_stock' => filter_var($product['in_stock'] ?? $product['availability'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'condition' => $product['condition'] ?? 'new',
+        ];
+    }
+
+    /**
+     * Store products in database
+     */
+    private function storeProducts(string $org, string $platform, array $products): int
+    {
+        $count = 0;
+
+        foreach ($products as $product) {
+            if (empty($product['name'])) continue;
+
+            try {
+                DB::table('cmis.catalog_products')->updateOrInsert(
+                    [
+                        'org_id' => $org,
+                        'sku' => $product['sku'] ?: Str::uuid()->toString(),
+                    ],
+                    [
+                        'id' => Str::uuid()->toString(),
+                        'name' => $product['name'],
+                        'description' => $product['description'] ?? null,
+                        'price' => $product['price'] ?? 0,
+                        'currency' => $product['currency'] ?? 'USD',
+                        'url' => $product['url'] ?? null,
+                        'image_url' => $product['image_url'] ?? null,
+                        'brand' => $product['brand'] ?? null,
+                        'in_stock' => $product['in_stock'] ?? true,
+                        'condition' => $product['condition'] ?? 'new',
+                        'platform' => $platform,
+                        'status' => 'active',
+                        'sync_status' => 'pending',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+                $count++;
+            } catch (\Exception $e) {
+                \Log::warning('Failed to store product', [
+                    'sku' => $product['sku'] ?? 'unknown',
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $count;
     }
 
     /**

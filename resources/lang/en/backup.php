@@ -359,6 +359,15 @@ return [
     'storage_google' => 'Google Drive',
     'storage_onedrive' => 'OneDrive',
     'storage_dropbox' => 'Dropbox',
+    'storage_not_configured' => 'Storage not configured',
+    'storage_credentials_missing' => 'Storage credentials are missing',
+    'storage_oauth_required' => 'OAuth authorization required',
+    'storage_token_refresh_failed' => 'Failed to refresh access token',
+    'storage_test_success' => 'Storage connection successful',
+    'storage_test_failed' => 'Storage connection failed',
+    'storage_test_error' => 'Error testing storage connection',
+    'storage_token_expired' => 'Access token has expired',
+    'settings_updated' => 'Settings updated successfully',
 
     // Upload
     'upload' => 'Upload',

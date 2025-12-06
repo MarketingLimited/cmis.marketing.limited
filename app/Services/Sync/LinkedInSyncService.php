@@ -2,24 +2,35 @@
 
 namespace App\Services\Sync;
 
+use App\Services\Connectors\Providers\LinkedInConnector;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LinkedIn Platform Sync Service
  *
  * Syncs content, metrics, and engagement data from LinkedIn Marketing API.
- * Note: Stub implementation - full API integration pending
+ * Uses LinkedInConnector for API interactions.
  */
 class LinkedInSyncService extends BasePlatformSyncService
 {
     protected $platform = 'linkedin';
+    protected ?LinkedInConnector $connector = null;
+
+    /**
+     * Get LinkedIn connector instance
+     */
+    protected function getConnector(): LinkedInConnector
+    {
+        if (!$this->connector) {
+            $this->connector = app(LinkedInConnector::class);
+        }
+        return $this->connector;
+    }
 
     /**
      * Sync data from LinkedIn
-     *
-     * @param array $options Sync options (since date, filters)
-     * @return array Sync results
      */
     public function sync(array $options = []): array
     {
@@ -27,13 +38,16 @@ class LinkedInSyncService extends BasePlatformSyncService
             ? Carbon::parse($options['since'])
             : Carbon::now()->subDays(config('sync.lookback_days', 7));
 
-        Log::info("Starting LinkedIn sync (stub)", [
+        Log::info("Starting LinkedIn sync", [
             'org_id' => $this->orgId,
             'integration_id' => $this->integration->integration_id,
             'since' => $since->toDateTimeString(),
         ]);
 
         try {
+            // Ensure token is valid
+            $this->ensureValidToken();
+
             $postsCount = $this->syncPosts($since);
             $metricsCount = $this->syncMetrics($since);
             $commentsCount = $this->syncComments($since);
@@ -49,7 +63,6 @@ class LinkedInSyncService extends BasePlatformSyncService
                     'messages' => $messagesCount,
                 ],
                 'errors' => [],
-                'stub' => true,
             ];
 
             $this->logSync('full_sync', 'success', $result);
@@ -72,98 +85,194 @@ class LinkedInSyncService extends BasePlatformSyncService
     }
 
     /**
+     * Ensure access token is valid, refresh if needed
+     */
+    protected function ensureValidToken(): void
+    {
+        if ($this->integration->token_expires_at &&
+            Carbon::parse($this->integration->token_expires_at)->isPast()) {
+            $this->refreshAccessToken();
+        }
+    }
+
+    /**
      * Sync posts/shares from LinkedIn
-     *
-     * Note: Stub implementation - LinkedIn API integration pending
-     *
-     * @param Carbon $since Sync posts since this date
-     * @return int Number of posts synced
      */
     protected function syncPosts(Carbon $since): int
     {
-        Log::info("LinkedIn posts sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $posts = $connector->syncPosts($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
+
+            Log::info("LinkedIn posts synced", [
+                'count' => $posts->count(),
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return $posts->count();
+        } catch (\Exception $e) {
+            Log::warning("LinkedIn posts sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync metrics/analytics from LinkedIn
-     *
-     * Note: Stub implementation - LinkedIn Analytics API pending
-     *
-     * @param Carbon $since Sync metrics since this date
-     * @return int Number of metric records synced
      */
     protected function syncMetrics(Carbon $since): int
     {
-        Log::info("LinkedIn metrics sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $metrics = $connector->getAccountMetrics($this->integration);
+
+            // Store metrics in unified_metrics table if we have data
+            if ($metrics->isNotEmpty()) {
+                DB::table('cmis.unified_metrics')->updateOrInsert(
+                    [
+                        'org_id' => $this->orgId,
+                        'platform' => 'linkedin',
+                        'entity_type' => 'account',
+                        'entity_id' => $this->integration->external_account_id,
+                        'date' => now()->toDateString(),
+                    ],
+                    [
+                        'followers' => $metrics->get('follower_count', 0),
+                        'following' => $metrics->get('connection_count', 0),
+                        'posts_count' => $metrics->get('post_count', 0),
+                        'raw_metrics' => json_encode($metrics->toArray()),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+
+            Log::info("LinkedIn metrics synced", [
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return 1;
+        } catch (\Exception $e) {
+            Log::warning("LinkedIn metrics sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync comments from LinkedIn
-     *
-     * Note: Stub implementation - LinkedIn API integration pending
-     *
-     * @param Carbon $since Sync comments since this date
-     * @return int Number of comments synced
      */
     protected function syncComments(Carbon $since): int
     {
-        Log::info("LinkedIn comments sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $comments = $connector->syncComments($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
+
+            return $comments->count();
+        } catch (\Exception $e) {
+            Log::warning("LinkedIn comments sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
      * Sync messages/InMail from LinkedIn
-     *
-     * Note: Stub implementation - LinkedIn Messaging API pending
-     *
-     * @param Carbon $since Sync messages since this date
-     * @return int Number of messages synced
      */
     protected function syncMessages(Carbon $since): int
     {
-        Log::info("LinkedIn messages sync (stub) - no data synced", ['since' => $since->toDateTimeString()]);
-        return 0;
+        try {
+            $connector = $this->getConnector();
+            $messages = $connector->syncMessages($this->integration, [
+                'since' => $since->toIso8601String(),
+            ]);
+
+            Log::info("LinkedIn messages synced", [
+                'count' => $messages->count(),
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return $messages->count();
+        } catch (\Exception $e) {
+            Log::warning("LinkedIn messages sync failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return 0;
+        }
     }
 
     /**
-     * Get LinkedIn API client
-     *
-     * Note: Stub implementation - throws exception
-     *
-     * @return mixed API client instance
-     * @throws \Exception Always throws - not yet implemented
-     */
-    protected function getApiClient()
-    {
-        throw new \Exception("LinkedIn API client not yet implemented (stub)");
-    }
-
-    /**
-     * Refresh OAuth access token
-     *
-     * Note: Stub implementation - always returns false
-     *
-     * @return bool True if token refreshed successfully
+     * Refresh access token
      */
     protected function refreshAccessToken(): bool
     {
-        Log::info("LinkedIn token refresh (stub) - not refreshed");
-        return false;
+        try {
+            $connector = $this->getConnector();
+            $this->integration = $connector->refreshToken($this->integration);
+
+            Log::info("LinkedIn token refreshed", [
+                'integration_id' => $this->integration->integration_id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error("LinkedIn token refresh failed", [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Get LinkedIn API client (via connector)
+     */
+    protected function getApiClient()
+    {
+        return $this->getConnector();
     }
 
     /**
      * Sync LinkedIn company page data
-     *
-     * Note: Stub implementation - returns empty data
-     *
-     * @param mixed $integration Integration credentials
-     * @return array Company page data
      */
     public function syncCompanyPage($integration): array
     {
-        Log::info("LinkedIn company page sync (stub) - no data synced");
-        return ['success' => true, 'data' => [], 'stub' => true];
+        try {
+            $connector = $this->getConnector();
+            $metrics = $connector->getAccountMetrics($integration);
+
+            return [
+                'success' => true,
+                'data' => $metrics->toArray(),
+            ];
+        } catch (\Exception $e) {
+            Log::error("LinkedIn company page sync failed", ['error' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Sync LinkedIn campaigns (for ad accounts)
+     */
+    public function syncCampaigns($integration, array $options = []): array
+    {
+        try {
+            $connector = $this->getConnector();
+            $campaigns = $connector->syncCampaigns($integration, $options);
+
+            return [
+                'success' => true,
+                'data' => $campaigns->toArray(),
+                'count' => $campaigns->count(),
+            ];
+        } catch (\Exception $e) {
+            Log::error("LinkedIn campaigns sync failed", ['error' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 }

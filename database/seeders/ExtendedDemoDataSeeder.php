@@ -113,14 +113,22 @@ class ExtendedDemoDataSeeder extends Seeder
         ];
 
         foreach ($modules as $module) {
-            $code = $module['code'];
-            $name = $module['name'];
-            $version = $module['version'];
+            // Check if module already exists by code
+            $exists = DB::table('cmis.modules')
+                ->where('code', $module['code'])
+                ->exists();
 
-            DB::unprepared("
-                INSERT INTO cmis.modules (code, name, version)
-                VALUES ('{$code}', '{$name}', '{$version}')
-            ");
+            if (!$exists) {
+                DB::table('cmis.modules')->insert([
+                    'module_id' => Str::uuid(),
+                    'code' => $module['code'],
+                    'name' => $module['name'],
+                    'version' => $module['version'],
+                    'is_active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 

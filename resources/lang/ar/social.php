@@ -171,6 +171,13 @@ return [
     'content_required' => 'المحتوى مطلوب',
     'media_required' => 'الوسائط مطلوبة',
 
+    // Media Library
+    'media_library_load_failed' => 'فشل تحميل مكتبة الوسائط',
+    'media_added_success' => 'تمت إضافة الوسائط للمنشور',
+    'media_deleted_success' => 'تم حذف الوسائط بنجاح',
+    'media_delete_failed' => 'فشل حذف الوسائط',
+    'confirm_delete_media' => 'هل أنت متأكد من حذف هذه الوسائط؟',
+
     // Empty States
     'no_posts' => 'لا توجد منشورات',
     'no_scheduled_posts' => 'لا توجد منشورات مجدولة',

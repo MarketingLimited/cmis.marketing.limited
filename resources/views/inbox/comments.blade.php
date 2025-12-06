@@ -316,51 +316,69 @@ function unifiedComments() {
         async loadComments() {
             this.loading = true;
             try {
-                // Get active org from user or use first org
-                const orgId = await this.getActiveOrgId();
+                const params = new URLSearchParams();
 
-                const params = new URLSearchParams({
-                    ...this.filters,
-                    page: this.pagination.current_page
+                // Add non-empty filters
+                Object.entries(this.filters).forEach(([key, value]) => {
+                    if (value !== null && value !== '' && value !== 'all') {
+                        params.append(key, value);
+                    }
+                });
+                params.append('page', this.pagination.current_page);
+
+                const response = await fetch(`/api/comments?${params}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
                 });
 
-                // TODO: Replace with actual API endpoint when backend is ready
-                // const response = await fetch(`/api/orgs/${orgId}/comments?${params}`);
-                // const data = await response.json();
+                const data = await response.json();
 
-                // Mock data for now
-                this.comments = [];
-                this.loading = false;
+                if (data.success) {
+                    this.comments = data.comments || [];
+                    this.pagination = data.pagination || {
+                        total: 0,
+                        per_page: 50,
+                        current_page: 1,
+                        last_page: 1
+                    };
+                } else {
+                    console.error('API error:', data.error);
+                    this.comments = [];
+                }
             } catch (error) {
                 console.error('Failed to load comments:', error);
+                this.comments = [];
+            } finally {
                 this.loading = false;
             }
         },
 
         async loadStatistics() {
             try {
-                const orgId = await this.getActiveOrgId();
+                const response = await fetch('/api/comments/statistics', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
 
-                // TODO: Replace with actual API endpoint
-                // const response = await fetch(`/api/orgs/${orgId}/comments/statistics`);
-                // const data = await response.json();
+                const data = await response.json();
 
-                // Mock data for now
-                this.stats = {
-                    total: 0,
-                    pending: 0,
-                    replied: 0,
-                    negative: 0
-                };
+                if (data.success) {
+                    this.stats = data.statistics || {
+                        total: 0,
+                        pending: 0,
+                        replied: 0,
+                        negative: 0
+                    };
+                } else {
+                    console.error('Failed to load statistics:', data.error);
+                }
             } catch (error) {
                 console.error('Failed to load statistics:', error);
             }
-        },
-
-        async getActiveOrgId() {
-            // This would normally come from the user's session/preferences
-            // For now, return a placeholder
-            return 'active-org-id';
         },
 
         debounceSearch() {
@@ -384,9 +402,7 @@ function unifiedComments() {
             if (!this.replyText.trim()) return;
 
             try {
-                const orgId = await this.getActiveOrgId();
-
-                const response = await fetch(`/api/orgs/${orgId}/comments/${commentId}/reply`, {
+                const response = await fetch(`/api/comments/${commentId}/reply`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -417,9 +433,7 @@ function unifiedComments() {
             if (!confirm('{{ __('inbox.confirm_hide_comment') }}')) return;
 
             try {
-                const orgId = await this.getActiveOrgId();
-
-                const response = await fetch(`/api/orgs/${orgId}/comments/${commentId}/hide`, {
+                const response = await fetch(`/api/comments/${commentId}/hide`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -444,9 +458,7 @@ function unifiedComments() {
 
         async likeComment(commentId) {
             try {
-                const orgId = await this.getActiveOrgId();
-
-                const response = await fetch(`/api/orgs/${orgId}/comments/${commentId}/like`, {
+                const response = await fetch(`/api/comments/${commentId}/like`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -472,9 +484,7 @@ function unifiedComments() {
             if (!confirm('{{ __('inbox.confirm_delete_comment') }}')) return;
 
             try {
-                const orgId = await this.getActiveOrgId();
-
-                const response = await fetch(`/api/orgs/${orgId}/comments/${commentId}`, {
+                const response = await fetch(`/api/comments/${commentId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',

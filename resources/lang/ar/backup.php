@@ -358,6 +358,15 @@ return [
     'storage_google' => 'Google Drive',
     'storage_onedrive' => 'OneDrive',
     'storage_dropbox' => 'Dropbox',
+    'storage_not_configured' => 'لم يتم تكوين التخزين',
+    'storage_credentials_missing' => 'بيانات اعتماد التخزين مفقودة',
+    'storage_oauth_required' => 'يتطلب تصريح OAuth',
+    'storage_token_refresh_failed' => 'فشل تحديث رمز الوصول',
+    'storage_test_success' => 'تم الاتصال بالتخزين بنجاح',
+    'storage_test_failed' => 'فشل الاتصال بالتخزين',
+    'storage_test_error' => 'خطأ في اختبار اتصال التخزين',
+    'storage_token_expired' => 'انتهت صلاحية رمز الوصول',
+    'settings_updated' => 'تم تحديث الإعدادات بنجاح',
 
     // Upload
     'upload' => 'رفع',

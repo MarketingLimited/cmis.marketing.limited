@@ -3,17 +3,17 @@
 namespace App\Models\Notification;
 
 use App\Models\Concerns\HasOrganization;
-
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+
 class Notification extends BaseModel
 {
     use HasOrganization, SoftDeletes, HasUuids;
 
     protected $table = 'cmis.notifications';
     protected $primaryKey = 'notification_id';
+
     protected $fillable = [
         'user_id',
         'org_id',
@@ -45,7 +45,13 @@ class Notification extends BaseModel
         'deleted_at' => 'datetime',
     ];
 
-    
+    /**
+     * User relationship
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 
     /**
      * Scope unread notifications
@@ -53,6 +59,7 @@ class Notification extends BaseModel
     public function scopeUnread($query)
     {
         return $query->where('is_read', false);
+    }
 
     /**
      * Scope by type
@@ -60,6 +67,7 @@ class Notification extends BaseModel
     public function scopeByType($query, string $type)
     {
         return $query->where('type', $type);
+    }
 
     /**
      * Scope by category
@@ -67,6 +75,7 @@ class Notification extends BaseModel
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
+    }
 
     /**
      * Scope by priority
@@ -74,6 +83,7 @@ class Notification extends BaseModel
     public function scopeHighPriority($query)
     {
         return $query->where('priority', 'high');
+    }
 
     /**
      * Scope not expired
@@ -83,6 +93,8 @@ class Notification extends BaseModel
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
+        });
+    }
 
     /**
      * Mark as read
@@ -93,6 +105,7 @@ class Notification extends BaseModel
             'is_read' => true,
             'read_at' => now(),
         ]);
+    }
 
     /**
      * Check if expired
@@ -101,6 +114,8 @@ class Notification extends BaseModel
     {
         if (!$this->expires_at) {
             return false;
+        }
 
         return $this->expires_at->isPast();
+    }
 }

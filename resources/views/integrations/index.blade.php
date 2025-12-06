@@ -343,137 +343,124 @@ function integrationsManager() {
 
         async connectPlatform(platformId) {
             try {
-                window.notify('جاري فتح نافذة المصادقة...', 'info');
+                window.notify('{{ __('integrations.opening_auth_window') }}', 'info');
 
-                // TODO: Implement OAuth flow for platform connection
-                // This should redirect to the platform's OAuth URL
-                // window.location.href = `/api/integrations/${platformId}/connect`;
-                // The callback will handle the OAuth response and store tokens
-                //
-                // OAuth callback should:
-                // 1. Receive authorization code
-                // 2. Exchange for access token
-                // 3. Store tokens securely in database
-                // 4. Redirect back to integrations page with success message
+                // Get the platform name for OAuth flow
+                const platform = this.platforms.find(p => p.id === platformId);
+                if (!platform) {
+                    throw new Error('Platform not found');
+                }
 
-                // Simulate OAuth flow for demo
-                openModal('connect-platform-modal');
+                // Redirect to OAuth flow - the backend will handle the OAuth redirect
+                window.location.href = `/api/integrations/${platform.type}/connect`;
 
-                setTimeout(() => {
-                    closeModal('connect-platform-modal');
-                    window.notify('تم ربط المنصة بنجاح!', 'success');
-
-                    // Update platform status
-                    const platform = this.platforms.find(p => p.id === platformId);
-                    if (platform) {
-                        platform.connected = true;
-                        platform.account = 'user@example.com';
-                        platform.lastSync = 'الآن';
-                        platform.status = 'active';
-                        this.stats.connected++;
-                        this.stats.disconnected--;
-                    }
-                }, 2000);
             } catch (error) {
                 console.error('Error connecting platform:', error);
-                window.notify('فشل ربط المنصة', 'error');
+                window.notify('{{ __('integrations.connection_failed') }}', 'error');
             }
         },
 
         async syncPlatform(platformId) {
             try {
-                window.notify('جاري المزامنة...', 'info');
+                window.notify('{{ __('integrations.syncing') }}', 'info');
 
-                // TODO: Implement manual sync API call
-                // const response = await fetch(`/api/integrations/${platformId}/sync`, {
-                //     method: 'POST',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
-                //
-                // if (!response.ok) throw new Error('Sync failed');
-                //
-                // const result = await response.json();
-                // // result.campaigns_synced, result.ads_synced, result.last_sync_time
+                const response = await fetch(`/api/sync/${platformId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                // Simulate sync
-                setTimeout(() => {
-                    window.notify('تمت المزامنة بنجاح!', 'success');
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    window.notify('{{ __('integrations.sync_success') }}', 'success');
 
                     const platform = this.platforms.find(p => p.id === platformId);
                     if (platform) {
-                        platform.lastSync = 'الآن';
+                        platform.lastSync = '{{ __('common.just_now') }}';
+                        if (result.data) {
+                            platform.syncedItems = result.data.synced_items || 0;
+                        }
                     }
-                }, 1500);
+                } else {
+                    throw new Error(result.message || '{{ __('integrations.sync_failed') }}');
+                }
             } catch (error) {
                 console.error('Error syncing platform:', error);
-                window.notify('فشل المزامنة', 'error');
+                window.notify(error.message || '{{ __('integrations.sync_failed') }}', 'error');
             }
         },
 
         async testConnection(platformId) {
             try {
-                window.notify('جاري اختبار الاتصال...', 'info');
+                window.notify('{{ __('integrations.testing_connection') }}', 'info');
 
-                // TODO: Implement connection test API call
-                // const response = await fetch(`/api/integrations/${platformId}/test`, {
-                //     method: 'POST',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
-                //
-                // if (!response.ok) throw new Error('Connection test failed');
+                const response = await fetch(`/api/integrations/${platformId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                setTimeout(() => {
-                    window.notify('الاتصال يعمل بشكل صحيح!', 'success');
-                }, 1000);
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    window.notify('{{ __('integrations.connection_working') }}', 'success');
+
+                    const platform = this.platforms.find(p => p.id === platformId);
+                    if (platform) {
+                        platform.status = 'active';
+                    }
+                } else {
+                    throw new Error(result.message || '{{ __('integrations.test_failed') }}');
+                }
             } catch (error) {
                 console.error('Error testing connection:', error);
-                window.notify('فشل اختبار الاتصال', 'error');
+                window.notify(error.message || '{{ __('integrations.test_failed') }}', 'error');
             }
         },
 
         async disconnectPlatform(platformId) {
-            if (!confirm('هل أنت متأكد من فصل هذه المنصة؟ سيتم إيقاف جميع عمليات المزامنة.')) return;
+            if (!confirm('{{ __('integrations.confirm_disconnect') }}')) return;
 
             try {
-                window.notify('جاري فصل المنصة...', 'info');
+                window.notify('{{ __('integrations.disconnecting') }}', 'info');
 
-                // TODO: Implement disconnect API call
-                // const response = await fetch(`/api/integrations/${platformId}/disconnect`, {
-                //     method: 'DELETE',
-                //     headers: {
-                //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                //         'Accept': 'application/json'
-                //     }
-                // });
-                //
-                // if (!response.ok) throw new Error('Failed to disconnect');
-                // This should:
-                // 1. Revoke OAuth tokens
-                // 2. Delete stored credentials
-                // 3. Stop all sync jobs for this platform
+                const response = await fetch(`/api/integrations/${platformId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
 
-                setTimeout(() => {
-                    window.notify('تم فصل المنصة بنجاح', 'success');
+                const result = await response.json();
 
+                if (response.ok && result.success) {
+                    window.notify('{{ __('integrations.disconnect_success') }}', 'success');
+
+                    // Update platform status
                     const platform = this.platforms.find(p => p.id === platformId);
                     if (platform) {
                         platform.connected = false;
                         platform.account = null;
                         platform.lastSync = null;
-                        platform.status = null;
+                        platform.status = 'disconnected';
                         this.stats.connected--;
                         this.stats.disconnected++;
                     }
-                }, 1000);
+                } else {
+                    throw new Error(result.message || '{{ __('integrations.disconnect_failed') }}');
+                }
             } catch (error) {
                 console.error('Error disconnecting platform:', error);
-                window.notify('فشل فصل المنصة', 'error');
+                window.notify(error.message || '{{ __('integrations.disconnect_failed') }}', 'error');
             }
         }
     };

@@ -67,24 +67,31 @@ class DatabaseSeeder extends Seeder
             $this->command->warn('⚠️  Core data (roles, permissions, orgs) has been seeded successfully.');
         }
 
-        // TODO: Fix ExtendedDemoDataSeeder - modules table insert issue
-        // $this->command->newLine();
-        // $this->command->info('📦 Seeding extended demo data (50+ additional tables)...');
-
         // Level 4: Extended Demo Data (AI, modules, contexts, compliance, analytics, etc.)
-        // $this->call([
-        //     ExtendedDemoDataSeeder::class,
-        // ]);
+        $this->command->newLine();
+        $this->command->info('📦 Seeding extended demo data (50+ additional tables)...');
+        try {
+            $this->call([
+                ExtendedDemoDataSeeder::class,
+            ]);
+        } catch (\Exception $e) {
+            $this->command->warn('⚠️  Extended demo data seeding skipped: ' . $e->getMessage());
+        }
 
-        // TODO: Fix SessionsSeeder - sessions table user_id type mismatch
-        // Optional: Session data from backup (for development/testing)
-        // if (app()->environment('local', 'development')) {
-        //     $this->call([
-        //         SessionsSeeder::class,
-        //     ]);
-        // }
+        // Level 5: Session data (for development/testing only)
+        if (app()->environment('local', 'development')) {
+            $this->command->newLine();
+            $this->command->info('🔐 Seeding demo session data...');
+            try {
+                $this->call([
+                    SessionsSeeder::class,
+                ]);
+            } catch (\Exception $e) {
+                $this->command->warn('⚠️  Session seeding skipped: ' . $e->getMessage());
+            }
+        }
 
-        // Level 5: Marketing Website Data (cmis_website schema)
+        // Level 6: Marketing Website Data (cmis_website schema)
         $this->command->newLine();
         $this->command->info('🌐 Seeding marketing website data...');
         try {
