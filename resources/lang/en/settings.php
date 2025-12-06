@@ -1085,4 +1085,18 @@ return [
     'deleting' => 'Deleting...',
     'try_again' => 'Try again',
 
+    // Access Control Labels
+    'full_control' => 'Full Control',
+    'partial_access' => 'Partial Access',
+    'no_control' => 'No Control',
+
+    // Permission Names
+    'permission_manage' => 'Manage',
+    'permission_advertise' => 'Advertise',
+    'permission_create_content' => 'Create Content',
+    'permission_moderate' => 'Moderate',
+    'permission_analyze' => 'Analytics',
+    'permission_messaging' => 'Messaging',
+    'permission_edit' => 'Edit',
+
 ];

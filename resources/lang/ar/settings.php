@@ -1373,4 +1373,18 @@ return [
     'tumblr_oauth_invalid_access_response' => 'استجابة رمز وصول غير صالحة من Tumblr',
     'tumblr_failed_to_get_user_info' => 'فشل في الحصول على معلومات مستخدم Tumblr',
 
+    // Access Control Labels
+    'full_control' => 'تحكم كامل',
+    'partial_access' => 'وصول جزئي',
+    'no_control' => 'بدون تحكم',
+
+    // Permission Names
+    'permission_manage' => 'إدارة',
+    'permission_advertise' => 'إعلان',
+    'permission_create_content' => 'إنشاء محتوى',
+    'permission_moderate' => 'إشراف',
+    'permission_analyze' => 'تحليلات',
+    'permission_messaging' => 'مراسلة',
+    'permission_edit' => 'تعديل',
+
 ];

@@ -293,6 +293,26 @@
                                                 <span x-show="page.source === 'personal' || !page.business_name" class="block text-xs text-gray-400">
                                                     <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                                 </span>
+                                                {{-- Access Control Badge --}}
+                                                <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                      :class="{
+                                                          'text-green-600': page.access_level === 'full',
+                                                          'text-amber-600': page.access_level === 'partial',
+                                                          'text-red-500': page.access_level === 'none' || !page.access_level
+                                                      }">
+                                                    <i class="fas" :class="{
+                                                        'fa-unlock': page.access_level === 'full',
+                                                        'fa-lock-open': page.access_level === 'partial',
+                                                        'fa-lock': page.access_level === 'none' || !page.access_level
+                                                    }"></i>
+                                                    <span x-text="getAccessLabel(page.access_level)"></span>
+                                                </span>
+                                                {{-- Permission Tags (for partial access) --}}
+                                                <div x-show="page.access_level === 'partial' && page.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                    <template x-for="perm in page.permissions" :key="perm">
+                                                        <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                    </template>
+                                                </div>
                                                 <span x-show="page.has_instagram" class="text-xs text-pink-600 inline-flex items-center gap-1">
                                                     <i class="fab fa-instagram"></i>{{ __('Instagram connected') }}
                                                 </span>
@@ -430,6 +450,26 @@
                                                 <span x-show="ig.source === 'personal' || (!ig.business_name && !ig.connected_page_name)" class="block text-xs text-gray-400">
                                                     <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                                 </span>
+                                                {{-- Access Control Badge --}}
+                                                <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                      :class="{
+                                                          'text-green-600': ig.access_level === 'full',
+                                                          'text-amber-600': ig.access_level === 'partial',
+                                                          'text-red-500': ig.access_level === 'none' || !ig.access_level
+                                                      }">
+                                                    <i class="fas" :class="{
+                                                        'fa-unlock': ig.access_level === 'full',
+                                                        'fa-lock-open': ig.access_level === 'partial',
+                                                        'fa-lock': ig.access_level === 'none' || !ig.access_level
+                                                    }"></i>
+                                                    <span x-text="getAccessLabel(ig.access_level)"></span>
+                                                </span>
+                                                {{-- Permission Tags (for partial access) --}}
+                                                <div x-show="ig.access_level === 'partial' && ig.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                    <template x-for="perm in ig.permissions" :key="perm">
+                                                        <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                     </label>
@@ -557,6 +597,26 @@
                                                 <span x-show="ig.source === 'personal' || !ig.business_name" class="block text-xs text-gray-400">
                                                     <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                                 </span>
+                                                {{-- Access Control Badge --}}
+                                                <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                      :class="{
+                                                          'text-green-600': ig.access_level === 'full',
+                                                          'text-amber-600': ig.access_level === 'partial',
+                                                          'text-red-500': ig.access_level === 'none' || !ig.access_level
+                                                      }">
+                                                    <i class="fas" :class="{
+                                                        'fa-unlock': ig.access_level === 'full',
+                                                        'fa-lock-open': ig.access_level === 'partial',
+                                                        'fa-lock': ig.access_level === 'none' || !ig.access_level
+                                                    }"></i>
+                                                    <span x-text="getAccessLabel(ig.access_level)"></span>
+                                                </span>
+                                                {{-- Permission Tags (for partial access) --}}
+                                                <div x-show="ig.access_level === 'partial' && ig.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                    <template x-for="perm in ig.permissions" :key="perm">
+                                                        <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                     </label>
@@ -691,6 +751,26 @@
                                             <span x-show="account.source === 'personal' || !account.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': account.access_level === 'full',
+                                                      'text-amber-600': account.access_level === 'partial',
+                                                      'text-red-500': account.access_level === 'none' || !account.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': account.access_level === 'full',
+                                                    'fa-lock-open': account.access_level === 'partial',
+                                                    'fa-lock': account.access_level === 'none' || !account.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(account.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="account.access_level === 'partial' && account.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in account.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -810,6 +890,26 @@
                                             <span x-show="pixel.source === 'personal' || !pixel.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': pixel.access_level === 'full',
+                                                      'text-amber-600': pixel.access_level === 'partial',
+                                                      'text-red-500': pixel.access_level === 'none' || !pixel.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': pixel.access_level === 'full',
+                                                    'fa-lock-open': pixel.access_level === 'partial',
+                                                    'fa-lock': pixel.access_level === 'none' || !pixel.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(pixel.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="pixel.access_level === 'partial' && pixel.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in pixel.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </label>
                                 </template>
@@ -925,6 +1025,26 @@
                                             <span x-show="catalog.source === 'personal' || !catalog.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': catalog.access_level === 'full',
+                                                      'text-amber-600': catalog.access_level === 'partial',
+                                                      'text-red-500': catalog.access_level === 'none' || !catalog.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': catalog.access_level === 'full',
+                                                    'fa-lock-open': catalog.access_level === 'partial',
+                                                    'fa-lock': catalog.access_level === 'none' || !catalog.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(catalog.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="catalog.access_level === 'partial' && catalog.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in catalog.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </label>
                                 </template>
@@ -1050,6 +1170,26 @@
                                             <span x-show="wa.source === 'personal' || !wa.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': wa.access_level === 'full',
+                                                      'text-amber-600': wa.access_level === 'partial',
+                                                      'text-red-500': wa.access_level === 'none' || !wa.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': wa.access_level === 'full',
+                                                    'fa-lock-open': wa.access_level === 'partial',
+                                                    'fa-lock': wa.access_level === 'none' || !wa.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(wa.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="wa.access_level === 'partial' && wa.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in wa.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                             <span x-show="wa.quality_rating" class="text-xs"
                                                   :class="wa.quality_rating === 'GREEN' ? 'text-green-600' : (wa.quality_rating === 'YELLOW' ? 'text-yellow-600' : 'text-red-600')">
                                                 <i class="fas fa-circle text-xs {{ $isRtl ? 'ml-1' : 'mr-1' }}"></i>{{ __('Quality') }}: <span x-text="wa.quality_rating"></span>
@@ -1167,6 +1307,26 @@
                                             <span x-show="conversion.source === 'personal' || !conversion.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': conversion.access_level === 'full',
+                                                      'text-amber-600': conversion.access_level === 'partial',
+                                                      'text-red-500': conversion.access_level === 'none' || !conversion.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': conversion.access_level === 'full',
+                                                    'fa-lock-open': conversion.access_level === 'partial',
+                                                    'fa-lock': conversion.access_level === 'none' || !conversion.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(conversion.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="conversion.access_level === 'partial' && conversion.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in conversion.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </label>
                                 </template>
@@ -1267,6 +1427,26 @@
                                             <span x-show="eventSet.source === 'personal' || !eventSet.business_name" class="block text-xs text-gray-400">
                                                 <i class="fas fa-user me-1"></i>{{ __('Personal') }}
                                             </span>
+                                            {{-- Access Control Badge --}}
+                                            <span class="inline-flex items-center gap-1 text-xs mt-0.5"
+                                                  :class="{
+                                                      'text-green-600': eventSet.access_level === 'full',
+                                                      'text-amber-600': eventSet.access_level === 'partial',
+                                                      'text-red-500': eventSet.access_level === 'none' || !eventSet.access_level
+                                                  }">
+                                                <i class="fas" :class="{
+                                                    'fa-unlock': eventSet.access_level === 'full',
+                                                    'fa-lock-open': eventSet.access_level === 'partial',
+                                                    'fa-lock': eventSet.access_level === 'none' || !eventSet.access_level
+                                                }"></i>
+                                                <span x-text="getAccessLabel(eventSet.access_level)"></span>
+                                            </span>
+                                            {{-- Permission Tags (for partial access) --}}
+                                            <div x-show="eventSet.access_level === 'partial' && eventSet.permissions?.length" class="flex flex-wrap gap-1 mt-1">
+                                                <template x-for="perm in eventSet.permissions" :key="perm">
+                                                    <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs" x-text="formatPermission(perm)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </label>
                                 </template>
@@ -1534,6 +1714,29 @@ function metaAssetsPage() {
                 (e.description || '').toLowerCase().includes(search) ||
                 (e.business_name || '').toLowerCase().includes(search)
             );
+        },
+
+        // Access control helper functions
+        getAccessLabel(level) {
+            const labels = {
+                'full': '{{ __("settings.full_control") }}',
+                'partial': '{{ __("settings.partial_access") }}',
+                'none': '{{ __("settings.no_control") }}'
+            };
+            return labels[level] || labels['none'];
+        },
+
+        formatPermission(perm) {
+            const names = {
+                'MANAGE': '{{ __("settings.permission_manage") }}',
+                'ADVERTISE': '{{ __("settings.permission_advertise") }}',
+                'CREATE_CONTENT': '{{ __("settings.permission_create_content") }}',
+                'MODERATE': '{{ __("settings.permission_moderate") }}',
+                'ANALYZE': '{{ __("settings.permission_analyze") }}',
+                'MESSAGING': '{{ __("settings.permission_messaging") }}',
+                'EDIT': '{{ __("settings.permission_edit") }}'
+            };
+            return names[perm] || perm;
         },
 
         // Initialize - load assets in parallel

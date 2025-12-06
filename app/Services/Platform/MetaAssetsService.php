@@ -599,7 +599,8 @@ class MetaAssetsService
         $adAccounts = [];
         $pixels = [];
         $customConversions = [];
-        $fields = 'id,name,account_id,account_status,currency,timezone_name,spend_cap,amount_spent,balance,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,custom_event_type,pixel{id}}';
+        // Added user_tasks for access control
+        $fields = 'id,name,account_id,account_status,currency,timezone_name,spend_cap,amount_spent,balance,user_tasks,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,custom_event_type,pixel{id}}';
         $chunks = array_chunk($adAccountIds, self::BATCH_SIZE);
         $batchNumber = 0;
 
@@ -632,6 +633,10 @@ class MetaAssetsService
                             $body = json_decode($batchResponse['body'] ?? '{}', true);
                             if (!empty($body['id'])) {
                                 $accountId = $body['id'];
+                                // Calculate access level from user_tasks
+                                $accountTasks = $body['user_tasks'] ?? [];
+                                $accountAccess = $this->calculateAccessLevel($accountTasks);
+
                                 $adAccounts[] = [
                                     'id' => $accountId,
                                     'account_id' => $body['account_id'] ?? str_replace('act_', '', $accountId),
@@ -643,9 +648,12 @@ class MetaAssetsService
                                     'spend_cap' => $body['spend_cap'] ?? null,
                                     'amount_spent' => $body['amount_spent'] ?? '0',
                                     'balance' => $body['balance'] ?? '0',
+                                    'tasks' => $accountTasks,
+                                    'access_level' => $accountAccess['level'],
+                                    'permissions' => $accountAccess['permissions'],
                                 ];
 
-                                // Extract pixels
+                                // Extract pixels (inherit access from ad account)
                                 foreach ($body['adspixels']['data'] ?? [] as $pixel) {
                                     $pixels[] = [
                                         'id' => $pixel['id'],
@@ -653,10 +661,13 @@ class MetaAssetsService
                                         'ad_account_id' => $accountId,
                                         'creation_time' => $pixel['creation_time'] ?? null,
                                         'last_fired_time' => $pixel['last_fired_time'] ?? null,
+                                        'tasks' => $accountTasks,
+                                        'access_level' => $accountAccess['level'],
+                                        'permissions' => $accountAccess['permissions'],
                                     ];
                                 }
 
-                                // Extract custom conversions
+                                // Extract custom conversions (inherit access from ad account)
                                 foreach ($body['customconversions']['data'] ?? [] as $conversion) {
                                     $customConversions[] = [
                                         'id' => $conversion['id'],
@@ -664,6 +675,9 @@ class MetaAssetsService
                                         'custom_event_type' => $conversion['custom_event_type'] ?? null,
                                         'pixel_id' => $conversion['pixel']['id'] ?? null,
                                         'ad_account_id' => $accountId,
+                                        'tasks' => $accountTasks,
+                                        'access_level' => $accountAccess['level'],
+                                        'permissions' => $accountAccess['permissions'],
                                     ];
                                 }
                             }
@@ -1014,6 +1028,8 @@ class MetaAssetsService
                             foreach ($business['owned_whatsapp_business_accounts']['data'] ?? [] as $waba) {
                                 $wabaId = $waba['id'] ?? null;
                                 $wabaName = $waba['name'] ?? 'Unnamed WABA';
+                                $wabaTasks = $waba['permitted_tasks'] ?? ['MANAGE'];
+                                $wabaAccess = $this->calculateAccessLevel($wabaTasks);
                                 foreach ($waba['phone_numbers']['data'] ?? [] as $phone) {
                                     $whatsappAccounts[] = [
                                         'id' => $phone['id'],
@@ -1025,11 +1041,14 @@ class MetaAssetsService
                                         'waba_name' => $wabaName,
                                         'business_id' => $businessId,
                                         'business_name' => $businessName,
+                                        'tasks' => $wabaTasks,
+                                        'access_level' => $wabaAccess['level'],
+                                        'permissions' => $wabaAccess['permissions'],
                                     ];
                                 }
                             }
 
-                            // Extract Offline Event Sets (System User only)
+                            // Extract Offline Event Sets (System User only - owned = full control)
                             foreach ($business['offline_conversion_data_sets']['data'] ?? [] as $eventSet) {
                                 $offlineEventSets[] = [
                                     'id' => $eventSet['id'],
@@ -1042,11 +1061,16 @@ class MetaAssetsService
                                     'data_origin' => $eventSet['data_origin'] ?? null,
                                     'business_id' => $businessId,
                                     'business_name' => $businessName,
+                                    'tasks' => ['MANAGE'],
+                                    'access_level' => 'full',
+                                    'permissions' => ['MANAGE'],
                                 ];
                             }
 
-                            // Extract owned pages with Instagram
+                            // Extract owned pages with Instagram (owned = has tasks field)
                             foreach ($business['owned_pages']['data'] ?? [] as $page) {
+                                $pageTasks = $page['tasks'] ?? ['MANAGE'];
+                                $pageAccess = $this->calculateAccessLevel($pageTasks);
                                 $businessPages[] = [
                                     'id' => $page['id'],
                                     'name' => $page['name'] ?? 'Unknown Page',
@@ -1056,10 +1080,14 @@ class MetaAssetsService
                                     'business_id' => $businessId,
                                     'business_name' => $businessName,
                                     'source' => 'owned',
+                                    'tasks' => $pageTasks,
+                                    'access_level' => $pageAccess['level'],
+                                    'permissions' => $pageAccess['permissions'],
                                 ];
 
                                 if (isset($page['instagram_business_account'])) {
                                     $ig = $page['instagram_business_account'];
+                                    // Instagram inherits access from connected page
                                     $businessInstagram[] = [
                                         'id' => $ig['id'],
                                         'username' => $ig['username'] ?? null,
@@ -1072,12 +1100,17 @@ class MetaAssetsService
                                         'business_id' => $businessId,
                                         'business_name' => $businessName,
                                         'source' => 'owned',
+                                        'tasks' => $pageTasks,
+                                        'access_level' => $pageAccess['level'],
+                                        'permissions' => $pageAccess['permissions'],
                                     ];
                                 }
                             }
 
-                            // Extract client pages with Instagram
+                            // Extract client pages with Instagram (client = has permitted_tasks field)
                             foreach ($business['client_pages']['data'] ?? [] as $page) {
+                                $pageTasks = $page['permitted_tasks'] ?? [];
+                                $pageAccess = $this->calculateAccessLevel($pageTasks);
                                 $businessPages[] = [
                                     'id' => $page['id'],
                                     'name' => $page['name'] ?? 'Unknown Page',
@@ -1087,10 +1120,14 @@ class MetaAssetsService
                                     'business_id' => $businessId,
                                     'business_name' => $businessName,
                                     'source' => 'client',
+                                    'tasks' => $pageTasks,
+                                    'access_level' => $pageAccess['level'],
+                                    'permissions' => $pageAccess['permissions'],
                                 ];
 
                                 if (isset($page['instagram_business_account'])) {
                                     $ig = $page['instagram_business_account'];
+                                    // Instagram inherits access from connected page
                                     $businessInstagram[] = [
                                         'id' => $ig['id'],
                                         'username' => $ig['username'] ?? null,
@@ -1103,6 +1140,9 @@ class MetaAssetsService
                                         'business_id' => $businessId,
                                         'business_name' => $businessName,
                                         'source' => 'client',
+                                        'tasks' => $pageTasks,
+                                        'access_level' => $pageAccess['level'],
+                                        'permissions' => $pageAccess['permissions'],
                                     ];
                                 }
                             }
@@ -1937,8 +1977,8 @@ class MetaAssetsService
         $batchChunks = array_chunk($accountIds, self::BATCH_SIZE);
         $batchNumber = 0;
 
-        // Fields for detailed fetch
-        $detailFields = 'id,name,account_status,disable_reason,spend_cap,amount_spent,balance,is_prepay_account,min_daily_budget,capabilities,funding_source_details,created_time,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}';
+        // Fields for detailed fetch - includes user_tasks for access control
+        $detailFields = 'id,name,account_status,disable_reason,spend_cap,amount_spent,balance,is_prepay_account,min_daily_budget,capabilities,funding_source_details,created_time,user_tasks,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}';
 
         foreach ($batchChunks as $chunk) {
             if ($batchNumber > 0) {
@@ -1983,7 +2023,11 @@ class MetaAssetsService
                     if (($batchResponse['code'] ?? 0) === 200) {
                         $body = json_decode($batchResponse['body'] ?? '{}', true);
 
-                        // Enrich account with detailed info
+                        // Calculate access level from user_tasks
+                        $accountTasks = $body['user_tasks'] ?? [];
+                        $accountAccess = $this->calculateAccessLevel($accountTasks);
+
+                        // Enrich account with detailed info and access control
                         $enrichedAccount = array_merge($baseAccount, [
                             'disable_reason' => isset($body['disable_reason']) ? $this->getDisableReasonLabel($body['disable_reason']) : null,
                             'spend_cap' => $body['spend_cap'] ?? null,
@@ -1994,10 +2038,13 @@ class MetaAssetsService
                             'capabilities' => $body['capabilities'] ?? [],
                             'funding_source' => $body['funding_source_details']['display_string'] ?? null,
                             'created_at' => $body['created_time'] ?? null,
+                            'tasks' => $accountTasks,
+                            'access_level' => $accountAccess['level'],
+                            'permissions' => $accountAccess['permissions'],
                         ]);
                         $enrichedAccounts[] = $enrichedAccount;
 
-                        // Extract pixels
+                        // Extract pixels (inherit access from ad account)
                         foreach ($body['adspixels']['data'] ?? [] as $pixel) {
                             $existingIds = array_column($pixels, 'id');
                             if (!in_array($pixel['id'], $existingIds)) {
@@ -2011,11 +2058,15 @@ class MetaAssetsService
                                     'source' => $baseAccount['source'] ?? 'unknown',
                                     'creation_time' => $pixel['creation_time'] ?? null,
                                     'last_fired_time' => $pixel['last_fired_time'] ?? null,
+                                    // Pixels inherit access from ad account
+                                    'tasks' => $accountTasks,
+                                    'access_level' => $accountAccess['level'],
+                                    'permissions' => $accountAccess['permissions'],
                                 ];
                             }
                         }
 
-                        // Extract custom conversions
+                        // Extract custom conversions (inherit access from ad account)
                         foreach ($body['customconversions']['data'] ?? [] as $conversion) {
                             $existingIds = array_column($customConversions, 'id');
                             if (!in_array($conversion['id'], $existingIds)) {
@@ -2034,6 +2085,10 @@ class MetaAssetsService
                                     'creation_time' => $conversion['creation_time'] ?? null,
                                     'last_fired_time' => $conversion['last_fired_time'] ?? null,
                                     'is_archived' => $conversion['is_archived'] ?? false,
+                                    // Custom conversions inherit access from ad account
+                                    'tasks' => $accountTasks,
+                                    'access_level' => $accountAccess['level'],
+                                    'permissions' => $accountAccess['permissions'],
                                 ];
                             }
                         }
