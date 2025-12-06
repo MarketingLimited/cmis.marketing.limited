@@ -23,15 +23,20 @@ class RestoreController extends Controller
 {
     use ApiResponse;
 
-    protected RestoreOrchestrator $orchestrator;
-    protected RollbackService $rollbackService;
+    /**
+     * Get the RestoreOrchestrator instance (lazy-loaded)
+     */
+    protected function getOrchestrator(): RestoreOrchestrator
+    {
+        return app(RestoreOrchestrator::class);
+    }
 
-    public function __construct(
-        RestoreOrchestrator $orchestrator,
-        RollbackService $rollbackService
-    ) {
-        $this->orchestrator = $orchestrator;
-        $this->rollbackService = $rollbackService;
+    /**
+     * Get the RollbackService instance (lazy-loaded)
+     */
+    protected function getRollbackService(): RollbackService
+    {
+        return app(RollbackService::class);
     }
 
     /**
@@ -83,7 +88,7 @@ class RestoreController extends Controller
 
         try {
             // Validate and process upload
-            $result = $this->orchestrator->uploadExternalBackup(
+            $result = $this->getOrchestrator()->uploadExternalBackup(
                 $org,
                 $file->path(),
                 $fileName
@@ -173,7 +178,7 @@ class RestoreController extends Controller
 
         // Run analysis
         try {
-            $analysis = $this->orchestrator->analyze($restore);
+            $analysis = $this->getOrchestrator()->analyze($restore);
 
             if ($request->wantsJson()) {
                 return $this->success([
@@ -438,7 +443,7 @@ class RestoreController extends Controller
             ->findOrFail($restore);
 
         if ($request->wantsJson()) {
-            return $this->success($this->orchestrator->getProgress($restore));
+            return $this->success($this->getOrchestrator()->getProgress($restore));
         }
 
         return view('apps.backup.restore.progress', [
@@ -456,7 +461,7 @@ class RestoreController extends Controller
         $restore = BackupRestore::where('org_id', $org)
             ->findOrFail($restore);
 
-        return $this->success($this->orchestrator->getProgress($restore));
+        return $this->success($this->getOrchestrator()->getProgress($restore));
     }
 
     /**
@@ -468,7 +473,7 @@ class RestoreController extends Controller
             ->findOrFail($restore);
 
         try {
-            $result = $this->rollbackService->rollback($restore);
+            $result = $this->getRollbackService()->rollback($restore);
 
             // Create audit log
             BackupAuditLog::create([

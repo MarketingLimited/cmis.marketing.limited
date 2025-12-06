@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', $backup->name)
 
@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="mb-6">
         <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                 {{ __('backup.dashboard_title') }}
             </a>
             <span class="mx-2">/</span>
@@ -24,12 +24,12 @@
             </div>
             <div class="flex items-center gap-3">
                 @if($backup->status === 'completed')
-                    <a href="{{ route('backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
+                    <a href="{{ route('orgs.backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
                        class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                         <i class="fas fa-download me-2"></i>
                         {{ __('backup.download') }}
                     </a>
-                    <a href="{{ route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
+                    <a href="{{ route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
                        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                         <i class="fas fa-undo me-2"></i>
                         {{ __('backup.restore') }}
@@ -243,19 +243,19 @@
 
                 <div class="space-y-3">
                     @if($backup->status === 'completed')
-                        <a href="{{ route('backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
+                        <a href="{{ route('orgs.backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
                            class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                             <i class="fas fa-download me-2"></i>
                             {{ __('backup.download') }}
                         </a>
-                        <a href="{{ route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
+                        <a href="{{ route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
                            class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                             <i class="fas fa-undo me-2"></i>
                             {{ __('backup.restore_from_this') }}
                         </a>
                     @endif
 
-                    <form action="{{ route('backup.destroy', ['org' => $org, 'backup' => $backup->id]) }}"
+                    <form action="{{ route('orgs.backup.destroy', ['org' => $org, 'backup' => $backup->id]) }}"
                           method="POST"
                           onsubmit="return confirm('{{ __('backup.confirm_delete') }}')">
                         @csrf
@@ -293,7 +293,7 @@ function backupDetails() {
 
         async checkProgress() {
             try {
-                const response = await fetch('{{ route('backup.progress', ['org' => $org, 'backup' => $backup->id]) }}');
+                const response = await fetch('{{ route('orgs.backup.progress', ['org' => $org, 'backup' => $backup->id]) }}');
                 const data = await response.json();
 
                 if (data.data) {

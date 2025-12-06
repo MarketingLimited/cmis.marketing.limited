@@ -13,13 +13,13 @@ $steps = [
     <nav class="flex mb-4" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3 rtl:space-x-reverse">
             <li>
-                <a href="{{ route('backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                     {{ __('backup.backups') }}
                 </a>
             </li>
             <li>
                 <span class="mx-2 text-gray-400">/</span>
-                <a href="{{ route('backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                     {{ __('backup.restore') }}
                 </a>
             </li>

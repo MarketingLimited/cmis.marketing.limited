@@ -38,6 +38,11 @@ class CheckBackupPermission
             return redirect()->route('login');
         }
 
+        // Super admins have full access to all backup features
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
         // Check permission if specified
         if ($permission && !$user->hasPermission($permission)) {
             if ($request->expectsJson()) {

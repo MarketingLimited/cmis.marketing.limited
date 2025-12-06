@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.restore_progress'))
 
@@ -138,7 +138,7 @@
 
     <!-- Actions -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('backup.restore.index', ['org' => $org]) }}"
+        <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}"
            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <i class="fas fa-list me-2"></i>
             {{ __('backup.back_to_restores') }}
@@ -147,7 +147,7 @@
         <div class="flex items-center gap-3">
             <!-- View Result (when completed) -->
             <a x-show="status === 'completed'"
-               href="{{ route('backup.restore.complete', ['org' => $org, 'restore' => $restore->id]) }}"
+               href="{{ route('orgs.backup.restore.complete', ['org' => $org, 'restore' => $restore->id]) }}"
                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                 <i class="fas fa-check-circle me-2"></i>
                 {{ __('backup.view_result') }}

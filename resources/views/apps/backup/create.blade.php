@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.create_backup'))
 
@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="mb-6">
         <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                 {{ __('backup.dashboard_title') }}
             </a>
             <span class="mx-2">/</span>
@@ -18,7 +18,7 @@
         </h1>
     </div>
 
-    <form action="{{ route('backup.store', ['org' => $org]) }}" method="POST" class="space-y-6">
+    <form action="{{ route('orgs.backup.store', ['org' => $org]) }}" method="POST" class="space-y-6">
         @csrf
 
         <!-- Basic Info -->
@@ -91,7 +91,7 @@
                         </div>
                         <div class="ms-3">
                             <span class="text-sm font-medium text-gray-900 dark:text-white">
-                                {{ $category['label'] }}
+                                {{ __($category['label']) }}
                             </span>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ $category['table_count'] ?? count($category['tables'] ?? []) }} {{ __('backup.tables') }}
@@ -132,7 +132,7 @@
                         @foreach($dataSummary as $key => $summary)
                             <tr>
                                 <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                    {{ $summary['label'] ?? $key }}
+                                    {{ __($summary['label'] ?? 'backup.categories.' . $key) }}
                                 </td>
                                 <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
                                     {{ number_format($summary['record_count'] ?? 0) }}
@@ -167,7 +167,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-4">
-            <a href="{{ route('backup.index', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}"
                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 {{ __('common.cancel') }}
             </a>

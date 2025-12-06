@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.manage_schedules'))
 
@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
             <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+                <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                     {{ __('backup.dashboard_title') }}
                 </a>
                 <span class="mx-2">/</span>
@@ -22,7 +22,7 @@
             </p>
         </div>
         <div class="mt-4 md:mt-0">
-            <a href="{{ route('backup.schedule.create', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.schedule.create', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                 <i class="fas fa-plus me-2"></i>
                 {{ __('backup.create_schedule') }}
@@ -36,7 +36,7 @@
             <div class="p-8 text-center">
                 <i class="fas fa-clock text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                 <p class="text-gray-500 dark:text-gray-400">{{ __('backup.no_schedules_yet') }}</p>
-                <a href="{{ route('backup.schedule.create', ['org' => $org]) }}"
+                <a href="{{ route('orgs.backup.schedule.create', ['org' => $org]) }}"
                    class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                     {{ __('backup.create_first_schedule') }}
                 </a>
@@ -126,7 +126,7 @@
                                 <td class="px-4 py-3 whitespace-nowrap text-end text-sm font-medium">
                                     <div class="flex items-center justify-end gap-2">
                                         <!-- Toggle Active -->
-                                        <form action="{{ route('backup.schedule.toggle', ['org' => $org, 'schedule' => $schedule->id]) }}"
+                                        <form action="{{ route('orgs.backup.schedule.toggle', ['org' => $org, 'schedule' => $schedule->id]) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PATCH')
@@ -138,7 +138,7 @@
                                         </form>
 
                                         <!-- Edit -->
-                                        <a href="{{ route('backup.schedule.edit', ['org' => $org, 'schedule' => $schedule->id]) }}"
+                                        <a href="{{ route('orgs.backup.schedule.edit', ['org' => $org, 'schedule' => $schedule->id]) }}"
                                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                                            title="{{ __('backup.edit') }}">
                                             <i class="fas fa-edit"></i>
@@ -230,7 +230,7 @@ function scheduleManager() {
         confirmDelete(id, name) {
             this.deleteScheduleId = id;
             this.deleteScheduleName = name;
-            this.deleteUrl = `{{ route('backup.schedule.index', ['org' => $org]) }}/${id}`;
+            this.deleteUrl = `{{ route('orgs.backup.schedule.index', ['org' => $org]) }}/${id}`;
             this.showDeleteModal = true;
         }
     };

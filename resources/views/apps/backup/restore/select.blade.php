@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.select_data'))
 
@@ -8,7 +8,7 @@
     @include('apps.backup.restore.partials.wizard-steps', ['currentStep' => 2])
 
     <!-- Restore Type Selection -->
-    <form action="{{ route('backup.restore.select.store', ['org' => $org, 'restore' => $restore->id]) }}"
+    <form action="{{ route('orgs.backup.restore.select.store', ['org' => $org, 'restore' => $restore->id]) }}"
           method="POST"
           @submit="handleSubmit">
         @csrf
@@ -254,7 +254,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-between">
-            <a href="{{ route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
+            <a href="{{ route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <i class="fas fa-arrow-start me-2"></i>
                 {{ __('common.back') }}

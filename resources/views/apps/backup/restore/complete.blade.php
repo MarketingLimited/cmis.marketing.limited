@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.restore_complete'))
 
@@ -9,13 +9,13 @@
         <nav class="flex mb-4" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3 rtl:space-x-reverse">
                 <li>
-                    <a href="{{ route('backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         {{ __('backup.backups') }}
                     </a>
                 </li>
                 <li>
                     <span class="mx-2 text-gray-400">/</span>
-                    <a href="{{ route('backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         {{ __('backup.restore') }}
                     </a>
                 </li>
@@ -271,13 +271,13 @@
 
     <!-- Actions -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('backup.restore.index', ['org' => $org]) }}"
+        <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}"
            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <i class="fas fa-list me-2"></i>
             {{ __('backup.back_to_restores') }}
         </a>
 
-        <a href="{{ route('backup.index', ['org' => $org]) }}"
+        <a href="{{ route('orgs.backup.index', ['org' => $org]) }}"
            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <i class="fas fa-home me-2"></i>
             {{ __('backup.go_to_dashboard') }}
@@ -334,7 +334,7 @@
                                 class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                             {{ __('common.cancel') }}
                         </button>
-                        <form action="{{ route('backup.restore.rollback', ['org' => $org, 'restore' => $restore->id]) }}"
+                        <form action="{{ route('orgs.backup.restore.rollback', ['org' => $org, 'restore' => $restore->id]) }}"
                               method="POST"
                               class="inline">
                             @csrf

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.dashboard_title'))
 
@@ -15,7 +15,7 @@
             </p>
         </div>
         <div class="mt-4 md:mt-0 flex gap-3">
-            <a href="{{ route('backup.create', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.create', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                 <i class="fas fa-plus me-2"></i>
                 {{ __('backup.create_backup') }}
@@ -86,22 +86,22 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{{ __('backup.quick_actions') }}</h3>
         <div class="flex flex-wrap gap-3">
-            <a href="{{ route('backup.schedule.index', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.schedule.index', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fas fa-clock me-2"></i>
                 {{ __('backup.manage_schedules') }}
             </a>
-            <a href="{{ route('backup.restore.index', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fas fa-undo me-2"></i>
                 {{ __('backup.restore_data') }}
             </a>
-            <a href="{{ route('backup.settings', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.settings', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fas fa-cog me-2"></i>
                 {{ __('backup.settings') }}
             </a>
-            <a href="{{ route('backup.logs', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.logs', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fas fa-list me-2"></i>
                 {{ __('backup.audit_logs') }}
@@ -119,7 +119,7 @@
             <div class="p-8 text-center">
                 <i class="fas fa-database text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                 <p class="text-gray-500 dark:text-gray-400">{{ __('backup.no_backups_yet') }}</p>
-                <a href="{{ route('backup.create', ['org' => $org]) }}"
+                <a href="{{ route('orgs.backup.create', ['org' => $org]) }}"
                    class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                     {{ __('backup.create_first_backup') }}
                 </a>
@@ -183,18 +183,18 @@
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-end text-sm font-medium">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('backup.show', ['org' => $org, 'backup' => $backup->id]) }}"
+                                        <a href="{{ route('orgs.backup.show', ['org' => $org, 'backup' => $backup->id]) }}"
                                            class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                                            title="{{ __('backup.view') }}">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if($backup->status === 'completed')
-                                            <a href="{{ route('backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
+                                            <a href="{{ route('orgs.backup.download', ['org' => $org, 'backup' => $backup->id]) }}"
                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                                                title="{{ __('backup.download') }}">
                                                 <i class="fas fa-download"></i>
                                             </a>
-                                            <a href="{{ route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
+                                            <a href="{{ route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
                                                class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                                title="{{ __('backup.restore') }}">
                                                 <i class="fas fa-undo"></i>
@@ -266,7 +266,7 @@ function backupDashboard() {
         confirmDelete(id, code) {
             this.deleteBackupId = id;
             this.deleteBackupCode = code;
-            this.deleteUrl = `{{ route('backup.index', ['org' => $org]) }}/${id}`;
+            this.deleteUrl = `{{ route('orgs.backup.index', ['org' => $org]) }}/${id}`;
             this.showDeleteModal = true;
         }
     };

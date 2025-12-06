@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.restore_title'))
 
@@ -15,12 +15,12 @@
             </p>
         </div>
         <div class="mt-4 md:mt-0 flex items-center gap-3">
-            <a href="{{ route('backup.restore.upload', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.restore.upload', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-upload me-2"></i>
                 {{ __('backup.upload_external') }}
             </a>
-            <a href="{{ route('backup.index', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <i class="fas fa-arrow-start me-2"></i>
                 {{ __('backup.back_to_backups') }}
@@ -85,17 +85,17 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-end">
                             @if(in_array($restore->status, ['pending', 'analyzing', 'awaiting_confirmation']))
-                            <a href="{{ route('backup.restore.select', ['org' => $org, 'restore' => $restore->id]) }}"
+                            <a href="{{ route('orgs.backup.restore.select', ['org' => $org, 'restore' => $restore->id]) }}"
                                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                 {{ __('backup.continue') }}
                             </a>
                             @elseif($restore->status === 'processing')
-                            <a href="{{ route('backup.restore.progress', ['org' => $org, 'restore' => $restore->id]) }}"
+                            <a href="{{ route('orgs.backup.restore.progress', ['org' => $org, 'restore' => $restore->id]) }}"
                                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                 {{ __('backup.view_progress') }}
                             </a>
                             @elseif($restore->status === 'completed')
-                            <a href="{{ route('backup.restore.complete', ['org' => $org, 'restore' => $restore->id]) }}"
+                            <a href="{{ route('orgs.backup.restore.complete', ['org' => $org, 'restore' => $restore->id]) }}"
                                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300">
                                 {{ __('backup.view_result') }}
                             </a>
@@ -127,7 +127,7 @@
             <p class="text-gray-500 dark:text-gray-400">
                 {{ __('backup.no_backups_available') }}
             </p>
-            <a href="{{ route('backup.create', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.create', ['org' => $org]) }}"
                class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 <i class="fas fa-plus me-2"></i>
                 {{ __('backup.create_backup') }}
@@ -184,7 +184,7 @@
                         </div>
 
                         <!-- Restore Button -->
-                        <a href="{{ route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
+                        <a href="{{ route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]) }}"
                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                             <i class="fas fa-undo me-2"></i>
                             {{ __('backup.restore') }}

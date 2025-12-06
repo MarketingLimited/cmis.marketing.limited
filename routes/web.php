@@ -943,17 +943,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', [BackupController::class, 'store'])->name('store')
                 ->middleware('backup.permission:backup.create');
 
-            // View & Download
-            Route::get('/{backup}', [BackupController::class, 'show'])->name('show');
-            Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download')
-                ->middleware('backup.permission:backup.download');
-            Route::get('/{backup}/progress', [BackupController::class, 'progress'])->name('progress');
-
-            // Delete
-            Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy')
-                ->middleware('backup.permission:backup.create');
-
-            // ==================== Restore Routes ====================
+            // ==================== Restore Routes (BEFORE wildcard routes) ====================
             Route::prefix('restore')->name('restore.')->group(function () {
                 // Restore list (available backups)
                 Route::get('/', [RestoreController::class, 'index'])->name('index');
@@ -1015,6 +1005,19 @@ Route::middleware(['auth'])->group(function () {
                 ->middleware('backup.permission:backup.view_logs');
             Route::get('/logs/{log}', [BackupAuditController::class, 'show'])->name('logs.show')
                 ->middleware('backup.permission:backup.view_logs');
+
+            // ==================== Single Backup Routes (MUST be after prefix routes) ====================
+            // View & Download - These wildcard routes must come AFTER all prefix routes
+            Route::get('/{backup}', [BackupController::class, 'show'])->name('show')
+                ->where('backup', '[0-9a-fA-F\-]{36}');  // Only match UUIDs
+            Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download')
+                ->middleware('backup.permission:backup.download')
+                ->where('backup', '[0-9a-fA-F\-]{36}');
+            Route::get('/{backup}/progress', [BackupController::class, 'progress'])->name('progress')
+                ->where('backup', '[0-9a-fA-F\-]{36}');
+            Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy')
+                ->middleware('backup.permission:backup.create')
+                ->where('backup', '[0-9a-fA-F\-]{36}');
         });
 
     }); // End of Organization-Specific Routes

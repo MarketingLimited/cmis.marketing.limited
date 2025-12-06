@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.audit_logs'))
 
@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
             <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+                <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                     {{ __('backup.dashboard_title') }}
                 </a>
                 <span class="mx-2">/</span>
@@ -31,12 +31,12 @@
                 </button>
                 <div x-show="open" @click.away="open = false" x-transition
                      class="absolute end-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-                    <a href="{{ route('backup.logs.export', ['org' => $org, 'format' => 'csv']) }}"
+                    <a href="{{ route('orgs.backup.logs.export', ['org' => $org, 'format' => 'csv']) }}"
                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <i class="fas fa-file-csv me-2 text-green-500"></i>
                         {{ __('backup.export_csv') }}
                     </a>
-                    <a href="{{ route('backup.logs.export', ['org' => $org, 'format' => 'json']) }}"
+                    <a href="{{ route('orgs.backup.logs.export', ['org' => $org, 'format' => 'json']) }}"
                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <i class="fas fa-file-code me-2 text-blue-500"></i>
                         {{ __('backup.export_json') }}
@@ -105,7 +105,7 @@
                     <i class="fas fa-filter me-1"></i>
                     {{ __('backup.filter') }}
                 </button>
-                <a href="{{ route('backup.logs', ['org' => $org]) }}"
+                <a href="{{ route('orgs.backup.logs', ['org' => $org]) }}"
                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
                     {{ __('backup.clear') }}
                 </a>

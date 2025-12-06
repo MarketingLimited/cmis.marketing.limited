@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.edit_schedule'))
 
@@ -7,11 +7,11 @@
     <!-- Header -->
     <div class="mb-6">
         <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                 {{ __('backup.dashboard_title') }}
             </a>
             <span class="mx-2">/</span>
-            <a href="{{ route('backup.schedule.index', ['org' => $org]) }}" class="hover:text-primary-600">
+            <a href="{{ route('orgs.backup.schedule.index', ['org' => $org]) }}" class="hover:text-primary-600">
                 {{ __('backup.schedules') }}
             </a>
             <span class="mx-2">/</span>
@@ -22,7 +22,7 @@
         </h1>
     </div>
 
-    <form action="{{ route('backup.schedule.update', ['org' => $org, 'schedule' => $schedule->id]) }}" method="POST" class="space-y-6">
+    <form action="{{ route('orgs.backup.schedule.update', ['org' => $org, 'schedule' => $schedule->id]) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -198,7 +198,7 @@
             </button>
 
             <div class="flex items-center gap-4">
-                <a href="{{ route('backup.schedule.index', ['org' => $org]) }}"
+                <a href="{{ route('orgs.backup.schedule.index', ['org' => $org]) }}"
                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                     {{ __('common.cancel') }}
                 </a>
@@ -231,7 +231,7 @@
                             class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                         {{ __('common.cancel') }}
                     </button>
-                    <form action="{{ route('backup.schedule.destroy', ['org' => $org, 'schedule' => $schedule->id]) }}"
+                    <form action="{{ route('orgs.backup.schedule.destroy', ['org' => $org, 'schedule' => $schedule->id]) }}"
                           method="POST" class="inline">
                         @csrf
                         @method('DELETE')

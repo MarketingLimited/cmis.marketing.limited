@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.settings'))
 
@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="mb-6">
         <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <a href="{{ route('backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="hover:text-primary-600">
                 {{ __('backup.dashboard_title') }}
             </a>
             <span class="mx-2">/</span>
@@ -21,7 +21,7 @@
         </p>
     </div>
 
-    <form action="{{ route('backup.settings.update', ['org' => $org]) }}" method="POST" class="space-y-6">
+    <form action="{{ route('orgs.backup.settings.update', ['org' => $org]) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -267,7 +267,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-4">
-            <a href="{{ route('backup.index', ['org' => $org]) }}"
+            <a href="{{ route('orgs.backup.index', ['org' => $org]) }}"
                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 {{ __('common.cancel') }}
             </a>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.confirm_restore'))
 
@@ -7,7 +7,7 @@
     <!-- Header with Steps -->
     @include('apps.backup.restore.partials.wizard-steps', ['currentStep' => 4])
 
-    <form action="{{ route('backup.restore.process', ['org' => $org, 'restore' => $restore->id]) }}"
+    <form action="{{ route('orgs.backup.restore.process', ['org' => $org, 'restore' => $restore->id]) }}"
           method="POST"
           @submit="handleSubmit">
         @csrf
@@ -257,8 +257,8 @@
         <div class="flex items-center justify-between">
             @php
                 $backRoute = !empty($restore->conflict_resolution['preview']['total'])
-                    ? route('backup.restore.conflicts', ['org' => $org, 'restore' => $restore->id])
-                    : route('backup.restore.select', ['org' => $org, 'restore' => $restore->id]);
+                    ? route('orgs.backup.restore.conflicts', ['org' => $org, 'restore' => $restore->id])
+                    : route('orgs.backup.restore.select', ['org' => $org, 'restore' => $restore->id]);
             @endphp
             <a href="{{ $backRoute }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

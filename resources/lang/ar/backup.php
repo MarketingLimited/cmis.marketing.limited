@@ -27,10 +27,17 @@ return [
     'breadcrumb_create' => 'إنشاء نسخة',
     'breadcrumb_restore' => 'استعادة',
     'breadcrumb_details' => 'التفاصيل',
+    'schedules' => 'إدارة الجداول',
+    'backup_name_placeholder' => 'أدخل اسم النسخة الاحتياطية',
 
     // Dashboard
     'dashboard_title' => 'لوحة النسخ الاحتياطي',
     'dashboard_subtitle' => 'إدارة النسخ الاحتياطية لمنظمتك',
+    'dashboard_description' => 'إدارة النسخ الاحتياطية لمنظمتك',
+    'quick_actions' => 'إجراءات سريعة',
+    'date' => 'التاريخ',
+    'manage_schedules' => 'إدارة الجداول',
+    'restore_data' => 'استعادة البيانات',
     'total_backups' => 'إجمالي النسخ',
     'this_month' => 'هذا الشهر',
     'storage_used' => 'المساحة المستخدمة',
@@ -41,6 +48,15 @@ return [
     'recent_activity' => 'النشاط الأخير',
     'no_backups_yet' => 'لا توجد نسخ احتياطية بعد',
     'create_first_backup' => 'أنشئ أول نسخة احتياطية لحماية بياناتك',
+
+    // Table Headers
+    'size' => 'الحجم',
+    'actions' => 'الإجراءات',
+    'view' => 'عرض',
+
+    // Delete Confirmation
+    'confirm_delete_title' => 'تأكيد الحذف',
+    'confirm_delete_message' => 'هل أنت متأكد من حذف هذه النسخة الاحتياطية؟',
 
     // Actions
     'create_backup' => 'إنشاء نسخة احتياطية',
@@ -88,6 +104,20 @@ return [
     'status_awaiting_confirmation' => 'بانتظار التأكيد',
     'status_rolled_back' => 'تم التراجع',
 
+    // Create Backup Form
+    'basic_info' => 'المعلومات الأساسية',
+    'default_backup_name' => 'سيتم إنشاء اسم النسخة الاحتياطية تلقائياً',
+    'description' => 'الوصف',
+    'description_placeholder' => 'وصف اختياري لهذه النسخة الاحتياطية',
+    'categories_description' => 'حدد فئات البيانات التي تريد تضمينها في هذه النسخة',
+    'no_selection_means_all' => 'إذا لم يتم تحديد أي فئة، سيتم نسخ جميع البيانات',
+    'data_summary' => 'ملخص البيانات',
+    'records' => 'السجلات',
+    'tables' => 'الجداول',
+    'security_options' => 'خيارات الأمان',
+    'encrypt_backup' => 'تشفير النسخة الاحتياطية',
+    'encrypt_description' => 'حماية نسختك الاحتياطية بتشفير AES-256',
+
     // Backup Details
     'backup_details' => 'تفاصيل النسخة الاحتياطية',
     'backup_code' => 'كود النسخة',
@@ -105,8 +135,28 @@ return [
     'expires_at' => 'تاريخ انتهاء الصلاحية',
     'error_message' => 'رسالة الخطأ',
 
-    // Categories
-    'categories' => 'الفئات',
+    // Categories (main label)
+    'categories_label' => 'الفئات',
+
+    // Category names (nested for dynamic access: __('backup.categories.campaigns'))
+    'categories' => [
+        'other' => 'أخرى',
+        'audiences' => 'الجماهير',
+        'analytics' => 'التحليلات',
+        'campaigns' => 'الحملات',
+        'social_posts' => 'المنشورات الاجتماعية',
+        'automations' => 'الأتمتة',
+        'ad_content' => 'محتوى الإعلانات',
+        'integrations' => 'التكاملات',
+        'reports' => 'التقارير',
+        'settings' => 'الإعدادات',
+        'users' => 'المستخدمين',
+        'content' => 'المحتوى',
+        'content_plans' => 'خطط المحتوى',
+        'team_settings' => 'إعدادات الفريق',
+    ],
+
+    // Other category-related keys
     'category' => 'الفئة',
     'select_categories' => 'اختر الفئات',
     'select_all' => 'اختر الكل',
@@ -146,6 +196,20 @@ return [
     'please_wait' => 'يرجى الانتظار...',
     'estimated_time' => 'الوقت المتوقع',
     'time_remaining' => 'الوقت المتبقي',
+
+    // Restore Page
+    'restore_title' => 'استعادة البيانات',
+    'restore_description' => 'اختر نسخة احتياطية لاستعادة بيانات منظمتك',
+    'back_to_backups' => 'العودة إلى النسخ الاحتياطية',
+    'recent_restores' => 'عمليات الاستعادة الأخيرة',
+    'restore_code' => 'كود الاستعادة',
+    'view_progress' => 'عرض التقدم',
+    'view_result' => 'عرض النتيجة',
+    'available_backups' => 'النسخ الاحتياطية المتاحة',
+    'select_backup_to_restore' => 'اختر نسخة احتياطية للاستعادة',
+    'no_backups_available' => 'لا توجد نسخ احتياطية متاحة',
+    'external_backup' => 'نسخة احتياطية خارجية',
+    'more' => 'المزيد',
 
     // Restore Wizard
     'restore_wizard_title' => 'معالج الاستعادة',
@@ -235,6 +299,13 @@ return [
     // Schedule
     'schedule' => 'الجدولة',
     'backup_schedule' => 'جدول النسخ الاحتياطي',
+    'schedules_description' => 'إعداد النسخ الاحتياطي التلقائي وفق جدول متكرر',
+    'no_schedules_yet' => 'لا توجد جداول نسخ احتياطي محددة',
+    'create_first_schedule' => 'أنشئ جدول النسخ الاحتياطي الأول لأتمتة حماية بياناتك',
+    'schedule_info_title' => 'حول جداول النسخ الاحتياطي',
+    'schedule_info_1' => 'تعمل النسخ الاحتياطية المجدولة تلقائياً في الأوقات المحددة',
+    'schedule_info_2' => 'يمكنك تحديد فترات الاحتفاظ لحذف النسخ القديمة تلقائياً',
+    'schedule_info_3' => 'يمكن إرسال إشعارات بريدية عند اكتمال أو فشل النسخ الاحتياطي',
     'schedule_name' => 'اسم الجدول',
     'frequency' => 'التكرار',
     'frequency_hourly' => 'كل ساعة',

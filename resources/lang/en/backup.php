@@ -27,10 +27,17 @@ return [
     'breadcrumb_create' => 'Create Backup',
     'breadcrumb_restore' => 'Restore',
     'breadcrumb_details' => 'Details',
+    'schedules' => 'Manage Schedules',
+    'backup_name_placeholder' => 'Enter backup name',
 
     // Dashboard
     'dashboard_title' => 'Backup Dashboard',
     'dashboard_subtitle' => 'Manage backups for your organization',
+    'dashboard_description' => 'Manage backups for your organization',
+    'quick_actions' => 'Quick Actions',
+    'date' => 'Date',
+    'manage_schedules' => 'Manage Schedules',
+    'restore_data' => 'Restore Data',
     'total_backups' => 'Total Backups',
     'this_month' => 'This Month',
     'storage_used' => 'Storage Used',
@@ -41,6 +48,15 @@ return [
     'recent_activity' => 'Recent Activity',
     'no_backups_yet' => 'No backups yet',
     'create_first_backup' => 'Create your first backup to protect your data',
+
+    // Table Headers
+    'size' => 'Size',
+    'actions' => 'Actions',
+    'view' => 'View',
+
+    // Delete Confirmation
+    'confirm_delete_title' => 'Confirm Delete',
+    'confirm_delete_message' => 'Are you sure you want to delete this backup?',
 
     // Actions
     'create_backup' => 'Create Backup',
@@ -88,6 +104,20 @@ return [
     'status_awaiting_confirmation' => 'Awaiting Confirmation',
     'status_rolled_back' => 'Rolled Back',
 
+    // Create Backup Form
+    'basic_info' => 'Basic Information',
+    'default_backup_name' => 'Default backup name will be generated',
+    'description' => 'Description',
+    'description_placeholder' => 'Optional description for this backup',
+    'categories_description' => 'Select which data categories to include in this backup',
+    'no_selection_means_all' => 'If no categories are selected, all data will be backed up',
+    'data_summary' => 'Data Summary',
+    'records' => 'Records',
+    'tables' => 'Tables',
+    'security_options' => 'Security Options',
+    'encrypt_backup' => 'Encrypt Backup',
+    'encrypt_description' => 'Protect your backup with AES-256 encryption',
+
     // Backup Details
     'backup_details' => 'Backup Details',
     'backup_code' => 'Backup Code',
@@ -105,8 +135,28 @@ return [
     'expires_at' => 'Expires At',
     'error_message' => 'Error Message',
 
-    // Categories
-    'categories' => 'Categories',
+    // Categories (main label)
+    'categories_label' => 'Categories',
+
+    // Category names (nested for dynamic access: __('backup.categories.campaigns'))
+    'categories' => [
+        'other' => 'Other',
+        'audiences' => 'Audiences',
+        'analytics' => 'Analytics',
+        'campaigns' => 'Campaigns',
+        'social_posts' => 'Social Posts',
+        'automations' => 'Automations',
+        'ad_content' => 'Ad Content',
+        'integrations' => 'Integrations',
+        'reports' => 'Reports',
+        'settings' => 'Settings',
+        'users' => 'Users',
+        'content' => 'Content',
+        'content_plans' => 'Content Plans',
+        'team_settings' => 'Team Settings',
+    ],
+
+    // Other category-related keys
     'category' => 'Category',
     'select_categories' => 'Select Categories',
     'select_all' => 'Select All',
@@ -122,6 +172,7 @@ return [
     'category_other' => 'Other',
     'records_count' => 'Records Count',
     'size_kb' => 'Size (KB)',
+
 
     // Backup Summary
     'summary' => 'Summary',
@@ -146,6 +197,20 @@ return [
     'please_wait' => 'Please wait...',
     'estimated_time' => 'Estimated Time',
     'time_remaining' => 'Time Remaining',
+
+    // Restore Page
+    'restore_title' => 'Restore Data',
+    'restore_description' => 'Select a backup to restore your organization data',
+    'back_to_backups' => 'Back to Backups',
+    'recent_restores' => 'Recent Restores',
+    'restore_code' => 'Restore Code',
+    'view_progress' => 'View Progress',
+    'view_result' => 'View Result',
+    'available_backups' => 'Available Backups',
+    'select_backup_to_restore' => 'Select a backup to restore',
+    'no_backups_available' => 'No backups available',
+    'external_backup' => 'External Backup',
+    'more' => 'more',
 
     // Restore Wizard
     'restore_wizard_title' => 'Restore Wizard',
@@ -235,6 +300,13 @@ return [
     // Schedule
     'schedule' => 'Schedule',
     'backup_schedule' => 'Backup Schedule',
+    'schedules_description' => 'Set up automatic backups on a recurring schedule',
+    'no_schedules_yet' => 'No backup schedules configured',
+    'create_first_schedule' => 'Create your first backup schedule to automate your data protection',
+    'schedule_info_title' => 'About Backup Schedules',
+    'schedule_info_1' => 'Scheduled backups run automatically at the specified times',
+    'schedule_info_2' => 'You can set retention periods to automatically delete old backups',
+    'schedule_info_3' => 'Email notifications can be sent when backups complete or fail',
     'schedule_name' => 'Schedule Name',
     'frequency' => 'Frequency',
     'frequency_hourly' => 'Hourly',

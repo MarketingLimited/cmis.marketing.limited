@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.upload_external'))
 
@@ -9,13 +9,13 @@
         <nav class="flex mb-4" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3 rtl:space-x-reverse">
                 <li>
-                    <a href="{{ route('backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <a href="{{ route('orgs.backup.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         {{ __('backup.backups') }}
                     </a>
                 </li>
                 <li>
                     <span class="mx-2 text-gray-400">/</span>
-                    <a href="{{ route('backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         {{ __('backup.restore') }}
                     </a>
                 </li>
@@ -36,7 +36,7 @@
 
     <!-- Upload Form -->
     <div class="max-w-2xl">
-        <form action="{{ route('backup.restore.upload.store', ['org' => $org]) }}"
+        <form action="{{ route('orgs.backup.restore.upload.store', ['org' => $org]) }}"
               method="POST"
               enctype="multipart/form-data"
               @submit="handleSubmit"
@@ -150,7 +150,7 @@
             </div>
 
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{{ route('backup.restore.index', ['org' => $org]) }}"
+                <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}"
                    class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors">
                     {{ __('common.cancel') }}
                 </a>

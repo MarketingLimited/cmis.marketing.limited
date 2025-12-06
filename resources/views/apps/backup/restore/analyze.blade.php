@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('backup.analyze_backup'))
 
@@ -282,14 +282,14 @@
 
     <!-- Actions -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('backup.restore.index', ['org' => $org]) }}"
+        <a href="{{ route('orgs.backup.restore.index', ['org' => $org]) }}"
            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <i class="fas fa-arrow-start me-2"></i>
             {{ __('common.back') }}
         </a>
 
         @if($isCompatible || $isPartial)
-        <a href="{{ route('backup.restore.select', ['org' => $org, 'restore' => $restore->id]) }}"
+        <a href="{{ route('orgs.backup.restore.select', ['org' => $org, 'restore' => $restore->id]) }}"
            class="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             {{ __('backup.continue_to_selection') }}
             <i class="fas fa-arrow-end ms-2"></i>
