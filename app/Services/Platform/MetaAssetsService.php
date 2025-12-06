@@ -145,7 +145,18 @@ class MetaAssetsService
             foreach ($assets as $asset) {
                 // Check if asset is fresh (synced within threshold)
                 if ($asset->last_synced_at && $asset->last_synced_at->isAfter(now()->subHours($freshHours))) {
-                    $freshAssets[$asset->platform_asset_id] = $asset->asset_data ?? [];
+                    $assetData = $asset->asset_data ?? [];
+
+                    // Add default ownership fields for Instagram/Threads if missing (OLD cached records)
+                    if (in_array($assetType, ['instagram', 'threads']) && !isset($assetData['source'])) {
+                        $assetData['source'] = 'personal';  // Default to personal if unknown
+                        $assetData['business_id'] = $assetData['business_id'] ?? null;
+                        $assetData['business_name'] = $assetData['business_name'] ?? null;
+                        $assetData['connected_page_id'] = $assetData['connected_page_id'] ?? null;
+                        $assetData['connected_page_name'] = $assetData['connected_page_name'] ?? null;
+                    }
+
+                    $freshAssets[$asset->platform_asset_id] = $assetData;
                 }
             }
 
@@ -1362,21 +1373,12 @@ class MetaAssetsService
                     foreach ($newPages as $page) {
                         $pages[] = $page;
 
-                        // Extract Instagram if present (already included via field expansion in batch)
+                        // Extract Instagram if present (already includes ownership from batchFetchPageDetails)
                         if (!empty($page['instagram_data'])) {
-                            $ig = $page['instagram_data'];
                             $existingIgIds = array_column($instagramAccounts, 'id');
-                            if (!in_array($ig['id'], $existingIgIds)) {
-                                $instagramAccounts[] = [
-                                    'id' => $ig['id'],
-                                    'username' => $ig['username'] ?? null,
-                                    'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
-                                    'profile_picture' => $ig['profile_picture_url'] ?? null,
-                                    'followers_count' => $ig['followers_count'] ?? 0,
-                                    'media_count' => $ig['media_count'] ?? 0,
-                                    'connected_page_id' => $page['id'],
-                                    'connected_page_name' => $page['name'] ?? 'Unknown Page',
-                                ];
+                            if (!in_array($page['instagram_data']['id'], $existingIgIds)) {
+                                // Use the fully-formatted instagram_data which includes ownership fields
+                                $instagramAccounts[] = $page['instagram_data'];
                             }
                         }
                     }
