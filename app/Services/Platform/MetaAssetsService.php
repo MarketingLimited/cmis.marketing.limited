@@ -267,6 +267,575 @@ class MetaAssetsService
         return $allAssets;
     }
 
+    // =========================================================================
+    // TWO-PHASE INCREMENTAL SYNC (Optimized for large accounts: 400+ pages)
+    // =========================================================================
+    // Phase 1: Fetch just IDs (lightweight, single paginated call)
+    // Phase 2: Check database - which IDs are new/stale?
+    // Phase 3: Batch fetch ONLY new/stale assets (50 per batch)
+    // =========================================================================
+
+    /**
+     * Fetch just asset IDs from an endpoint (lightweight call).
+     * Used for phase 1 of incremental sync.
+     *
+     * @param string $endpoint The API endpoint
+     * @param string $accessToken Access token
+     * @param int $limit Items per page (max 500)
+     * @return array<string> List of asset IDs
+     */
+    protected function fetchAssetIdsOnly(string $endpoint, string $accessToken, int $limit = 500): array
+    {
+        $ids = [];
+        $url = $endpoint;
+        $pageCount = 0;
+
+        while ($url && $pageCount < self::MAX_PAGES) {
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT)
+                    ->get($url, $pageCount === 0 ? [
+                        'access_token' => $accessToken,
+                        'fields' => 'id',
+                        'limit' => $limit,
+                    ] : []);
+
+                if (!$response->successful()) {
+                    break;
+                }
+
+                $data = $response->json();
+                foreach ($data['data'] ?? [] as $item) {
+                    if (isset($item['id'])) {
+                        $ids[] = $item['id'];
+                    }
+                }
+
+                $url = $data['paging']['next'] ?? null;
+                $pageCount++;
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch asset IDs', ['error' => $e->getMessage()]);
+                break;
+            }
+        }
+
+        Log::debug('Fetched asset IDs (lightweight)', [
+            'endpoint' => $endpoint,
+            'total_ids' => count($ids),
+            'pages_fetched' => $pageCount,
+        ]);
+
+        return $ids;
+    }
+
+    /**
+     * Batch fetch page details for a list of page IDs.
+     * Uses Meta Batch API to fetch 50 pages per request.
+     *
+     * @param array $pageIds List of page IDs to fetch
+     * @param string $accessToken Access token
+     * @return array Array of page data
+     */
+    protected function batchFetchPageDetails(array $pageIds, string $accessToken): array
+    {
+        if (empty($pageIds)) {
+            return [];
+        }
+
+        $pages = [];
+        $fields = 'id,name,category,picture{url},access_token,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}';
+        $chunks = array_chunk($pageIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $pageId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $pageId . '?' . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $index => $batchResponse) {
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $body = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (!empty($body['id'])) {
+                                $pages[] = [
+                                    'id' => $body['id'],
+                                    'name' => $body['name'] ?? 'Unknown Page',
+                                    'category' => $body['category'] ?? null,
+                                    'picture' => $body['picture']['data']['url'] ?? null,
+                                    'has_instagram' => isset($body['instagram_business_account']),
+                                    'instagram_id' => $body['instagram_business_account']['id'] ?? null,
+                                    'instagram_data' => $body['instagram_business_account'] ?? null,
+                                ];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Batch page fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched page details', [
+            'requested' => count($pageIds),
+            'fetched' => count($pages),
+            'batches_used' => $batchNumber,
+            'api_calls' => $batchNumber, // Each batch = 1 API call
+        ]);
+
+        return $pages;
+    }
+
+    /**
+     * Incremental sync for pages using two-phase approach.
+     * Optimized for users with 400+ pages.
+     *
+     * Phase 1: Fetch just IDs (1 paginated call for up to 2500 pages)
+     * Phase 2: Check DB for existing fresh data
+     * Phase 3: Batch fetch only NEW pages (50 per batch)
+     *
+     * @param string $accessToken Access token
+     * @param string $connectionId Connection ID
+     * @return array Array of pages with instagram data
+     */
+    protected function incrementalSyncPages(string $accessToken, string $connectionId): array
+    {
+        // Phase 1: Get all page IDs (lightweight - just IDs)
+        $allPageIds = $this->fetchAssetIdsOnly(
+            self::BASE_URL . '/' . self::API_VERSION . '/me/accounts',
+            $accessToken,
+            500 // Get up to 500 per page
+        );
+
+        if (empty($allPageIds)) {
+            Log::info('No pages found in incremental sync');
+            return [];
+        }
+
+        // Phase 2: Check which pages we already have fresh data for
+        $freshPages = $this->getExistingFreshAssets('page');
+        $freshIds = array_keys($freshPages);
+
+        // Find pages that need fetching (new or stale)
+        $newPageIds = array_diff($allPageIds, $freshIds);
+
+        Log::info('Incremental page sync analysis', [
+            'total_pages' => count($allPageIds),
+            'fresh_in_db' => count($freshIds),
+            'new_to_fetch' => count($newPageIds),
+            'api_calls_saved' => count($freshIds),
+        ]);
+
+        // Start with fresh pages from DB
+        $allPages = array_values($freshPages);
+
+        // Phase 3: Batch fetch only NEW pages
+        if (!empty($newPageIds)) {
+            $newPages = $this->batchFetchPageDetails($newPageIds, $accessToken);
+            $allPages = array_merge($allPages, $newPages);
+        }
+
+        return $allPages;
+    }
+
+    /**
+     * Batch fetch business asset details (pages, Instagram, catalogs, etc.)
+     * Used when field expansion on /me/businesses times out or returns incomplete data.
+     *
+     * @param array $businessIds List of business IDs
+     * @param string $accessToken Access token
+     * @param array $fieldsToFetch Fields to include in response
+     * @return array Array of business data
+     */
+    protected function batchFetchBusinessDetails(array $businessIds, string $accessToken, array $fieldsToFetch): array
+    {
+        if (empty($businessIds)) {
+            return [];
+        }
+
+        $businesses = [];
+        $fields = implode(',', $fieldsToFetch);
+        $chunks = array_chunk($businessIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $businessId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $businessId . '?' . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $batchResponse) {
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $body = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (!empty($body['id'])) {
+                                $businesses[] = $body;
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Batch business fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched business details', [
+            'requested' => count($businessIds),
+            'fetched' => count($businesses),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return $businesses;
+    }
+
+    /**
+     * Batch fetch ad account details for a list of ad account IDs.
+     * Uses Meta Batch API to fetch 50 ad accounts per request.
+     *
+     * @param array $adAccountIds List of ad account IDs (format: act_XXXXX)
+     * @param string $accessToken Access token
+     * @return array Array of ad account data with pixels and custom conversions
+     */
+    protected function batchFetchAdAccountDetailsIncremental(array $adAccountIds, string $accessToken): array
+    {
+        if (empty($adAccountIds)) {
+            return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
+        }
+
+        $adAccounts = [];
+        $pixels = [];
+        $customConversions = [];
+        $fields = 'id,name,account_id,account_status,currency,timezone_name,spend_cap,amount_spent,balance,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,custom_event_type,pixel{id}}';
+        $chunks = array_chunk($adAccountIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $adAccountId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $adAccountId . '?' . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $batchResponse) {
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $body = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (!empty($body['id'])) {
+                                $accountId = $body['id'];
+                                $adAccounts[] = [
+                                    'id' => $accountId,
+                                    'account_id' => $body['account_id'] ?? str_replace('act_', '', $accountId),
+                                    'name' => $body['name'] ?? 'Unknown',
+                                    'status' => $this->getAccountStatusLabel($body['account_status'] ?? 0),
+                                    'status_code' => $body['account_status'] ?? 0,
+                                    'currency' => $body['currency'] ?? 'USD',
+                                    'timezone' => $body['timezone_name'] ?? 'UTC',
+                                    'spend_cap' => $body['spend_cap'] ?? null,
+                                    'amount_spent' => $body['amount_spent'] ?? '0',
+                                    'balance' => $body['balance'] ?? '0',
+                                ];
+
+                                // Extract pixels
+                                foreach ($body['adspixels']['data'] ?? [] as $pixel) {
+                                    $pixels[] = [
+                                        'id' => $pixel['id'],
+                                        'name' => $pixel['name'] ?? 'Unnamed Pixel',
+                                        'ad_account_id' => $accountId,
+                                        'creation_time' => $pixel['creation_time'] ?? null,
+                                        'last_fired_time' => $pixel['last_fired_time'] ?? null,
+                                    ];
+                                }
+
+                                // Extract custom conversions
+                                foreach ($body['customconversions']['data'] ?? [] as $conversion) {
+                                    $customConversions[] = [
+                                        'id' => $conversion['id'],
+                                        'name' => $conversion['name'] ?? 'Unnamed Conversion',
+                                        'custom_event_type' => $conversion['custom_event_type'] ?? null,
+                                        'pixel_id' => $conversion['pixel']['id'] ?? null,
+                                        'ad_account_id' => $accountId,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Batch ad account fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched ad account details', [
+            'requested' => count($adAccountIds),
+            'fetched' => count($adAccounts),
+            'pixels' => count($pixels),
+            'custom_conversions' => count($customConversions),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return [
+            'ad_accounts' => $adAccounts,
+            'pixels' => $pixels,
+            'custom_conversions' => $customConversions,
+        ];
+    }
+
+    /**
+     * Incremental sync for ad accounts using two-phase approach.
+     * Optimized for users with many ad accounts.
+     *
+     * @param string $accessToken Access token
+     * @param string $connectionId Connection ID
+     * @return array Array with ad_accounts, pixels, custom_conversions
+     */
+    protected function incrementalSyncAdAccounts(string $accessToken, string $connectionId): array
+    {
+        // Phase 1: Get all ad account IDs (lightweight)
+        $allAdAccountIds = $this->fetchAssetIdsOnly(
+            self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
+            $accessToken,
+            500
+        );
+
+        if (empty($allAdAccountIds)) {
+            Log::info('No ad accounts found in incremental sync');
+            return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
+        }
+
+        // Phase 2: Check which ad accounts we already have fresh data for
+        $freshAdAccounts = $this->getExistingFreshAssets('ad_account');
+        $freshIds = array_keys($freshAdAccounts);
+        $freshPixels = $this->getExistingFreshAssets('pixel');
+        $freshConversions = $this->getExistingFreshAssets('custom_conversion');
+
+        // Find ad accounts that need fetching (new or stale)
+        $newAdAccountIds = array_diff($allAdAccountIds, $freshIds);
+
+        Log::info('Incremental ad account sync analysis', [
+            'total_ad_accounts' => count($allAdAccountIds),
+            'fresh_in_db' => count($freshIds),
+            'new_to_fetch' => count($newAdAccountIds),
+            'api_calls_saved' => count($freshIds),
+        ]);
+
+        // Start with fresh data from DB
+        $allAdAccounts = array_values($freshAdAccounts);
+        $allPixels = array_values($freshPixels);
+        $allConversions = array_values($freshConversions);
+
+        // Phase 3: Batch fetch only NEW ad accounts
+        if (!empty($newAdAccountIds)) {
+            $newData = $this->batchFetchAdAccountDetailsIncremental($newAdAccountIds, $accessToken);
+            $allAdAccounts = array_merge($allAdAccounts, $newData['ad_accounts'] ?? []);
+            $allPixels = array_merge($allPixels, $newData['pixels'] ?? []);
+            $allConversions = array_merge($allConversions, $newData['custom_conversions'] ?? []);
+        }
+
+        return [
+            'ad_accounts' => $allAdAccounts,
+            'pixels' => $allPixels,
+            'custom_conversions' => $allConversions,
+        ];
+    }
+
+    /**
+     * Batch fetch Instagram account details for a list of Instagram IDs.
+     *
+     * @param array $instagramIds List of Instagram account IDs
+     * @param string $accessToken Access token
+     * @return array Array of Instagram account data
+     */
+    protected function batchFetchInstagramDetails(array $instagramIds, string $accessToken): array
+    {
+        if (empty($instagramIds)) {
+            return [];
+        }
+
+        $accounts = [];
+        $fields = 'id,username,name,profile_picture_url,followers_count,follows_count,media_count,biography';
+        $chunks = array_chunk($instagramIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $igId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $igId . '?' . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $batchResponse) {
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $body = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (!empty($body['id'])) {
+                                $accounts[] = [
+                                    'id' => $body['id'],
+                                    'username' => $body['username'] ?? null,
+                                    'name' => $body['name'] ?? $body['username'] ?? 'Unknown',
+                                    'profile_picture' => $body['profile_picture_url'] ?? null,
+                                    'followers_count' => $body['followers_count'] ?? 0,
+                                    'follows_count' => $body['follows_count'] ?? 0,
+                                    'media_count' => $body['media_count'] ?? 0,
+                                    'biography' => $body['biography'] ?? null,
+                                ];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Batch Instagram fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched Instagram details', [
+            'requested' => count($instagramIds),
+            'fetched' => count($accounts),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return $accounts;
+    }
+
+    /**
+     * Universal incremental sync for any asset type.
+     * Works for pages, Instagram, ad accounts, catalogs, etc.
+     *
+     * @param string $assetType Asset type (page, instagram, ad_account, etc.)
+     * @param string $endpoint API endpoint to fetch IDs from
+     * @param string $accessToken Access token
+     * @param callable $batchFetchCallback Callback to batch fetch details
+     * @param string $connectionId Connection ID for caching
+     * @return array Merged array of fresh DB data + new API data
+     */
+    protected function universalIncrementalSync(
+        string $assetType,
+        string $endpoint,
+        string $accessToken,
+        callable $batchFetchCallback,
+        string $connectionId
+    ): array {
+        // Phase 1: Get all asset IDs (lightweight)
+        $allIds = $this->fetchAssetIdsOnly($endpoint, $accessToken, 500);
+
+        if (empty($allIds)) {
+            Log::info("No {$assetType} found in incremental sync");
+            return [];
+        }
+
+        // Phase 2: Check which assets we already have fresh data for
+        $freshAssets = $this->getExistingFreshAssets($assetType);
+        $freshIds = array_keys($freshAssets);
+
+        // Find assets that need fetching (new or stale)
+        $newIds = array_diff($allIds, $freshIds);
+
+        Log::info("Incremental {$assetType} sync analysis", [
+            'asset_type' => $assetType,
+            'total_assets' => count($allIds),
+            'fresh_in_db' => count($freshIds),
+            'new_to_fetch' => count($newIds),
+            'api_calls_saved' => count($freshIds),
+            'batch_calls_needed' => empty($newIds) ? 0 : ceil(count($newIds) / self::BATCH_SIZE),
+        ]);
+
+        // Start with fresh assets from DB
+        $allAssets = array_values($freshAssets);
+
+        // Phase 3: Batch fetch only NEW assets
+        if (!empty($newIds)) {
+            $newAssets = $batchFetchCallback($newIds);
+            $allAssets = array_merge($allAssets, $newAssets);
+        }
+
+        return $allAssets;
+    }
+
     /**
      * Extract asset ID from asset data
      */
@@ -474,62 +1043,87 @@ class MetaAssetsService
                 ];
             }
 
-            Log::info('Fetching ALL user assets from Meta API (with pagination and field expansion)');
+            Log::info('Fetching user assets using TWO-PHASE INCREMENTAL SYNC (optimized for 400+ pages)');
 
             try {
-                // Fetch ALL pages with embedded Instagram accounts using pagination
-                $rawPages = $this->fetchAllPages(
+                // =====================================================================
+                // TWO-PHASE INCREMENTAL SYNC FOR PAGES
+                // Phase 1: Fetch just page IDs (lightweight - ~500 IDs per request)
+                // Phase 2: Check which IDs are already fresh in database
+                // Phase 3: Batch fetch only NEW page details (50 per batch request)
+                // =====================================================================
+
+                // Phase 1: Get all page IDs (lightweight call)
+                $allPageIds = $this->fetchAssetIdsOnly(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/accounts',
                     $accessToken,
-                    [
-                        'fields' => implode(',', [
-                            'id',
-                            'name',
-                            'category',
-                            'picture{url}',
-                            'access_token',
-                            'instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}',
-                        ]),
-                    ]
+                    500 // Max 500 IDs per page
                 );
 
-                // Parse pages and extract Instagram accounts
-                $pages = [];
-                $instagramAccounts = [];
+                Log::info('Phase 1 complete: Got page IDs', ['count' => count($allPageIds)]);
 
-                foreach ($rawPages as $page) {
-                    // Store page info
-                    $pages[] = [
-                        'id' => $page['id'],
-                        'name' => $page['name'] ?? 'Unknown Page',
-                        'category' => $page['category'] ?? null,
-                        'picture' => $page['picture']['data']['url'] ?? null,
-                        'has_instagram' => isset($page['instagram_business_account']),
-                        'instagram_id' => $page['instagram_business_account']['id'] ?? null,
-                    ];
-
-                    // Extract Instagram account if present
-                    if (isset($page['instagram_business_account'])) {
-                        $ig = $page['instagram_business_account'];
-                        $existingIds = array_column($instagramAccounts, 'id');
-                        if (!in_array($ig['id'], $existingIds)) {
-                            $instagramAccounts[] = [
-                                'id' => $ig['id'],
-                                'username' => $ig['username'] ?? null,
-                                'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
-                                'profile_picture' => $ig['profile_picture_url'] ?? null,
-                                'followers_count' => $ig['followers_count'] ?? 0,
-                                'media_count' => $ig['media_count'] ?? 0,
-                                'connected_page_id' => $page['id'],
-                                'connected_page_name' => $page['name'] ?? 'Unknown Page',
-                            ];
-                        }
-                    }
+                if (empty($allPageIds)) {
+                    return ['pages' => [], 'instagram' => []];
                 }
 
-                Log::info('ALL user assets fetched with pagination', [
-                    'pages' => count($pages),
-                    'instagram_accounts' => count($instagramAccounts),
+                // Phase 2: Check DB for existing fresh page data
+                $freshPagesById = $this->getExistingFreshAssets('page');
+                $freshIds = array_keys($freshPagesById);
+                $newPageIds = array_diff($allPageIds, $freshIds);
+
+                Log::info('Phase 2 complete: Identified new pages to fetch', [
+                    'total_pages' => count($allPageIds),
+                    'fresh_in_db' => count($freshIds),
+                    'new_to_fetch' => count($newPageIds),
+                    'api_calls_saved' => count($freshIds),
+                    'batch_calls_needed' => empty($newPageIds) ? 0 : ceil(count($newPageIds) / self::BATCH_SIZE),
+                ]);
+
+                // Start with fresh pages from DB
+                $pages = array_values($freshPagesById);
+                $instagramAccounts = array_values($this->getExistingFreshAssets('instagram'));
+
+                // Phase 3: Batch fetch only NEW pages (50 per batch)
+                if (!empty($newPageIds)) {
+                    $newPages = $this->batchFetchPageDetails(array_values($newPageIds), $accessToken);
+
+                    // Extract Instagram from new pages
+                    foreach ($newPages as $page) {
+                        $pages[] = $page;
+
+                        // Extract Instagram if present (already included via field expansion in batch)
+                        if (!empty($page['instagram_data'])) {
+                            $ig = $page['instagram_data'];
+                            $existingIgIds = array_column($instagramAccounts, 'id');
+                            if (!in_array($ig['id'], $existingIgIds)) {
+                                $instagramAccounts[] = [
+                                    'id' => $ig['id'],
+                                    'username' => $ig['username'] ?? null,
+                                    'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                    'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                    'followers_count' => $ig['followers_count'] ?? 0,
+                                    'media_count' => $ig['media_count'] ?? 0,
+                                    'connected_page_id' => $page['id'],
+                                    'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                                ];
+                            }
+                        }
+                    }
+
+                    Log::info('Phase 3 complete: Batch fetched new pages', [
+                        'new_pages_fetched' => count($newPages),
+                        'instagram_extracted' => count($instagramAccounts),
+                    ]);
+                }
+
+                Log::info('TWO-PHASE user asset sync complete', [
+                    'total_pages' => count($pages),
+                    'total_instagram' => count($instagramAccounts),
+                    'api_efficiency' => sprintf(
+                        '%d batch calls instead of %d paginated calls',
+                        empty($newPageIds) ? 0 : ceil(count($newPageIds) / self::BATCH_SIZE),
+                        ceil(count($allPageIds) / 100)
+                    ),
                 ]);
 
                 return [
@@ -792,87 +1386,75 @@ class MetaAssetsService
                 ];
             }
 
-            Log::info('Fetching ALL ad account assets with Batch API optimization');
+            Log::info('Fetching ad accounts using TWO-PHASE INCREMENTAL SYNC (optimized for large accounts)');
 
             try {
-                $adAccounts = [];
-                $pixels = [];
-                $customConversions = [];
-                $processedAccountIds = []; // Track IDs to prevent duplicates
+                // =====================================================================
+                // TWO-PHASE INCREMENTAL SYNC FOR AD ACCOUNTS
+                // Phase 1: Fetch just ad account IDs (lightweight - ~500 IDs per request)
+                // Phase 2: Check which IDs are already fresh in database
+                // Phase 3: Batch fetch only NEW ad account details (50 per batch)
+                // =====================================================================
 
-                // Lighter ad account fields for initial fetch (reduces payload)
-                $adAccountFieldsLight = 'id,name,account_id,account_status,currency,timezone_name';
-
-                // STEP 1: Fetch businesses with embedded ad accounts using field expansion
-                // This reduces N*2 calls (owned + client per business) to just 1 paginated call
-                $businessesWithAdAccounts = $this->fetchAllPages(
-                    self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
-                    $accessToken,
-                    ['fields' => "id,name,owned_ad_accounts.limit(100){{$adAccountFieldsLight}},client_ad_accounts.limit(100){{$adAccountFieldsLight}}"]
-                );
-
-                Log::debug('Fetched businesses with embedded ad accounts', ['count' => count($businessesWithAdAccounts)]);
-
-                // Extract ad accounts from businesses
-                foreach ($businessesWithAdAccounts as $business) {
-                    $businessId = $business['id'] ?? null;
-                    $businessName = $business['name'] ?? 'Unknown Business';
-
-                    if (!$businessId) continue;
-
-                    // Process owned ad accounts (HIGHEST PRIORITY)
-                    foreach ($business['owned_ad_accounts']['data'] ?? [] as $account) {
-                        $accountId = $account['id'];
-                        if (in_array($accountId, $processedAccountIds)) continue;
-
-                        $processedAccountIds[] = $accountId;
-                        $adAccounts[] = $this->formatAdAccountBasic($account, $businessId, $businessName, 'owned');
-                    }
-
-                    // Process client ad accounts (SECOND PRIORITY)
-                    foreach ($business['client_ad_accounts']['data'] ?? [] as $account) {
-                        $accountId = $account['id'];
-                        if (in_array($accountId, $processedAccountIds)) continue;
-
-                        $processedAccountIds[] = $accountId;
-                        $adAccounts[] = $this->formatAdAccountBasic($account, $businessId, $businessName, 'client');
-                    }
-                }
-
-                // STEP 2: Fetch personal ad accounts from /me/adaccounts (LOWEST PRIORITY)
-                $personalAccounts = $this->fetchAllPages(
+                // Phase 1: Get all ad account IDs (lightweight call)
+                $allAdAccountIds = $this->fetchAssetIdsOnly(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
                     $accessToken,
-                    ['fields' => $adAccountFieldsLight]
+                    500
                 );
 
-                foreach ($personalAccounts as $account) {
-                    $accountId = $account['id'];
-                    if (in_array($accountId, $processedAccountIds)) continue;
+                Log::info('Phase 1 complete: Got ad account IDs', ['count' => count($allAdAccountIds)]);
 
-                    $processedAccountIds[] = $accountId;
-                    $adAccounts[] = $this->formatAdAccountBasic($account, null, null, 'personal');
+                if (empty($allAdAccountIds)) {
+                    return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
                 }
 
-                // STEP 3: Batch fetch pixels and custom conversions for all ad accounts
-                // Only if we have ad accounts to query
-                if (!empty($adAccounts)) {
-                    $pixelsAndConversions = $this->batchFetchAdAccountDetails($adAccounts, $accessToken);
-                    $pixels = $pixelsAndConversions['pixels'] ?? [];
-                    $customConversions = $pixelsAndConversions['custom_conversions'] ?? [];
+                // Phase 2: Check DB for existing fresh ad account data
+                $freshAdAccountsById = $this->getExistingFreshAssets('ad_account');
+                $freshIds = array_keys($freshAdAccountsById);
+                $newAdAccountIds = array_diff($allAdAccountIds, $freshIds);
 
-                    // Enrich ad accounts with detailed info
-                    $adAccounts = $pixelsAndConversions['ad_accounts'] ?? $adAccounts;
+                Log::info('Phase 2 complete: Identified new ad accounts to fetch', [
+                    'total_ad_accounts' => count($allAdAccountIds),
+                    'fresh_in_db' => count($freshIds),
+                    'new_to_fetch' => count($newAdAccountIds),
+                    'api_calls_saved' => count($freshIds),
+                    'batch_calls_needed' => empty($newAdAccountIds) ? 0 : ceil(count($newAdAccountIds) / self::BATCH_SIZE),
+                ]);
+
+                // Start with fresh data from DB
+                $adAccounts = array_values($freshAdAccountsById);
+                $pixels = array_values($freshPixels);
+                $customConversions = array_values($freshConversions);
+
+                // Phase 3: Batch fetch only NEW ad accounts with pixels/conversions (50 per batch)
+                if (!empty($newAdAccountIds)) {
+                    $newData = $this->batchFetchAdAccountDetailsIncremental(
+                        array_values($newAdAccountIds),
+                        $accessToken
+                    );
+
+                    // Merge new data with existing DB data
+                    $adAccounts = array_merge($adAccounts, $newData['ad_accounts'] ?? []);
+                    $pixels = array_merge($pixels, $newData['pixels'] ?? []);
+                    $customConversions = array_merge($customConversions, $newData['custom_conversions'] ?? []);
+
+                    Log::info('Phase 3 complete: Batch fetched new ad accounts', [
+                        'new_ad_accounts' => count($newData['ad_accounts'] ?? []),
+                        'new_pixels' => count($newData['pixels'] ?? []),
+                        'new_conversions' => count($newData['custom_conversions'] ?? []),
+                    ]);
                 }
 
-                Log::info('ALL ad account assets fetched with Batch API optimization', [
-                    'ad_accounts' => count($adAccounts),
-                    'pixels' => count($pixels),
-                    'custom_conversions' => count($customConversions),
-                    'owned_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'owned')),
-                    'client_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'client')),
-                    'personal_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'personal')),
-                    'api_calls_saved' => 'Using field expansion instead of per-business calls',
+                Log::info('TWO-PHASE ad account sync complete', [
+                    'total_ad_accounts' => count($adAccounts),
+                    'total_pixels' => count($pixels),
+                    'total_conversions' => count($customConversions),
+                    'api_efficiency' => sprintf(
+                        '%d batch calls instead of %d individual calls',
+                        empty($newAdAccountIds) ? 0 : ceil(count($newAdAccountIds) / self::BATCH_SIZE),
+                        count($allAdAccountIds)
+                    ),
                 ]);
 
                 // Persist to database for three-tier caching
@@ -1246,7 +1828,7 @@ class MetaAssetsService
                 ];
             }
 
-            Log::info('Fetching ALL business assets from Meta API (with pagination and field expansion)');
+            Log::info('Fetching business assets using TWO-PHASE INCREMENTAL SYNC (optimized for 30+ businesses)');
 
             $usedFallback = false;
 
