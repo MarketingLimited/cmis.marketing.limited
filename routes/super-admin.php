@@ -11,6 +11,7 @@ use App\Http\Controllers\SuperAdmin\SuperAdminSystemController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAppController;
 use App\Http\Controllers\SuperAdmin\SuperAdminIntegrationController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAnnouncementController;
+use App\Http\Controllers\SuperAdmin\SuperAdminSecurityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -145,6 +146,20 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::post('/{announcement}/toggle-active', [SuperAdminAnnouncementController::class, 'toggleActive'])->name('toggle-active');
         Route::post('/{announcement}/duplicate', [SuperAdminAnnouncementController::class, 'duplicate'])->name('duplicate');
         Route::post('/{announcement}/dismiss', [SuperAdminAnnouncementController::class, 'dismiss'])->name('dismiss');
+    });
+
+    // =====================================================
+    // Security Dashboard
+    // =====================================================
+    Route::prefix('security')->name('security.')->group(function () {
+        Route::get('/', [SuperAdminSecurityController::class, 'index'])->name('index');
+        Route::get('/audit-logs', [SuperAdminSecurityController::class, 'auditLogs'])->name('audit-logs');
+        Route::get('/events', [SuperAdminSecurityController::class, 'events'])->name('events');
+        Route::post('/events/{event}/resolve', [SuperAdminSecurityController::class, 'resolveEvent'])->name('resolve-event');
+        Route::get('/ip-blacklist', [SuperAdminSecurityController::class, 'ipBlacklist'])->name('ip-blacklist');
+        Route::post('/ip-blacklist', [SuperAdminSecurityController::class, 'blockIp'])->name('block-ip');
+        Route::delete('/ip-blacklist/{blacklist}/unblock', [SuperAdminSecurityController::class, 'unblockIp'])->name('unblock-ip');
+        Route::get('/admin-actions', [SuperAdminSecurityController::class, 'adminActions'])->name('admin-actions');
     });
 
     // =====================================================

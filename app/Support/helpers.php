@@ -158,6 +158,16 @@ if (!function_exists('format_file_size')) {
     }
 }
 
+if (!function_exists('formatBytes')) {
+    /**
+     * Alias for format_file_size() - used by backup views
+     */
+    function formatBytes(int|float|null $bytes): string
+    {
+        return format_file_size((int) ($bytes ?? 0));
+    }
+}
+
 if (!function_exists('format_phone')) {
     function format_phone(string $phone): string
     {

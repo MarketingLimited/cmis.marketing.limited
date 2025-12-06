@@ -264,6 +264,12 @@
                     <i class="fas fa-bullhorn w-5 text-center"></i>
                     <span>{{ __('super_admin.nav.announcements') }}</span>
                 </a>
+
+                <a href="{{ route('super-admin.security.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.security.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-shield-alt w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.security') }}</span>
+                </a>
             </nav>
 
             <!-- User Section -->
