@@ -13,6 +13,7 @@ use App\Http\Controllers\SuperAdmin\SuperAdminIntegrationController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAnnouncementController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSecurityController;
 use App\Http\Controllers\SuperAdmin\SuperAdminBillingController;
+use App\Http\Controllers\SuperAdmin\SuperAdminAssetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -178,6 +179,20 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::post('/ip-blacklist', [SuperAdminSecurityController::class, 'blockIp'])->name('block-ip');
         Route::delete('/ip-blacklist/{blacklist}/unblock', [SuperAdminSecurityController::class, 'unblockIp'])->name('unblock-ip');
         Route::get('/admin-actions', [SuperAdminSecurityController::class, 'adminActions'])->name('admin-actions');
+    });
+
+    // =====================================================
+    // Asset Management
+    // =====================================================
+    Route::prefix('assets')->name('assets.')->group(function () {
+        Route::get('/', [SuperAdminAssetController::class, 'index'])->name('index');
+        Route::get('/browse', [SuperAdminAssetController::class, 'browse'])->name('browse');
+        Route::get('/storage', [SuperAdminAssetController::class, 'storage'])->name('storage');
+        Route::get('/cleanup', [SuperAdminAssetController::class, 'cleanup'])->name('cleanup');
+        Route::get('/{asset}', [SuperAdminAssetController::class, 'show'])->name('show');
+        Route::delete('/{asset}', [SuperAdminAssetController::class, 'destroy'])->name('destroy');
+        Route::post('/purge', [SuperAdminAssetController::class, 'purge'])->name('purge');
+        Route::post('/bulk-delete-unused', [SuperAdminAssetController::class, 'bulkDeleteUnused'])->name('bulk-delete-unused');
     });
 
     // =====================================================
