@@ -178,10 +178,14 @@ return [
     'summary' => 'Summary',
     'backup_summary' => 'Backup Summary',
     'total_records' => 'Total Records',
+    'total_tables' => 'Total Tables',
     'total_size' => 'Total Size',
     'included_categories' => 'Included Categories',
     'excluded_categories' => 'Excluded Categories',
     'files_included' => 'Files Included',
+    'file_info' => 'File Info',
+    'by_category' => 'By Category',
+    'restore_from_this' => 'Restore from This',
 
     // Progress
     'progress' => 'Progress',

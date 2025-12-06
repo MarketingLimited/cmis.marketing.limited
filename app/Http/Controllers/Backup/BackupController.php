@@ -137,7 +137,7 @@ class BackupController extends Controller
         }
 
         return redirect()
-            ->route('backup.show', ['org' => $org, 'backup' => $backup->id])
+            ->route('orgs.backup.show', ['org' => $org, 'backup' => $backup->id])
             ->with('success', __('backup.backup_started'));
     }
 
@@ -249,7 +249,7 @@ class BackupController extends Controller
         }
 
         return redirect()
-            ->route('backup.index', ['org' => $org])
+            ->route('orgs.backup.index', ['org' => $org])
             ->with('success', __('backup.backup_deleted'));
     }
 

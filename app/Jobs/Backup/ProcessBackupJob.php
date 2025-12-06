@@ -114,8 +114,9 @@ class ProcessBackupJob implements ShouldQueue
                 'org_id' => $this->backup->org_id,
             ]);
 
-            // Step 1: Get schema snapshot
-            $schemaSnapshot = $schemaDiscovery->getSchemaSnapshot();
+            // Step 1: Discover org tables and get schema snapshot
+            $orgTables = $schemaDiscovery->discoverOrgTables();
+            $schemaSnapshot = $schemaDiscovery->getSchemaSnapshot($orgTables);
 
             // Step 2: Extract data
             $extractedData = $dataExtractor->extractAllData(

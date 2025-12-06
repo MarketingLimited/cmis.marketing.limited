@@ -187,7 +187,7 @@
                                 {{ count($backup->summary['categories'] ?? []) }}
                             </p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('backup.categories') }}
+                                {{ __('backup.categories_label') }}
                             </p>
                         </div>
                     </div>

@@ -53,6 +53,9 @@ class DependencyResolver
         $cacheKey = 'backup:dependency_graph:' . md5(implode(',', $this->schemas));
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () {
+            // Convert PHP array to PostgreSQL array literal format
+            $schemaArrayLiteral = '{' . implode(',', $this->schemas) . '}';
+
             // Query foreign key relationships from PostgreSQL catalog
             $foreignKeys = DB::select("
                 SELECT
@@ -67,9 +70,9 @@ class DependencyResolver
                 JOIN information_schema.constraint_column_usage ccu
                     ON ccu.constraint_name = tc.constraint_name
                 WHERE tc.constraint_type = 'FOREIGN KEY'
-                    AND tc.table_schema = ANY(?)
-                    AND ccu.table_schema = ANY(?)
-            ", [$this->schemas, $this->schemas]);
+                    AND tc.table_schema = ANY(?::text[])
+                    AND ccu.table_schema = ANY(?::text[])
+            ", [$schemaArrayLiteral, $schemaArrayLiteral]);
 
             // Build dependency maps
             $dependencies = []; // table => [tables it depends on]

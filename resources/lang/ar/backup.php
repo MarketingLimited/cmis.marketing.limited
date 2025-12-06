@@ -177,10 +177,14 @@ return [
     'summary' => 'الملخص',
     'backup_summary' => 'ملخص النسخة الاحتياطية',
     'total_records' => 'إجمالي السجلات',
+    'total_tables' => 'إجمالي الجداول',
     'total_size' => 'الحجم الإجمالي',
     'included_categories' => 'الفئات المضمنة',
     'excluded_categories' => 'الفئات المستبعدة',
     'files_included' => 'الملفات المضمنة',
+    'file_info' => 'معلومات الملف',
+    'by_category' => 'حسب الفئة',
+    'restore_from_this' => 'استعادة من هذه النسخة',
 
     // Progress
     'progress' => 'التقدم',
