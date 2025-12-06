@@ -1587,7 +1587,7 @@ function metaAssetsPage() {
 
             try {
                 // Clear cache on server
-                await fetch(`${this.apiBaseUrl}/refresh`, {
+                await this.fetchWithTimeout(`${this.apiBaseUrl}/refresh`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1619,6 +1619,27 @@ function metaAssetsPage() {
             }
         },
 
+        // Fetch with timeout helper - prevents frontend from hanging on slow API calls
+        async fetchWithTimeout(url, options = {}, timeoutMs = 60000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal,
+                });
+                clearTimeout(timeoutId);
+                return response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('{{ __('Request timed out. The server is taking too long to respond. Please try again.') }}');
+                }
+                throw error;
+            }
+        },
+
         // Load Pages
         async loadPages(forceRefresh = false) {
             this.loading.pages = true;
@@ -1627,9 +1648,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/pages?refresh=true` : `${this.apiBaseUrl}/pages`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 90000); // 90 second timeout for pages (can have many)
                 const data = await response.json();
 
                 if (data.success) {
@@ -1659,9 +1680,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/businesses?refresh=true` : `${this.apiBaseUrl}/businesses`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {
@@ -1689,9 +1710,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/instagram?refresh=true` : `${this.apiBaseUrl}/instagram`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 90000); // Instagram can have many accounts
                 const data = await response.json();
 
                 if (data.success) {
@@ -1721,9 +1742,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/threads?refresh=true` : `${this.apiBaseUrl}/threads`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 30000); // Threads is quick
                 const data = await response.json();
 
                 if (data.success) {
@@ -1750,9 +1771,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/ad-accounts?refresh=true` : `${this.apiBaseUrl}/ad-accounts`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 90000); // Ad accounts can have many
                 const data = await response.json();
 
                 if (data.success) {
@@ -1782,9 +1803,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/pixels?refresh=true` : `${this.apiBaseUrl}/pixels`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {
@@ -1812,9 +1833,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/catalogs?refresh=true` : `${this.apiBaseUrl}/catalogs`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {
@@ -1842,9 +1863,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/whatsapp?refresh=true` : `${this.apiBaseUrl}/whatsapp`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {
@@ -1872,9 +1893,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/custom-conversions?refresh=true` : `${this.apiBaseUrl}/custom-conversions`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {
@@ -1902,9 +1923,9 @@ function metaAssetsPage() {
 
             try {
                 const url = forceRefresh ? `${this.apiBaseUrl}/offline-event-sets?refresh=true` : `${this.apiBaseUrl}/offline-event-sets`;
-                const response = await fetch(url, {
+                const response = await this.fetchWithTimeout(url, {
                     credentials: 'same-origin',
-                });
+                }, 60000);
                 const data = await response.json();
 
                 if (data.success) {

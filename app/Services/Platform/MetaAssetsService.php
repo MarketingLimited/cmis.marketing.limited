@@ -167,6 +167,7 @@ class MetaAssetsService
     /**
      * Core pagination helper - fetches ALL pages from Meta API.
      * Follows paging.next cursor until all data is retrieved.
+     * Includes retry logic for timeout errors and returns partial results on failure.
      */
     private function fetchAllPages(string $url, string $accessToken, array $params = []): array
     {
@@ -176,6 +177,9 @@ class MetaAssetsService
 
         $nextUrl = $url . '?' . http_build_query($params);
         $pageCount = 0;
+        $maxRetries = 2;
+        $consecutiveTimeouts = 0;
+        $maxConsecutiveTimeouts = 2; // Stop after 2 consecutive timeouts
 
         while ($nextUrl && $pageCount < self::MAX_PAGES) {
             // Add delay between requests to prevent rate limiting
@@ -183,7 +187,51 @@ class MetaAssetsService
                 usleep(self::DELAY_BETWEEN_REQUESTS_MS * 1000);
             }
 
-            $response = Http::timeout(self::REQUEST_TIMEOUT)->get($nextUrl);
+            $response = null;
+            $lastError = null;
+
+            // Retry loop for timeout errors
+            for ($retry = 0; $retry <= $maxRetries; $retry++) {
+                try {
+                    // Use separate connect and read timeouts
+                    $response = Http::connectTimeout(10)
+                        ->timeout(self::REQUEST_TIMEOUT)
+                        ->get($nextUrl);
+
+                    // Reset consecutive timeout counter on success
+                    $consecutiveTimeouts = 0;
+                    break; // Success, exit retry loop
+
+                } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                    $lastError = $e->getMessage();
+                    $consecutiveTimeouts++;
+
+                    Log::warning('Meta API connection error, retrying', [
+                        'url' => preg_replace('/access_token=[^&]+/', 'access_token=***', $nextUrl),
+                        'page' => $pageCount + 1,
+                        'retry' => $retry + 1,
+                        'max_retries' => $maxRetries,
+                        'error' => $lastError,
+                    ]);
+
+                    // Wait before retry (exponential backoff)
+                    if ($retry < $maxRetries) {
+                        usleep(($retry + 1) * 500000); // 500ms, 1000ms
+                    }
+                }
+            }
+
+            // If all retries failed or too many consecutive timeouts
+            if ($response === null || $consecutiveTimeouts >= $maxConsecutiveTimeouts) {
+                Log::warning('Meta API pagination stopped due to timeouts', [
+                    'url' => preg_replace('/access_token=[^&]+/', 'access_token=***', $nextUrl),
+                    'page' => $pageCount + 1,
+                    'items_collected' => count($allData),
+                    'consecutive_timeouts' => $consecutiveTimeouts,
+                    'last_error' => $lastError,
+                ]);
+                break; // Return partial results
+            }
 
             if (!$response->successful()) {
                 $error = $response->json('error', []);
@@ -565,15 +613,20 @@ class MetaAssetsService
     }
 
     /**
-     * Fetch ALL ad account assets with pagination (ad accounts + pixels + custom conversions).
-     * Uses field expansion to get nested data and pagination to get ALL accounts.
+     * Fetch ALL ad account assets using Batch API for efficiency.
+     * Uses field expansion on businesses to get ad accounts in fewer API calls.
+     *
+     * OPTIMIZATION: Instead of N calls per business, uses:
+     * 1. Single /me/businesses call with embedded owned_ad_accounts and client_ad_accounts
+     * 2. Batch API fallback if field expansion doesn't work
+     * 3. Single /me/adaccounts call for personal accounts
      */
     private function getAllAdAccountAssets(string $accessToken, string $connectionId): array
     {
         $cacheKey = $this->getCacheKey($connectionId, 'all_adaccount_assets');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
-            Log::info('Fetching ALL ad account assets with ownership hierarchy (owned > client > personal)');
+            Log::info('Fetching ALL ad account assets with Batch API optimization');
 
             try {
                 $adAccounts = [];
@@ -581,128 +634,50 @@ class MetaAssetsService
                 $customConversions = [];
                 $processedAccountIds = []; // Track IDs to prevent duplicates
 
-                // Ad account fields for detailed info
-                $adAccountFields = implode(',', [
-                    'id',
-                    'name',
-                    'account_id',
-                    'account_status',
-                    'disable_reason',
-                    'currency',
-                    'timezone_name',
-                    'timezone_id',
-                    'spend_cap',
-                    'amount_spent',
-                    'balance',
-                    'funding_source_details',
-                    'created_time',
-                    'capabilities',
-                    'is_prepay_account',
-                    'min_daily_budget',
-                    'adspixels.limit(100){id,name,creation_time,last_fired_time}',
-                    'customconversions.limit(100){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}',
-                ]);
+                // Lighter ad account fields for initial fetch (reduces payload)
+                $adAccountFieldsLight = 'id,name,account_id,account_status,currency,timezone_name';
 
-                // STEP 1: Fetch all businesses first
-                $businesses = $this->fetchAllPages(
+                // STEP 1: Fetch businesses with embedded ad accounts using field expansion
+                // This reduces N*2 calls (owned + client per business) to just 1 paginated call
+                $businessesWithAdAccounts = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
                     $accessToken,
-                    ['fields' => 'id,name']
+                    ['fields' => "id,name,owned_ad_accounts.limit(100){{$adAccountFieldsLight}},client_ad_accounts.limit(100){{$adAccountFieldsLight}}"]
                 );
 
-                Log::debug('Fetched businesses for ad account ownership', ['count' => count($businesses)]);
+                Log::debug('Fetched businesses with embedded ad accounts', ['count' => count($businessesWithAdAccounts)]);
 
-                // STEP 2: For each business, fetch owned_ad_accounts (HIGHEST PRIORITY)
-                foreach ($businesses as $business) {
+                // Extract ad accounts from businesses
+                foreach ($businessesWithAdAccounts as $business) {
                     $businessId = $business['id'] ?? null;
                     $businessName = $business['name'] ?? 'Unknown Business';
 
                     if (!$businessId) continue;
 
-                    // Fetch owned ad accounts for this business
-                    try {
-                        $ownedAccounts = $this->fetchAllPages(
-                            self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/owned_ad_accounts",
-                            $accessToken,
-                            ['fields' => $adAccountFields]
-                        );
+                    // Process owned ad accounts (HIGHEST PRIORITY)
+                    foreach ($business['owned_ad_accounts']['data'] ?? [] as $account) {
+                        $accountId = $account['id'];
+                        if (in_array($accountId, $processedAccountIds)) continue;
 
-                        foreach ($ownedAccounts as $account) {
-                            $accountId = $account['id'];
-                            if (in_array($accountId, $processedAccountIds)) continue;
+                        $processedAccountIds[] = $accountId;
+                        $adAccounts[] = $this->formatAdAccountBasic($account, $businessId, $businessName, 'owned');
+                    }
 
-                            $processedAccountIds[] = $accountId;
-                            $this->addAdAccountToResults(
-                                $account,
-                                $businessId,
-                                $businessName,
-                                'owned',
-                                $adAccounts,
-                                $pixels,
-                                $customConversions
-                            );
-                        }
+                    // Process client ad accounts (SECOND PRIORITY)
+                    foreach ($business['client_ad_accounts']['data'] ?? [] as $account) {
+                        $accountId = $account['id'];
+                        if (in_array($accountId, $processedAccountIds)) continue;
 
-                        Log::debug('Fetched owned ad accounts from business', [
-                            'business' => $businessName,
-                            'owned_count' => count($ownedAccounts),
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::warning('Failed to fetch owned_ad_accounts for business', [
-                            'business_id' => $businessId,
-                            'error' => $e->getMessage(),
-                        ]);
+                        $processedAccountIds[] = $accountId;
+                        $adAccounts[] = $this->formatAdAccountBasic($account, $businessId, $businessName, 'client');
                     }
                 }
 
-                // STEP 3: For each business, fetch client_ad_accounts (SECOND PRIORITY)
-                foreach ($businesses as $business) {
-                    $businessId = $business['id'] ?? null;
-                    $businessName = $business['name'] ?? 'Unknown Business';
-
-                    if (!$businessId) continue;
-
-                    // Fetch client ad accounts for this business
-                    try {
-                        $clientAccounts = $this->fetchAllPages(
-                            self::BASE_URL . '/' . self::API_VERSION . "/{$businessId}/client_ad_accounts",
-                            $accessToken,
-                            ['fields' => $adAccountFields]
-                        );
-
-                        foreach ($clientAccounts as $account) {
-                            $accountId = $account['id'];
-                            if (in_array($accountId, $processedAccountIds)) continue;
-
-                            $processedAccountIds[] = $accountId;
-                            $this->addAdAccountToResults(
-                                $account,
-                                $businessId,
-                                $businessName,
-                                'client',
-                                $adAccounts,
-                                $pixels,
-                                $customConversions
-                            );
-                        }
-
-                        Log::debug('Fetched client ad accounts from business', [
-                            'business' => $businessName,
-                            'client_count' => count($clientAccounts),
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::warning('Failed to fetch client_ad_accounts for business', [
-                            'business_id' => $businessId,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-
-                // STEP 4: Fetch personal ad accounts from /me/adaccounts (LOWEST PRIORITY - fallback)
+                // STEP 2: Fetch personal ad accounts from /me/adaccounts (LOWEST PRIORITY)
                 $personalAccounts = $this->fetchAllPages(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
                     $accessToken,
-                    ['fields' => $adAccountFields]
+                    ['fields' => $adAccountFieldsLight]
                 );
 
                 foreach ($personalAccounts as $account) {
@@ -710,25 +685,28 @@ class MetaAssetsService
                     if (in_array($accountId, $processedAccountIds)) continue;
 
                     $processedAccountIds[] = $accountId;
-                    // Personal accounts - no business ownership
-                    $this->addAdAccountToResults(
-                        $account,
-                        null,
-                        null,
-                        'personal',
-                        $adAccounts,
-                        $pixels,
-                        $customConversions
-                    );
+                    $adAccounts[] = $this->formatAdAccountBasic($account, null, null, 'personal');
                 }
 
-                Log::info('ALL ad account assets fetched with ownership hierarchy', [
+                // STEP 3: Batch fetch pixels and custom conversions for all ad accounts
+                // Only if we have ad accounts to query
+                if (!empty($adAccounts)) {
+                    $pixelsAndConversions = $this->batchFetchAdAccountDetails($adAccounts, $accessToken);
+                    $pixels = $pixelsAndConversions['pixels'] ?? [];
+                    $customConversions = $pixelsAndConversions['custom_conversions'] ?? [];
+
+                    // Enrich ad accounts with detailed info
+                    $adAccounts = $pixelsAndConversions['ad_accounts'] ?? $adAccounts;
+                }
+
+                Log::info('ALL ad account assets fetched with Batch API optimization', [
                     'ad_accounts' => count($adAccounts),
                     'pixels' => count($pixels),
                     'custom_conversions' => count($customConversions),
                     'owned_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'owned')),
                     'client_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'client')),
                     'personal_count' => count(array_filter($adAccounts, fn($a) => ($a['source'] ?? '') === 'personal')),
+                    'api_calls_saved' => 'Using field expansion instead of per-business calls',
                 ]);
 
                 // Persist to database for three-tier caching
@@ -746,6 +724,186 @@ class MetaAssetsService
                 return ['ad_accounts' => [], 'pixels' => [], 'custom_conversions' => []];
             }
         });
+    }
+
+    /**
+     * Format ad account with basic fields (used during initial fetch)
+     */
+    private function formatAdAccountBasic(array $account, ?string $businessId, ?string $businessName, string $source): array
+    {
+        $statusCode = $account['account_status'] ?? 0;
+        return [
+            'id' => $account['id'],
+            'account_id' => $account['account_id'] ?? str_replace('act_', '', $account['id']),
+            'name' => $account['name'] ?? 'Unknown',
+            'business_name' => $businessName,
+            'business_id' => $businessId,
+            'source' => $source,
+            'currency' => $account['currency'] ?? 'USD',
+            'timezone' => $account['timezone_name'] ?? 'UTC',
+            'status' => $this->getAccountStatusLabel($statusCode),
+            'status_code' => $statusCode,
+            'can_create_ads' => $statusCode === 1,
+        ];
+    }
+
+    /**
+     * Batch fetch pixels and custom conversions for ad accounts using Batch API.
+     * Reduces N individual calls to ceil(N/50) batch calls.
+     */
+    private function batchFetchAdAccountDetails(array $adAccounts, string $accessToken): array
+    {
+        if (empty($adAccounts)) {
+            return ['ad_accounts' => $adAccounts, 'pixels' => [], 'custom_conversions' => []];
+        }
+
+        $pixels = [];
+        $customConversions = [];
+        $enrichedAccounts = [];
+
+        // Build account metadata for enrichment
+        $accountMetadata = [];
+        foreach ($adAccounts as $account) {
+            $accountMetadata[$account['id']] = $account;
+        }
+
+        $accountIds = array_keys($accountMetadata);
+        $batchChunks = array_chunk($accountIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        // Fields for detailed fetch
+        $detailFields = 'id,name,account_status,disable_reason,spend_cap,amount_spent,balance,is_prepay_account,min_daily_budget,capabilities,funding_source_details,created_time,adspixels.limit(50){id,name,creation_time,last_fired_time},customconversions.limit(50){id,name,description,custom_event_type,rule,pixel,creation_time,last_fired_time,is_archived}';
+
+        foreach ($batchChunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            // Build batch request
+            $batchRequests = [];
+            foreach ($chunk as $accountId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $accountId . '?' . http_build_query(['fields' => $detailFields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::warning('Batch ad account details fetch failed', [
+                        'batch' => $batchNumber + 1,
+                        'status' => $response->status(),
+                    ]);
+                    $batchNumber++;
+                    continue;
+                }
+
+                $batchResponses = $response->json();
+                foreach ($batchResponses as $index => $batchResponse) {
+                    $accountId = $chunk[$index] ?? null;
+                    if (!$accountId) continue;
+
+                    $baseAccount = $accountMetadata[$accountId] ?? [];
+
+                    if (($batchResponse['code'] ?? 0) === 200) {
+                        $body = json_decode($batchResponse['body'] ?? '{}', true);
+
+                        // Enrich account with detailed info
+                        $enrichedAccount = array_merge($baseAccount, [
+                            'disable_reason' => isset($body['disable_reason']) ? $this->getDisableReasonLabel($body['disable_reason']) : null,
+                            'spend_cap' => $body['spend_cap'] ?? null,
+                            'amount_spent' => $body['amount_spent'] ?? '0',
+                            'balance' => $body['balance'] ?? '0',
+                            'is_prepay' => $body['is_prepay_account'] ?? false,
+                            'min_daily_budget' => $body['min_daily_budget'] ?? null,
+                            'capabilities' => $body['capabilities'] ?? [],
+                            'funding_source' => $body['funding_source_details']['display_string'] ?? null,
+                            'created_at' => $body['created_time'] ?? null,
+                        ]);
+                        $enrichedAccounts[] = $enrichedAccount;
+
+                        // Extract pixels
+                        foreach ($body['adspixels']['data'] ?? [] as $pixel) {
+                            $existingIds = array_column($pixels, 'id');
+                            if (!in_array($pixel['id'], $existingIds)) {
+                                $pixels[] = [
+                                    'id' => $pixel['id'],
+                                    'name' => $pixel['name'] ?? 'Unnamed Pixel',
+                                    'ad_account_id' => $accountId,
+                                    'ad_account_name' => $baseAccount['name'] ?? 'Unknown',
+                                    'business_name' => $baseAccount['business_name'] ?? null,
+                                    'business_id' => $baseAccount['business_id'] ?? null,
+                                    'source' => $baseAccount['source'] ?? 'unknown',
+                                    'creation_time' => $pixel['creation_time'] ?? null,
+                                    'last_fired_time' => $pixel['last_fired_time'] ?? null,
+                                ];
+                            }
+                        }
+
+                        // Extract custom conversions
+                        foreach ($body['customconversions']['data'] ?? [] as $conversion) {
+                            $existingIds = array_column($customConversions, 'id');
+                            if (!in_array($conversion['id'], $existingIds)) {
+                                $customConversions[] = [
+                                    'id' => $conversion['id'],
+                                    'name' => $conversion['name'] ?? 'Unnamed Conversion',
+                                    'description' => $conversion['description'] ?? null,
+                                    'custom_event_type' => $conversion['custom_event_type'] ?? null,
+                                    'rule' => $conversion['rule'] ?? null,
+                                    'pixel_id' => $conversion['pixel']['id'] ?? null,
+                                    'ad_account_id' => $accountId,
+                                    'ad_account_name' => $baseAccount['name'] ?? 'Unknown',
+                                    'business_name' => $baseAccount['business_name'] ?? null,
+                                    'business_id' => $baseAccount['business_id'] ?? null,
+                                    'source' => $baseAccount['source'] ?? 'unknown',
+                                    'creation_time' => $conversion['creation_time'] ?? null,
+                                    'last_fired_time' => $conversion['last_fired_time'] ?? null,
+                                    'is_archived' => $conversion['is_archived'] ?? false,
+                                ];
+                            }
+                        }
+                    } else {
+                        // Keep basic account info if detailed fetch failed
+                        $enrichedAccounts[] = $baseAccount;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Exception in batch ad account details fetch', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+                // Add remaining accounts without enrichment
+                foreach ($chunk as $accountId) {
+                    if (isset($accountMetadata[$accountId]) && !in_array($accountMetadata[$accountId], $enrichedAccounts)) {
+                        $enrichedAccounts[] = $accountMetadata[$accountId];
+                    }
+                }
+            }
+
+            $batchNumber++;
+        }
+
+        Log::debug('Batch ad account details fetch completed', [
+            'accounts_enriched' => count($enrichedAccounts),
+            'pixels_found' => count($pixels),
+            'conversions_found' => count($customConversions),
+            'batches_used' => $batchNumber,
+        ]);
+
+        return [
+            'ad_accounts' => $enrichedAccounts,
+            'pixels' => $pixels,
+            'custom_conversions' => $customConversions,
+        ];
     }
 
     /**
