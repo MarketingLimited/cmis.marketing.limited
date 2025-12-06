@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table already exists
+        if (Schema::hasTable('cmis.plan_apps')) {
+            return;
+        }
+
         // Create plan_apps table to track which apps are available for each plan
         Schema::create('cmis.plan_apps', function (Blueprint $table) {
             $table->uuid('plan_app_id')->primary()->default(DB::raw('gen_random_uuid()'));

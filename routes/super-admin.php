@@ -10,6 +10,7 @@ use App\Http\Controllers\SuperAdmin\SuperAdminAnalyticsController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSystemController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAppController;
 use App\Http\Controllers\SuperAdmin\SuperAdminIntegrationController;
+use App\Http\Controllers\SuperAdmin\SuperAdminAnnouncementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,6 +128,23 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::get('/rate-limits', [SuperAdminAnalyticsController::class, 'rateLimits'])->name('rate-limits');
         Route::get('/endpoints', [SuperAdminAnalyticsController::class, 'endpoints'])->name('endpoints');
         Route::get('/slow-requests', [SuperAdminAnalyticsController::class, 'slowRequests'])->name('slow-requests');
+    });
+
+    // =====================================================
+    // Announcements Management
+    // =====================================================
+    Route::prefix('announcements')->name('announcements.')->group(function () {
+        Route::get('/', [SuperAdminAnnouncementController::class, 'index'])->name('index');
+        Route::get('/create', [SuperAdminAnnouncementController::class, 'create'])->name('create');
+        Route::post('/', [SuperAdminAnnouncementController::class, 'store'])->name('store');
+        Route::get('/active', [SuperAdminAnnouncementController::class, 'getActiveForUser'])->name('active');
+        Route::get('/{announcement}', [SuperAdminAnnouncementController::class, 'show'])->name('show');
+        Route::get('/{announcement}/edit', [SuperAdminAnnouncementController::class, 'edit'])->name('edit');
+        Route::put('/{announcement}', [SuperAdminAnnouncementController::class, 'update'])->name('update');
+        Route::delete('/{announcement}', [SuperAdminAnnouncementController::class, 'destroy'])->name('destroy');
+        Route::post('/{announcement}/toggle-active', [SuperAdminAnnouncementController::class, 'toggleActive'])->name('toggle-active');
+        Route::post('/{announcement}/duplicate', [SuperAdminAnnouncementController::class, 'duplicate'])->name('duplicate');
+        Route::post('/{announcement}/dismiss', [SuperAdminAnnouncementController::class, 'dismiss'])->name('dismiss');
     });
 
     // =====================================================
