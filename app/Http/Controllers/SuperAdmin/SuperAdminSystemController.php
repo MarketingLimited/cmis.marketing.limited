@@ -58,25 +58,57 @@ class SuperAdminSystemController extends Controller
     public function logs(Request $request)
     {
         $logFile = storage_path('logs/laravel.log');
-        $lines = $request->get('lines', 100);
-        $level = $request->get('level'); // error, warning, info, debug
+        $perPage = $request->get('per_page', 50);
+        $page = $request->get('page', 1);
+        $level = $request->get('level');
+        $search = $request->get('search');
+        $date = $request->get('date', 'today');
 
         if (!file_exists($logFile)) {
-            return $this->success(['logs' => [], 'message' => 'No log file found']);
+            if ($request->expectsJson()) {
+                return response()->json(['logs' => [], 'pagination' => $this->emptyPagination()]);
+            }
+            return view('super-admin.system.logs', ['entries' => [], 'level' => $level]);
         }
 
-        // Read last N lines
-        $logs = $this->tailFile($logFile, $lines * 10); // Read more to filter
+        // Read log file and parse entries
+        $logs = $this->tailFile($logFile, 5000); // Read more to filter
+        $entries = $this->parseLogEntriesFormatted($logs, $level, $search, $date);
 
-        // Parse log entries
-        $entries = $this->parseLogEntries($logs, $level);
-        $entries = array_slice($entries, -$lines);
+        // Reverse to show newest first
+        $entries = array_reverse($entries);
+
+        // Paginate
+        $total = count($entries);
+        $offset = ($page - 1) * $perPage;
+        $paginatedEntries = array_slice($entries, $offset, $perPage);
 
         if ($request->expectsJson()) {
-            return $this->success(['logs' => $entries]);
+            return response()->json([
+                'logs' => $paginatedEntries,
+                'pagination' => [
+                    'current_page' => (int) $page,
+                    'last_page' => (int) ceil($total / $perPage),
+                    'per_page' => (int) $perPage,
+                    'total' => $total,
+                ],
+            ]);
         }
 
         return view('super-admin.system.logs', compact('entries', 'level'));
+    }
+
+    /**
+     * Get empty pagination structure.
+     */
+    protected function emptyPagination(): array
+    {
+        return [
+            'current_page' => 1,
+            'last_page' => 1,
+            'per_page' => 50,
+            'total' => 0,
+        ];
     }
 
     /**
@@ -589,6 +621,109 @@ class SuperAdminSystemController extends Controller
                 'environment' => $match[2],
                 'level' => $entryLevel,
                 'message' => trim($match[4]),
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Parse log entries with full formatting for the logs viewer.
+     *
+     * Returns entries with: id, level, date, message, stack, context, file, line
+     */
+    protected function parseLogEntriesFormatted(string $logs, ?string $level, ?string $search, string $date): array
+    {
+        $entries = [];
+        // Match log entries with stack traces
+        $pattern = '/\[(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}\.?\d*[^\]]*)\]\s+(\w+)\.(\w+):\s+(.+?)(?=\[\d{4}-\d{2}-\d{2}|$)/s';
+
+        preg_match_all($pattern, $logs, $matches, PREG_SET_ORDER);
+
+        // Calculate date filter
+        $filterDate = null;
+        $filterDateEnd = null;
+        switch ($date) {
+            case 'today':
+                $filterDate = now()->startOfDay();
+                $filterDateEnd = now()->endOfDay();
+                break;
+            case 'yesterday':
+                $filterDate = now()->subDay()->startOfDay();
+                $filterDateEnd = now()->subDay()->endOfDay();
+                break;
+            case 'week':
+                $filterDate = now()->subDays(7)->startOfDay();
+                $filterDateEnd = now()->endOfDay();
+                break;
+        }
+
+        $id = 1;
+        foreach ($matches as $match) {
+            $entryLevel = strtolower($match[3]);
+
+            // Filter by level
+            if ($level && $entryLevel !== strtolower($level)) {
+                continue;
+            }
+
+            // Parse timestamp
+            $timestamp = $match[1];
+            try {
+                $dateTime = new \DateTime($timestamp);
+                $logDate = \Carbon\Carbon::parse($dateTime);
+
+                // Filter by date
+                if ($filterDate && $filterDateEnd) {
+                    if ($logDate < $filterDate || $logDate > $filterDateEnd) {
+                        continue;
+                    }
+                }
+
+                $formattedDate = $logDate->format('Y-m-d H:i:s');
+            } catch (\Exception $e) {
+                $formattedDate = $timestamp;
+            }
+
+            $fullMessage = trim($match[4]);
+
+            // Filter by search
+            if ($search && stripos($fullMessage, $search) === false) {
+                continue;
+            }
+
+            // Extract file and line from message
+            $file = null;
+            $line = null;
+            if (preg_match('/in\s+([^\s]+\.php)(?::(\d+))?/', $fullMessage, $fileMatch)) {
+                $file = $fileMatch[1];
+                $line = $fileMatch[2] ?? null;
+            }
+
+            // Separate message from stack trace
+            $message = $fullMessage;
+            $stack = null;
+            $firstNewline = strpos($fullMessage, "\n");
+            if ($firstNewline !== false) {
+                $message = substr($fullMessage, 0, $firstNewline);
+                $stack = trim(substr($fullMessage, $firstNewline));
+            }
+
+            // Truncate message if too long
+            if (strlen($message) > 200) {
+                $message = substr($message, 0, 200) . '...';
+            }
+
+            $entries[] = [
+                'id' => $id++,
+                'level' => $entryLevel,
+                'date' => $formattedDate,
+                'message' => $message,
+                'stack' => $stack,
+                'context' => null,
+                'file' => $file,
+                'line' => $line,
+                'environment' => $match[2],
             ];
         }
 
