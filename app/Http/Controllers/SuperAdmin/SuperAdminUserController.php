@@ -127,14 +127,82 @@ class SuperAdminUserController extends Controller
             'orgs_count' => count($userOrgIds),
         ];
 
+        // Get user sessions from Laravel session table
+        $sessions = DB::table('sessions')
+            ->where('user_id', $userId)
+            ->orderBy('last_activity', 'desc')
+            ->get();
+
+        // Get user activity from super_admin_actions
+        $activities = DB::table('cmis.super_admin_actions')
+            ->where('target_type', 'user')
+            ->where('target_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function ($action) {
+                return (object) [
+                    'icon' => $this->getActivityIcon($action->action_type),
+                    'description' => str_replace('_', ' ', ucfirst($action->action_type)) . ' by ' . ($action->target_name ?: 'Admin'),
+                    'created_at' => \Carbon\Carbon::parse($action->created_at),
+                ];
+            });
+
+        // Also get audit logs if available
+        $auditLogs = DB::table('cmis.audit_logs')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($log) {
+                return (object) [
+                    'icon' => $this->getActivityIcon($log->action ?? 'activity'),
+                    'description' => ($log->action ?? 'Activity') . ' on ' . ($log->model_type ?? 'record'),
+                    'created_at' => \Carbon\Carbon::parse($log->created_at),
+                ];
+            });
+
+        // Merge and sort activities
+        $activities = $activities->merge($auditLogs)->sortByDesc('created_at')->take(20)->values();
+
         if ($request->expectsJson()) {
             return $this->success([
                 'user' => $user,
                 'activity_stats' => $activityStats,
+                'sessions' => $sessions,
+                'activities' => $activities,
             ]);
         }
 
-        return view('super-admin.users.show', compact('user', 'activityStats'));
+        return view('super-admin.users.show', compact('user', 'activityStats', 'sessions', 'activities'));
+    }
+
+    /**
+     * Get icon for activity type.
+     */
+    protected function getActivityIcon(string $actionType): string
+    {
+        $icons = [
+            'user_suspended' => 'pause',
+            'user_blocked' => 'ban',
+            'user_restored' => 'play',
+            'user_impersonated' => 'user-secret',
+            'super_admin_granted' => 'shield-alt',
+            'super_admin_revoked' => 'shield-alt',
+            'login' => 'sign-in-alt',
+            'logout' => 'sign-out-alt',
+            'create' => 'plus',
+            'update' => 'edit',
+            'delete' => 'trash',
+        ];
+
+        foreach ($icons as $key => $icon) {
+            if (str_contains(strtolower($actionType), $key)) {
+                return $icon;
+            }
+        }
+
+        return 'circle';
     }
 
     /**

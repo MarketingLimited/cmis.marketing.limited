@@ -225,6 +225,23 @@
                     <span>{{ __('super_admin.nav.subscriptions') }}</span>
                 </a>
 
+                <!-- Platform Section -->
+                <div class="mt-6 mb-2">
+                    <h3 class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ __('super_admin.nav.platform') ?? 'Platform' }}</h3>
+                </div>
+
+                <a href="{{ route('super-admin.apps.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.apps.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-puzzle-piece w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.apps') ?? 'Apps' }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.integrations.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.integrations.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-plug w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.integrations') ?? 'Integrations' }}</span>
+                </a>
+
                 <!-- Monitoring Section -->
                 <div class="mt-6 mb-2">
                     <h3 class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ __('super_admin.nav.monitoring') }}</h3>

@@ -341,9 +341,10 @@ function superAdminDashboard() {
                     const apiStats = data.stats || {};
                     this.stats = {
                         total_organizations: apiStats.total_organizations || 0,
-                        new_organizations_today: 0, // Not provided
+                        new_organizations_today: apiStats.new_organizations_today || 0,
                         total_users: apiStats.total_users || 0,
                         active_users: apiStats.active_users || 0,
+                        new_users_today: apiStats.new_users_today || 0,
                         api_calls_today: apiStats.api_calls_today || 0,
                         error_rate: Math.round(apiStats.api_error_rate || 0),
                         active_subscriptions: apiStats.active_subscriptions || 0,
@@ -372,8 +373,14 @@ function superAdminDashboard() {
                     // System health - fetch from health endpoint
                     await this.loadSystemHealth();
 
-                    // Subscriptions by plan - not provided by API, leave empty
-                    this.subscriptionsByPlan = [];
+                    // Subscriptions by plan
+                    this.subscriptionsByPlan = (data.subscriptions_by_plan || []).map(plan => ({
+                        plan_id: plan.plan_id,
+                        name: plan.name,
+                        code: plan.code,
+                        count: plan.count,
+                        percentage: plan.percentage || 0
+                    }));
 
                     // Initialize chart with hourly API usage
                     const apiUsage = data.api_usage || {};

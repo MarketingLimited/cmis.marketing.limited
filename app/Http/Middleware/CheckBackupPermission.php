@@ -63,7 +63,7 @@ class CheckBackupPermission
         }
 
         // Check if user belongs to organization
-        if (!$user->belongsToOrganization($orgId)) {
+        if (!$user->belongsToOrg($orgId)) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,

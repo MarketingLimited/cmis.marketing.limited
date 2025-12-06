@@ -127,4 +127,13 @@ return [
     // Apps Marketplace
     'apps_marketplace' => 'سوق التطبيقات',
 
+    // Backup & Restore
+    'backup_restore' => 'النسخ الاحتياطي والاستعادة',
+    'backup_section' => 'إدارة البيانات',
+    'all_backups' => 'جميع النسخ الاحتياطية',
+    'create_backup' => 'إنشاء نسخة احتياطية',
+    'restore_data' => 'استعادة البيانات',
+    'backup_schedule' => 'الجدولة',
+    'backup_settings' => 'إعدادات النسخ الاحتياطي',
+
 ];

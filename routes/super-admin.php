@@ -8,6 +8,8 @@ use App\Http\Controllers\SuperAdmin\SuperAdminPlanController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSubscriptionController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAnalyticsController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSystemController;
+use App\Http\Controllers\SuperAdmin\SuperAdminAppController;
+use App\Http\Controllers\SuperAdmin\SuperAdminIntegrationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +73,31 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::delete('/{plan}', [SuperAdminPlanController::class, 'destroy'])->name('destroy');
         Route::post('/{plan}/toggle-active', [SuperAdminPlanController::class, 'toggleActive'])->name('toggle-active');
         Route::post('/{plan}/set-default', [SuperAdminPlanController::class, 'setDefault'])->name('set-default');
+    });
+
+    // =====================================================
+    // Marketplace Apps Management
+    // =====================================================
+    Route::prefix('apps')->name('apps.')->group(function () {
+        Route::get('/', [SuperAdminAppController::class, 'index'])->name('index');
+        Route::get('/matrix', [SuperAdminAppController::class, 'matrix'])->name('matrix');
+        Route::post('/bulk-assign', [SuperAdminAppController::class, 'bulkAssign'])->name('bulk-assign');
+        Route::get('/{app}', [SuperAdminAppController::class, 'show'])->name('show');
+        Route::put('/{app}/plan-apps', [SuperAdminAppController::class, 'updatePlanApps'])->name('update-plan-apps');
+        Route::post('/{app}/toggle/{plan}', [SuperAdminAppController::class, 'toggleAppForPlan'])->name('toggle');
+    });
+
+    // =====================================================
+    // Platform Integrations
+    // =====================================================
+    Route::prefix('integrations')->name('integrations.')->group(function () {
+        Route::get('/', [SuperAdminIntegrationController::class, 'index'])->name('index');
+        Route::get('/health', [SuperAdminIntegrationController::class, 'healthDashboard'])->name('health');
+        Route::get('/sync-status', [SuperAdminIntegrationController::class, 'syncStatus'])->name('sync-status');
+        Route::get('/rate-limits', [SuperAdminIntegrationController::class, 'rateLimits'])->name('rate-limits');
+        Route::get('/{connection}', [SuperAdminIntegrationController::class, 'show'])->name('show');
+        Route::post('/{connection}/refresh', [SuperAdminIntegrationController::class, 'forceRefresh'])->name('refresh');
+        Route::delete('/{connection}', [SuperAdminIntegrationController::class, 'disconnect'])->name('disconnect');
     });
 
     // =====================================================

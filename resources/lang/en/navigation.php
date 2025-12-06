@@ -127,4 +127,13 @@ return [
     // Apps Marketplace
     'apps_marketplace' => 'Apps Marketplace',
 
+    // Backup & Restore
+    'backup_restore' => 'Backup & Restore',
+    'backup_section' => 'Data Management',
+    'all_backups' => 'All Backups',
+    'create_backup' => 'Create Backup',
+    'restore_data' => 'Restore Data',
+    'backup_schedule' => 'Schedules',
+    'backup_settings' => 'Backup Settings',
+
 ];

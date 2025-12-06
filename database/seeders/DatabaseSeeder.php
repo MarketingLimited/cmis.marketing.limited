@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
             MarketingDotLimitedSeeder::class,
             ProfileGroupSeeder::class,
             BackupAppSeeder::class, // Backup & Restore marketplace app
+            PlanAppSeeder::class, // Plan-App access control relationships
         ]);
 
         $this->command->newLine();

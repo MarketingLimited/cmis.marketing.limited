@@ -29,16 +29,18 @@ class SuperAdminController extends Controller
         $stats = $this->getDashboardStats();
         $recentActivity = $this->getRecentActivity();
         $apiUsage = $this->getApiUsageSummary();
+        $subscriptionsByPlan = $this->getSubscriptionsByPlan();
 
         if ($request->expectsJson()) {
             return $this->success([
                 'stats' => $stats,
                 'recent_activity' => $recentActivity,
                 'api_usage' => $apiUsage,
+                'subscriptions_by_plan' => $subscriptionsByPlan,
             ]);
         }
 
-        return view('super-admin.dashboard', compact('stats', 'recentActivity', 'apiUsage'));
+        return view('super-admin.dashboard', compact('stats', 'recentActivity', 'apiUsage', 'subscriptionsByPlan'));
     }
 
     /**
@@ -51,12 +53,14 @@ class SuperAdminController extends Controller
             'active_organizations' => Org::active()->count(),
             'suspended_organizations' => Org::suspended()->count(),
             'blocked_organizations' => Org::blocked()->count(),
+            'new_organizations_today' => Org::whereDate('created_at', now()->toDateString())->count(),
 
             'total_users' => User::count(),
             'active_users' => User::active()->count(),
             'suspended_users' => User::suspended()->count(),
             'blocked_users' => User::blocked()->count(),
             'super_admins' => User::superAdmins()->count(),
+            'new_users_today' => User::whereDate('created_at', now()->toDateString())->count(),
 
             'total_subscriptions' => Subscription::count(),
             'active_subscriptions' => Subscription::active()->count(),
@@ -138,6 +142,43 @@ class SuperAdminController extends Controller
             'average_response_time' => PlatformApiCall::getAverageResponseTime(),
             'error_rate_24h' => PlatformApiCall::getErrorRate(null, null, 24),
         ];
+    }
+
+    /**
+     * Get subscriptions grouped by plan with percentages.
+     */
+    protected function getSubscriptionsByPlan(): array
+    {
+        $totalActive = Subscription::active()->count();
+
+        $subscriptionsByPlan = DB::table('cmis.subscriptions')
+            ->join('cmis.plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+            ->select(
+                'plans.plan_id',
+                'plans.name',
+                'plans.code',
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereNull('subscriptions.cancelled_at')
+            ->groupBy('plans.plan_id', 'plans.name', 'plans.code')
+            ->orderByRaw("CASE
+                WHEN plans.code = 'free' THEN 1
+                WHEN plans.code = 'starter' THEN 2
+                WHEN plans.code = 'professional' THEN 3
+                WHEN plans.code = 'enterprise' THEN 4
+                ELSE 5
+            END")
+            ->get();
+
+        return $subscriptionsByPlan->map(function ($plan) use ($totalActive) {
+            return [
+                'plan_id' => $plan->plan_id,
+                'name' => $plan->name,
+                'code' => $plan->code,
+                'count' => $plan->count,
+                'percentage' => $totalActive > 0 ? round(($plan->count / $totalActive) * 100, 1) : 0,
+            ];
+        })->toArray();
     }
 
     /**

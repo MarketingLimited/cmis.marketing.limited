@@ -3,7 +3,9 @@
 namespace App\Models\Subscription;
 
 use App\Models\BaseModel;
+use App\Models\Marketplace\MarketplaceApp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -75,6 +77,35 @@ class Plan extends BaseModel
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class, 'plan_id', 'plan_id');
+    }
+
+    /**
+     * Get all marketplace apps available for this plan.
+     */
+    public function apps(): BelongsToMany
+    {
+        return $this->belongsToMany(MarketplaceApp::class, 'cmis.plan_apps', 'plan_id', 'app_id')
+            ->withPivot(['is_enabled', 'usage_limit', 'settings_override'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if this plan has access to a specific app by code/slug.
+     */
+    public function hasApp(string $appCode): bool
+    {
+        return $this->apps()
+            ->where('slug', $appCode)
+            ->wherePivot('is_enabled', true)
+            ->exists();
+    }
+
+    /**
+     * Get all enabled apps for this plan.
+     */
+    public function enabledApps()
+    {
+        return $this->apps()->wherePivot('is_enabled', true);
     }
 
     // ===== Scopes =====

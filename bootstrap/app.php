@@ -94,6 +94,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Apps Marketplace
             'app.enabled' => \App\Http\Middleware\CheckAppEnabled::class,
+            'app.access' => \App\Http\Middleware\CheckAppAccess::class,
 
             // Backup & Restore
             'backup.permission' => \App\Http\Middleware\CheckBackupPermission::class,

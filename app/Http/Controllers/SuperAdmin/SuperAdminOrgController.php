@@ -79,6 +79,7 @@ class SuperAdminOrgController extends Controller
             'subscription.plan',
             'suspendedByUser',
             'blockedByUser',
+            'integrations',
         ])
             ->withCount([
                 'users' => function($q) {
@@ -105,14 +106,71 @@ class SuperAdminOrgController extends Controller
             'error_rate' => \App\Models\Platform\PlatformApiCall::getErrorRate($orgId),
         ];
 
+        // API calls this month
+        $apiCallsThisMonth = DB::table('cmis.platform_api_calls')
+            ->where('org_id', $orgId)
+            ->whereMonth('called_at', now()->month)
+            ->whereYear('called_at', now()->year)
+            ->count();
+
+        // Calculate storage usage from creative assets
+        $storageBytes = DB::table('cmis.creative_assets')
+            ->where('org_id', $orgId)
+            ->sum('file_size');
+        $storageUsed = $this->formatBytes($storageBytes);
+
+        // Get recent activity for this org
+        $recentActivity = DB::table('cmis.super_admin_actions')
+            ->where('target_type', 'organization')
+            ->where('target_id', $orgId)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($action) {
+                return (object) [
+                    'action_type' => $action->action_type,
+                    'description' => $action->target_name . ' - ' . str_replace('_', ' ', $action->action_type),
+                    'created_at' => $action->created_at ? \Carbon\Carbon::parse($action->created_at) : null,
+                ];
+            });
+
+        // Get all plans for the plan change dropdown
+        $plans = \App\Models\Subscription\Plan::active()->orderBy('price_monthly')->get();
+
         if ($request->expectsJson()) {
             return $this->success([
                 'organization' => $org,
                 'api_stats' => $apiStats,
+                'api_calls_this_month' => $apiCallsThisMonth,
+                'storage_used' => $storageUsed,
+                'recent_activity' => $recentActivity,
             ]);
         }
 
-        return view('super-admin.organizations.show', compact('org', 'apiStats'));
+        return view('super-admin.organizations.show', compact(
+            'org',
+            'apiStats',
+            'apiCallsThisMonth',
+            'storageUsed',
+            'recentActivity',
+            'plans'
+        ));
+    }
+
+    /**
+     * Format bytes to human-readable format.
+     */
+    protected function formatBytes($bytes, $precision = 2): string
+    {
+        if ($bytes <= 0) {
+            return '0 MB';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $pow = floor(log($bytes) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        return round($bytes / pow(1024, $pow), $precision) . ' ' . $units[$pow];
     }
 
     /**

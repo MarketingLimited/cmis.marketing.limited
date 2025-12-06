@@ -2,10 +2,12 @@
 
 namespace App\Models\Marketplace;
 
+use App\Models\Subscription\Plan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -129,6 +131,24 @@ class MarketplaceApp extends Model
     public function organizationApps(): HasMany
     {
         return $this->hasMany(OrganizationApp::class, 'app_id', 'app_id');
+    }
+
+    /**
+     * Get all subscription plans that have access to this app.
+     */
+    public function plans(): BelongsToMany
+    {
+        return $this->belongsToMany(Plan::class, 'cmis.plan_apps', 'app_id', 'plan_id')
+            ->withPivot(['is_enabled', 'usage_limit', 'settings_override'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all plans that have this app enabled.
+     */
+    public function enabledPlans(): BelongsToMany
+    {
+        return $this->plans()->wherePivot('is_enabled', true);
     }
 
     /**

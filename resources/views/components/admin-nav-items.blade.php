@@ -572,6 +572,53 @@
     <span class="font-medium text-sm" x-show="!compactMode">{{ __('navigation.organizations') }}</span>
 </a>
 
+<!-- Backup & Restore (Dynamic based on enabled status) -->
+@if($isEnabled('org-backup-restore'))
+<div class="mt-4 mb-2" x-show="!compactMode">
+    <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.backup_section') }}</p>
+</div>
+
+<div x-data="{ open: {{ request()->routeIs('orgs.backup.*') ? 'true' : 'false' }} }">
+    <button @click="open = !open"
+            class="group w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
+                   {{ request()->routeIs('orgs.backup.*') ? 'bg-gradient-to-l from-blue-600/20 to-purple-600/20 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/30' }}">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-all
+                        {{ request()->routeIs('orgs.backup.*') ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-white' }}">
+                <i class="fas fa-database text-sm"></i>
+            </div>
+            <span class="font-medium text-sm" x-show="!compactMode">{{ __('navigation.backup_restore') }}</span>
+        </div>
+        <i class="fas fa-chevron-down text-xs transition-transform duration-200" x-show="!compactMode" :class="{ 'rotate-180': open }"></i>
+    </button>
+    <div x-show="open && !compactMode" x-collapse class="{{ $isRtl ? 'mr-6' : 'ml-6' }} space-y-1">
+        <a href="{{ route('orgs.backup.index', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                  {{ request()->routeIs('orgs.backup.index') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+            <i class="fas fa-list text-xs w-4"></i>
+            <span>{{ __('navigation.all_backups') }}</span>
+        </a>
+        <a href="{{ route('orgs.backup.create', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/30">
+            <i class="fas fa-plus text-xs w-4"></i>
+            <span>{{ __('navigation.create_backup') }}</span>
+        </a>
+        <a href="{{ route('orgs.backup.restore.index', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                  {{ request()->routeIs('orgs.backup.restore.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+            <i class="fas fa-undo text-xs w-4"></i>
+            <span>{{ __('navigation.restore_data') }}</span>
+        </a>
+        <a href="{{ route('orgs.backup.schedule.index', ['org' => $currentOrg]) }}"
+           class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
+                  {{ request()->routeIs('orgs.backup.schedule.*') ? 'text-blue-400 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/30' }}">
+            <i class="fas fa-clock text-xs w-4"></i>
+            <span>{{ __('navigation.backup_schedule') }}</span>
+        </a>
+    </div>
+</div>
+@endif
+
 <!-- Apps Marketplace (Core - Always visible) -->
 <div class="mt-4 mb-2" x-show="!compactMode">
     <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ __('navigation.apps_marketplace') }}</p>

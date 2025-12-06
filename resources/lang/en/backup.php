@@ -394,6 +394,10 @@ return [
     'notification_storage_warning_title' => 'Storage Warning',
     'notification_storage_warning_body' => 'You are approaching your storage limit.',
 
+    // Validation Messages
+    'organization_required' => 'Organization is required',
+    'not_member_of_organization' => 'You are not a member of this organization',
+
     // Miscellaneous
     'yes' => 'Yes',
     'no' => 'No',

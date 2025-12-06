@@ -394,6 +394,10 @@ return [
     'notification_storage_warning_title' => 'تحذير مساحة التخزين',
     'notification_storage_warning_body' => 'اقتربت من الوصول إلى حد التخزين المسموح.',
 
+    // Validation Messages
+    'organization_required' => 'المنظمة مطلوبة',
+    'not_member_of_organization' => 'أنت لست عضواً في هذه المنظمة',
+
     // Miscellaneous
     'yes' => 'نعم',
     'no' => 'لا',
