@@ -359,8 +359,15 @@ function superAdminDashboard() {
                         created_at: new Date(org.created_at).toLocaleDateString()
                     }));
 
-                    // Map admin actions - use recent suspensions as activity for now
-                    this.recentActivity = [];
+                    // Map admin actions from API activities
+                    this.recentActivity = (recentActivity.activities || []).map(activity => ({
+                        action_id: activity.action_id,
+                        action_type: activity.action_type,
+                        admin_name: activity.admin_name,
+                        target_name: activity.target_name,
+                        target_type: activity.target_type,
+                        created_at: activity.created_at
+                    }));
 
                     // System health - fetch from health endpoint
                     await this.loadSystemHealth();
