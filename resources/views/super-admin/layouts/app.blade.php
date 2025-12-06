@@ -282,6 +282,24 @@
                     <i class="fas fa-photo-video w-5 text-center"></i>
                     <span>{{ __('super_admin.nav.assets') }}</span>
                 </a>
+
+                <a href="{{ route('super-admin.feature-flags.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.feature-flags.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-flag w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.feature_flags') }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.system.database') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.system.database*') || request()->routeIs('super-admin.system.migrations') || request()->routeIs('super-admin.system.active-queries') || request()->routeIs('super-admin.system.schema-tables') || request()->routeIs('super-admin.system.table-details') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-database w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.database') }}</span>
+                </a>
+
+                <a href="{{ route('super-admin.settings.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.settings.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-cog w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.settings') }}</span>
+                </a>
             </nav>
 
             <!-- User Section -->

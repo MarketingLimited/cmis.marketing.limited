@@ -930,6 +930,538 @@ class SuperAdminSystemController extends Controller
         }
     }
 
+    // ===== Database Maintenance Methods =====
+
+    /**
+     * Display database maintenance dashboard.
+     */
+    public function databaseMaintenance(Request $request)
+    {
+        $stats = [
+            'database_size' => $this->getDatabaseSize(),
+            'connections' => $this->getConnectionStats(),
+            'schemas' => $this->getSchemaStats(),
+            'largest_tables' => $this->getLargestTables(15),
+            'index_usage' => $this->getIndexUsage(15),
+            'table_bloat' => $this->getTableBloat(10),
+            'dead_tuples' => $this->getDeadTupleStats(10),
+            'cache_stats' => $this->getDatabaseCacheStats(),
+        ];
+
+        if ($request->expectsJson()) {
+            return $this->success($stats);
+        }
+
+        return view('super-admin.system.database-maintenance', compact('stats'));
+    }
+
+    /**
+     * View tables in a specific schema.
+     */
+    public function schemaTables(Request $request, string $schema)
+    {
+        $allowedSchemas = ['cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public'];
+
+        if (!in_array($schema, $allowedSchemas)) {
+            return $this->error(__('super_admin.invalid_schema'));
+        }
+
+        $tables = DB::select("
+            SELECT
+                t.table_name,
+                pg_size_pretty(pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))) as total_size,
+                pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name)) as size_bytes,
+                COALESCE(s.n_live_tup, 0) as row_count,
+                COALESCE(s.n_dead_tup, 0) as dead_tuples,
+                s.last_vacuum,
+                s.last_analyze,
+                s.last_autovacuum,
+                s.last_autoanalyze
+            FROM information_schema.tables t
+            LEFT JOIN pg_stat_user_tables s
+                ON s.schemaname = t.table_schema
+                AND s.relname = t.table_name
+            WHERE t.table_schema = ?
+                AND t.table_type = 'BASE TABLE'
+            ORDER BY pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name)) DESC
+        ", [$schema]);
+
+        if ($request->expectsJson()) {
+            return $this->success(['schema' => $schema, 'tables' => $tables]);
+        }
+
+        return view('super-admin.system.schema-tables', compact('schema', 'tables'));
+    }
+
+    /**
+     * View table details and indexes.
+     */
+    public function tableDetails(Request $request, string $schema, string $table)
+    {
+        $allowedSchemas = ['cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public'];
+
+        if (!in_array($schema, $allowedSchemas)) {
+            return $this->error(__('super_admin.invalid_schema'));
+        }
+
+        // Sanitize table name
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+
+        // Table stats
+        $tableStats = DB::selectOne("
+            SELECT
+                pg_size_pretty(pg_total_relation_size(quote_ident(?) || '.' || quote_ident(?))) as total_size,
+                pg_size_pretty(pg_relation_size(quote_ident(?) || '.' || quote_ident(?))) as table_size,
+                pg_size_pretty(pg_indexes_size(quote_ident(?) || '.' || quote_ident(?))) as indexes_size,
+                n_live_tup as row_count,
+                n_dead_tup as dead_tuples,
+                last_vacuum,
+                last_analyze,
+                last_autovacuum,
+                last_autoanalyze,
+                seq_scan,
+                idx_scan,
+                n_tup_ins,
+                n_tup_upd,
+                n_tup_del
+            FROM pg_stat_user_tables
+            WHERE schemaname = ? AND relname = ?
+        ", [$schema, $table, $schema, $table, $schema, $table, $schema, $table]);
+
+        // Columns
+        $columns = DB::select("
+            SELECT
+                column_name,
+                data_type,
+                character_maximum_length,
+                is_nullable,
+                column_default
+            FROM information_schema.columns
+            WHERE table_schema = ? AND table_name = ?
+            ORDER BY ordinal_position
+        ", [$schema, $table]);
+
+        // Indexes
+        $indexes = DB::select("
+            SELECT
+                i.relname as index_name,
+                pg_size_pretty(pg_relation_size(i.oid)) as index_size,
+                ix.indisunique as is_unique,
+                ix.indisprimary as is_primary,
+                COALESCE(s.idx_scan, 0) as scans,
+                COALESCE(s.idx_tup_read, 0) as tuples_read,
+                pg_get_indexdef(ix.indexrelid) as definition
+            FROM pg_class t
+            JOIN pg_index ix ON t.oid = ix.indrelid
+            JOIN pg_class i ON i.oid = ix.indexrelid
+            JOIN pg_namespace n ON n.oid = t.relnamespace
+            LEFT JOIN pg_stat_user_indexes s ON s.indexrelid = i.oid
+            WHERE n.nspname = ? AND t.relname = ?
+            ORDER BY pg_relation_size(i.oid) DESC
+        ", [$schema, $table]);
+
+        // RLS policies
+        $policies = DB::select("
+            SELECT polname as name,
+                   CASE polcmd
+                       WHEN 'r' THEN 'SELECT'
+                       WHEN 'a' THEN 'INSERT'
+                       WHEN 'w' THEN 'UPDATE'
+                       WHEN 'd' THEN 'DELETE'
+                       WHEN '*' THEN 'ALL'
+                   END as command,
+                   pg_get_expr(polqual, polrelid) as using_expr,
+                   pg_get_expr(polwithcheck, polrelid) as check_expr
+            FROM pg_policy
+            WHERE polrelid = (quote_ident(?) || '.' || quote_ident(?))::regclass
+        ", [$schema, $table]);
+
+        // Check if RLS is enabled
+        $rlsEnabled = DB::selectOne("
+            SELECT relrowsecurity
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = ? AND c.relname = ?
+        ", [$schema, $table]);
+
+        $data = [
+            'schema' => $schema,
+            'table' => $table,
+            'stats' => $tableStats,
+            'columns' => $columns,
+            'indexes' => $indexes,
+            'policies' => $policies,
+            'rls_enabled' => $rlsEnabled->relrowsecurity ?? false,
+        ];
+
+        if ($request->expectsJson()) {
+            return $this->success($data);
+        }
+
+        return view('super-admin.system.table-details', $data);
+    }
+
+    /**
+     * Run VACUUM on a table.
+     */
+    public function vacuumTable(Request $request, string $schema, string $table)
+    {
+        $this->logAction('vacuum_table', ['schema' => $schema, 'table' => $table]);
+
+        $allowedSchemas = ['cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public'];
+
+        if (!in_array($schema, $allowedSchemas)) {
+            return $this->error(__('super_admin.invalid_schema'));
+        }
+
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+
+        try {
+            $analyze = $request->boolean('analyze', true);
+            $command = $analyze ? 'VACUUM ANALYZE' : 'VACUUM';
+
+            DB::statement("{$command} {$schema}.{$table}");
+
+            return $this->success(null, __('super_admin.database.vacuum_success'));
+        } catch (\Exception $e) {
+            return $this->error(__('super_admin.database.vacuum_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Run ANALYZE on a table.
+     */
+    public function analyzeTable(Request $request, string $schema, string $table)
+    {
+        $this->logAction('analyze_table', ['schema' => $schema, 'table' => $table]);
+
+        $allowedSchemas = ['cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public'];
+
+        if (!in_array($schema, $allowedSchemas)) {
+            return $this->error(__('super_admin.invalid_schema'));
+        }
+
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+
+        try {
+            DB::statement("ANALYZE {$schema}.{$table}");
+            return $this->success(null, __('super_admin.database.analyze_success'));
+        } catch (\Exception $e) {
+            return $this->error(__('super_admin.database.analyze_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Run REINDEX on a table.
+     */
+    public function reindexTable(Request $request, string $schema, string $table)
+    {
+        $this->logAction('reindex_table', ['schema' => $schema, 'table' => $table]);
+
+        $allowedSchemas = ['cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public'];
+
+        if (!in_array($schema, $allowedSchemas)) {
+            return $this->error(__('super_admin.invalid_schema'));
+        }
+
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+
+        try {
+            DB::statement("REINDEX TABLE {$schema}.{$table}");
+            return $this->success(null, __('super_admin.database.reindex_success'));
+        } catch (\Exception $e) {
+            return $this->error(__('super_admin.database.reindex_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * View migration status.
+     */
+    public function migrations(Request $request)
+    {
+        $migrations = DB::table('migrations')
+            ->orderBy('batch', 'desc')
+            ->orderBy('migration', 'desc')
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id' => $m->id,
+                    'migration' => $m->migration,
+                    'batch' => $m->batch,
+                ];
+            });
+
+        // Get pending migrations from Artisan
+        try {
+            Artisan::call('migrate:status', ['--pending' => true]);
+            $output = Artisan::output();
+            $pendingMigrations = [];
+
+            // Parse output for pending migrations
+            if (preg_match_all('/\|\s+(\d{4}_\d{2}_\d{2}_\d+_\w+)\s+\|\s+Pending/', $output, $matches)) {
+                $pendingMigrations = $matches[1];
+            }
+        } catch (\Exception $e) {
+            $pendingMigrations = [];
+        }
+
+        if ($request->expectsJson()) {
+            return $this->success([
+                'migrations' => $migrations,
+                'pending' => $pendingMigrations,
+            ]);
+        }
+
+        return view('super-admin.system.migrations', compact('migrations', 'pendingMigrations'));
+    }
+
+    /**
+     * View active database queries.
+     */
+    public function activeQueries(Request $request)
+    {
+        $queries = DB::select("
+            SELECT
+                pid,
+                usename as user,
+                client_addr,
+                application_name,
+                state,
+                query_start,
+                EXTRACT(EPOCH FROM (now() - query_start))::numeric(10,2) as duration_seconds,
+                wait_event_type,
+                wait_event,
+                LEFT(query, 500) as query
+            FROM pg_stat_activity
+            WHERE datname = current_database()
+                AND pid <> pg_backend_pid()
+                AND state <> 'idle'
+            ORDER BY query_start ASC
+        ");
+
+        if ($request->expectsJson()) {
+            return $this->success($queries);
+        }
+
+        return view('super-admin.system.active-queries', compact('queries'));
+    }
+
+    /**
+     * Cancel a running query.
+     */
+    public function cancelQuery(Request $request, int $pid)
+    {
+        $this->logAction('cancel_query', ['pid' => $pid]);
+
+        try {
+            $result = DB::selectOne("SELECT pg_cancel_backend(?)", [$pid]);
+
+            if ($result->pg_cancel_backend) {
+                return $this->success(null, __('super_admin.database.query_cancelled'));
+            } else {
+                return $this->error(__('super_admin.database.query_cancel_failed'));
+            }
+        } catch (\Exception $e) {
+            return $this->error(__('super_admin.database.query_cancel_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Terminate a database connection.
+     */
+    public function terminateConnection(Request $request, int $pid)
+    {
+        $this->logAction('terminate_connection', ['pid' => $pid]);
+
+        try {
+            $result = DB::selectOne("SELECT pg_terminate_backend(?)", [$pid]);
+
+            if ($result->pg_terminate_backend) {
+                return $this->success(null, __('super_admin.database.connection_terminated'));
+            } else {
+                return $this->error(__('super_admin.database.connection_terminate_failed'));
+            }
+        } catch (\Exception $e) {
+            return $this->error(__('super_admin.database.connection_terminate_failed') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Log super admin action.
+     */
+    protected function logAction(string $action, array $data = []): void
+    {
+        try {
+            DB::table('cmis.super_admin_actions')->insert([
+                'id' => \Illuminate\Support\Str::uuid(),
+                'admin_user_id' => auth()->id(),
+                'action_type' => $action,
+                'target_type' => 'database',
+                'target_id' => null,
+                'data' => json_encode($data),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'created_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to log super admin action', ['error' => $e->getMessage()]);
+        }
+    }
+
+    // ===== Database Maintenance Helper Methods =====
+
+    protected function getSchemaStats(): array
+    {
+        try {
+            return DB::select("
+                SELECT
+                    nspname as schema_name,
+                    pg_size_pretty(SUM(pg_total_relation_size(quote_ident(nspname) || '.' || quote_ident(relname)))) as total_size,
+                    SUM(pg_total_relation_size(quote_ident(nspname) || '.' || quote_ident(relname))) as size_bytes,
+                    COUNT(*) as table_count
+                FROM pg_class c
+                JOIN pg_namespace n ON n.oid = c.relnamespace
+                WHERE nspname IN ('cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social', 'public')
+                    AND c.relkind = 'r'
+                GROUP BY nspname
+                ORDER BY SUM(pg_total_relation_size(quote_ident(nspname) || '.' || quote_ident(relname))) DESC
+            ");
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getLargestTables(int $limit): array
+    {
+        try {
+            return DB::select("
+                SELECT
+                    schemaname as schema,
+                    relname as table_name,
+                    pg_size_pretty(pg_total_relation_size(schemaname || '.' || relname)) as total_size,
+                    pg_total_relation_size(schemaname || '.' || relname) as size_bytes,
+                    n_live_tup as row_count
+                FROM pg_stat_user_tables
+                WHERE schemaname IN ('cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social')
+                ORDER BY pg_total_relation_size(schemaname || '.' || relname) DESC
+                LIMIT ?
+            ", [$limit]);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getIndexUsage(int $limit): array
+    {
+        try {
+            return DB::select("
+                SELECT
+                    schemaname as schema,
+                    relname as table_name,
+                    indexrelname as index_name,
+                    pg_size_pretty(pg_relation_size(indexrelid)) as index_size,
+                    idx_scan as scans,
+                    idx_tup_read as tuples_read,
+                    idx_tup_fetch as tuples_fetched,
+                    CASE WHEN idx_scan = 0 THEN 'Unused' ELSE 'Used' END as status
+                FROM pg_stat_user_indexes
+                WHERE schemaname IN ('cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social')
+                ORDER BY idx_scan ASC, pg_relation_size(indexrelid) DESC
+                LIMIT ?
+            ", [$limit]);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getTableBloat(int $limit): array
+    {
+        try {
+            return DB::select("
+                SELECT
+                    schemaname as schema,
+                    relname as table_name,
+                    n_dead_tup as dead_tuples,
+                    n_live_tup as live_tuples,
+                    CASE
+                        WHEN n_live_tup > 0
+                        THEN round(100.0 * n_dead_tup / (n_live_tup + n_dead_tup), 2)
+                        ELSE 0
+                    END as bloat_ratio,
+                    last_vacuum,
+                    last_autovacuum
+                FROM pg_stat_user_tables
+                WHERE schemaname IN ('cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social')
+                    AND (n_dead_tup > 1000 OR (n_live_tup > 0 AND (100.0 * n_dead_tup / (n_live_tup + n_dead_tup)) > 10))
+                ORDER BY n_dead_tup DESC
+                LIMIT ?
+            ", [$limit]);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getDeadTupleStats(int $limit): array
+    {
+        try {
+            return DB::select("
+                SELECT
+                    schemaname as schema,
+                    relname as table_name,
+                    n_dead_tup as dead_tuples,
+                    n_live_tup as live_tuples,
+                    last_vacuum,
+                    last_autovacuum,
+                    vacuum_count,
+                    autovacuum_count
+                FROM pg_stat_user_tables
+                WHERE schemaname IN ('cmis', 'cmis_platform', 'cmis_creative', 'cmis_ai', 'cmis_social')
+                ORDER BY n_dead_tup DESC
+                LIMIT ?
+            ", [$limit]);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getDatabaseCacheStats(): array
+    {
+        try {
+            $result = DB::selectOne("
+                SELECT
+                    sum(heap_blks_read) as heap_read,
+                    sum(heap_blks_hit) as heap_hit,
+                    CASE
+                        WHEN sum(heap_blks_hit) + sum(heap_blks_read) > 0
+                        THEN round(100.0 * sum(heap_blks_hit) / (sum(heap_blks_hit) + sum(heap_blks_read)), 2)
+                        ELSE 0
+                    END as cache_hit_ratio,
+                    sum(idx_blks_read) as index_read,
+                    sum(idx_blks_hit) as index_hit,
+                    CASE
+                        WHEN sum(idx_blks_hit) + sum(idx_blks_read) > 0
+                        THEN round(100.0 * sum(idx_blks_hit) / (sum(idx_blks_hit) + sum(idx_blks_read)), 2)
+                        ELSE 0
+                    END as index_hit_ratio
+                FROM pg_statio_user_tables
+            ");
+
+            return [
+                'heap_read' => $result->heap_read ?? 0,
+                'heap_hit' => $result->heap_hit ?? 0,
+                'cache_hit_ratio' => $result->cache_hit_ratio ?? 0,
+                'index_read' => $result->index_read ?? 0,
+                'index_hit' => $result->index_hit ?? 0,
+                'index_hit_ratio' => $result->index_hit_ratio ?? 0,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'cache_hit_ratio' => 0,
+                'index_hit_ratio' => 0,
+            ];
+        }
+    }
+
     /**
      * Get recent errors from Laravel logs.
      *

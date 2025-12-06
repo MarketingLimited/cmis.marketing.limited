@@ -253,7 +253,7 @@ class RestoreOrchestrator
             throw new \Exception('Failed to extract backup: ' . ($extracted['error'] ?? 'Unknown error'));
         }
 
-        return $extracted['extract_path'];
+        return $extracted['extracted_to'];
     }
 
     /**

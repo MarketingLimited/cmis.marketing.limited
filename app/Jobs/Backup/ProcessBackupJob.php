@@ -114,9 +114,9 @@ class ProcessBackupJob implements ShouldQueue
                 'org_id' => $this->backup->org_id,
             ]);
 
-            // Step 1: Discover org tables and get schema snapshot
-            $orgTables = $schemaDiscovery->discoverOrgTables();
-            $schemaSnapshot = $schemaDiscovery->getSchemaSnapshot($orgTables);
+            // Step 1: Discover org tables (schema snapshot disabled for security)
+            // Note: Schema discovery still used internally by data extractor for table info
+            // but snapshot is not included in backup package
 
             // Step 2: Extract data
             $extractedData = $dataExtractor->extractAllData(
@@ -137,17 +137,20 @@ class ProcessBackupJob implements ShouldQueue
             );
 
             // Step 4: Create package
+            // Note: Schema snapshot disabled by default for security (prevents exposing DB structure)
+            // Set includeSchema: true if restore compatibility checking is needed
             $packageResult = $packager->createPackage(
                 $this->backup->org_id,
                 $extractedData,
                 $files,
-                $schemaSnapshot,
+                null,  // schemaSnapshot - not included by default for security
                 [
                     'backup_id' => $this->backup->id,
                     'backup_code' => $this->backup->backup_code,
                     'type' => $this->backup->type,
                     'categories' => $this->categories,
-                ]
+                ],
+                false  // includeSchema - disabled by default
             );
 
             $filePath = $packageResult['path'];
@@ -184,7 +187,7 @@ class ProcessBackupJob implements ShouldQueue
                 'is_encrypted' => $this->encrypt,
                 'encryption_key_id' => $this->encryptionKeyId,
                 'summary' => $packageResult['manifest']['summary'],
-                'schema_snapshot' => $schemaSnapshot,
+                'schema_snapshot' => null,  // Schema not included for security
                 'completed_at' => now(),
                 'expires_at' => $this->calculateExpiryDate(),
             ]);

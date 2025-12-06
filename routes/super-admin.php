@@ -14,6 +14,8 @@ use App\Http\Controllers\SuperAdmin\SuperAdminAnnouncementController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSecurityController;
 use App\Http\Controllers\SuperAdmin\SuperAdminBillingController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAssetController;
+use App\Http\Controllers\SuperAdmin\SuperAdminFeatureFlagController;
+use App\Http\Controllers\SuperAdmin\SuperAdminSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -196,6 +198,35 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
     });
 
     // =====================================================
+    // Feature Flags Management
+    // =====================================================
+    Route::prefix('feature-flags')->name('feature-flags.')->group(function () {
+        Route::get('/', [SuperAdminFeatureFlagController::class, 'index'])->name('index');
+        Route::get('/browse', [SuperAdminFeatureFlagController::class, 'browse'])->name('browse');
+        Route::get('/create', [SuperAdminFeatureFlagController::class, 'create'])->name('create');
+        Route::post('/', [SuperAdminFeatureFlagController::class, 'store'])->name('store');
+        Route::get('/{flag}', [SuperAdminFeatureFlagController::class, 'show'])->name('show');
+        Route::get('/{flag}/edit', [SuperAdminFeatureFlagController::class, 'edit'])->name('edit');
+        Route::put('/{flag}', [SuperAdminFeatureFlagController::class, 'update'])->name('update');
+        Route::post('/{flag}/toggle', [SuperAdminFeatureFlagController::class, 'toggle'])->name('toggle');
+        Route::delete('/{flag}', [SuperAdminFeatureFlagController::class, 'destroy'])->name('destroy');
+        Route::post('/{flag}/override', [SuperAdminFeatureFlagController::class, 'addOverride'])->name('add-override');
+        Route::delete('/{flag}/override/{override}', [SuperAdminFeatureFlagController::class, 'removeOverride'])->name('remove-override');
+        Route::post('/bulk-toggle', [SuperAdminFeatureFlagController::class, 'bulkToggle'])->name('bulk-toggle');
+    });
+
+    // =====================================================
+    // Global Settings
+    // =====================================================
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SuperAdminSettingsController::class, 'index'])->name('index');
+        Route::post('/', [SuperAdminSettingsController::class, 'update'])->name('update');
+        Route::post('/reset/{key}', [SuperAdminSettingsController::class, 'reset'])->name('reset');
+        Route::get('/export', [SuperAdminSettingsController::class, 'export'])->name('export');
+        Route::post('/import', [SuperAdminSettingsController::class, 'import'])->name('import');
+    });
+
+    // =====================================================
     // System Management
     // =====================================================
     Route::prefix('system')->name('system.')->group(function () {
@@ -208,5 +239,17 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::get('/database-stats', [SuperAdminSystemController::class, 'databaseStats'])->name('database-stats');
         Route::get('/scheduled-tasks', [SuperAdminSystemController::class, 'scheduledTasks'])->name('scheduled-tasks');
         Route::get('/action-logs', [SuperAdminSystemController::class, 'actionLogs'])->name('action-logs');
+
+        // Database Maintenance
+        Route::get('/database', [SuperAdminSystemController::class, 'databaseMaintenance'])->name('database');
+        Route::get('/database/schema/{schema}', [SuperAdminSystemController::class, 'schemaTables'])->name('schema-tables');
+        Route::get('/database/table/{schema}/{table}', [SuperAdminSystemController::class, 'tableDetails'])->name('table-details');
+        Route::post('/database/vacuum/{schema}/{table}', [SuperAdminSystemController::class, 'vacuumTable'])->name('vacuum-table');
+        Route::post('/database/analyze/{schema}/{table}', [SuperAdminSystemController::class, 'analyzeTable'])->name('analyze-table');
+        Route::post('/database/reindex/{schema}/{table}', [SuperAdminSystemController::class, 'reindexTable'])->name('reindex-table');
+        Route::get('/migrations', [SuperAdminSystemController::class, 'migrations'])->name('migrations');
+        Route::get('/active-queries', [SuperAdminSystemController::class, 'activeQueries'])->name('active-queries');
+        Route::post('/cancel-query/{pid}', [SuperAdminSystemController::class, 'cancelQuery'])->name('cancel-query');
+        Route::post('/terminate-connection/{pid}', [SuperAdminSystemController::class, 'terminateConnection'])->name('terminate-connection');
     });
 });

@@ -48,16 +48,18 @@ class BackupPackagerService
      * @param string $orgId Organization ID
      * @param array $extractedData Extracted database data by category
      * @param Collection $files Collected files
-     * @param array $schemaSnapshot Database schema snapshot
+     * @param array|null $schemaSnapshot Database schema snapshot (optional, defaults to null for security)
      * @param array $metadata Additional metadata
+     * @param bool $includeSchema Whether to include schema snapshot (default: false for security)
      * @return array Package info with path, size, checksums
      */
     public function createPackage(
         string $orgId,
         array $extractedData,
         Collection $files,
-        array $schemaSnapshot,
-        array $metadata = []
+        ?array $schemaSnapshot = null,
+        array $metadata = [],
+        bool $includeSchema = false
     ): array {
         // Ensure temp directory exists
         $this->ensureTempDirectory();
@@ -96,17 +98,21 @@ class BackupPackagerService
         // Add organization files
         $addedFiles = $this->addFilesToZip($zip, $files, $fileChecksums);
 
-        // Add schema snapshot
-        $schemaContent = json_encode($schemaSnapshot, JSON_PRETTY_PRINT);
-        $zip->addFromString('schema/snapshot.json', $schemaContent);
-        $fileChecksums['schema/snapshot.json'] = $this->checksumService->hashString($schemaContent);
+        // Add schema snapshot only if explicitly requested (disabled by default for security)
+        if ($includeSchema && $schemaSnapshot !== null) {
+            // Remove sensitive info from schema (database name, etc.)
+            $safeSchema = $this->sanitizeSchemaSnapshot($schemaSnapshot);
+            $schemaContent = json_encode($safeSchema, JSON_PRETTY_PRINT);
+            $zip->addFromString('schema/snapshot.json', $schemaContent);
+            $fileChecksums['schema/snapshot.json'] = $this->checksumService->hashString($schemaContent);
+        }
 
         // Build and add manifest
         $manifest = $this->buildManifest(
             $orgId,
             $extractedData,
             $addedFiles,
-            $schemaSnapshot,
+            $includeSchema ? $schemaSnapshot : null,
             $metadata,
             $fileChecksums
         );
@@ -193,7 +199,7 @@ class BackupPackagerService
      * @param string $orgId Organization ID
      * @param array $extractedData Extracted data
      * @param array $files Added files info
-     * @param array $schemaSnapshot Schema snapshot
+     * @param array|null $schemaSnapshot Schema snapshot (null if not included)
      * @param array $metadata Additional metadata
      * @param array $checksums File checksums
      * @return array Manifest data
@@ -202,7 +208,7 @@ class BackupPackagerService
         string $orgId,
         array $extractedData,
         array $files,
-        array $schemaSnapshot,
+        ?array $schemaSnapshot,
         array $metadata,
         array $checksums
     ): array {
@@ -225,12 +231,13 @@ class BackupPackagerService
         $addedFiles = collect($files)->where('status', 'added');
         $skippedFiles = collect($files)->where('status', 'skipped');
 
-        return [
+        $manifest = [
             'version' => config('backup.version', '1.0.0'),
             'format' => 'cmis-backup',
             'created_at' => now()->toISOString(),
             'organization' => [
                 'id' => $orgId,
+                // Note: Organization name/details intentionally not included for privacy
             ],
             'summary' => [
                 'categories' => $categories,
@@ -243,10 +250,6 @@ class BackupPackagerService
                     'total_size' => $addedFiles->sum('size'),
                 ],
             ],
-            'schema' => [
-                'cmis_version' => config('cmis.version', '3.0'),
-                'table_count' => count($schemaSnapshot),
-            ],
             'files' => $files,
             'checksums' => $checksums,
             'metadata' => array_merge($metadata, [
@@ -254,6 +257,16 @@ class BackupPackagerService
                 'generator_version' => config('backup.version', '1.0.0'),
             ]),
         ];
+
+        // Only include schema info if schema was included in backup
+        if ($schemaSnapshot !== null) {
+            $manifest['schema'] = [
+                'cmis_version' => config('cmis.version', '3.0'),
+                'table_count' => count($schemaSnapshot['tables'] ?? []),
+            ];
+        }
+
+        return $manifest;
     }
 
     /**
@@ -402,6 +415,27 @@ class BackupPackagerService
         if (!is_dir($path)) {
             mkdir($path, 0755, true);
         }
+    }
+
+    /**
+     * Sanitize schema snapshot to remove sensitive information
+     *
+     * @param array $schemaSnapshot Original schema snapshot
+     * @return array Sanitized schema snapshot
+     */
+    protected function sanitizeSchemaSnapshot(array $schemaSnapshot): array
+    {
+        // Remove database name and other sensitive system info
+        unset($schemaSnapshot['database']);
+        unset($schemaSnapshot['host']);
+        unset($schemaSnapshot['port']);
+
+        // Keep only structural information needed for restore compatibility
+        return [
+            'version' => $schemaSnapshot['version'] ?? '1.0',
+            'created_at' => $schemaSnapshot['created_at'] ?? now()->toISOString(),
+            'tables' => $schemaSnapshot['tables'] ?? [],
+        ];
     }
 
     /**

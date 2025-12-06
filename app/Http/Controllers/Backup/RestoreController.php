@@ -63,7 +63,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return view('apps.backup.restore.index', compact('backups', 'restores', 'org'));
+        return view('apps.orgs.backup.restore.index', compact('backups', 'restores', 'org'));
     }
 
     /**
@@ -71,7 +71,7 @@ class RestoreController extends Controller
      */
     public function upload(Request $request, string $org)
     {
-        return view('apps.backup.restore.upload', compact('org'));
+        return view('apps.orgs.backup.restore.upload', compact('org'));
     }
 
     /**
@@ -127,12 +127,12 @@ class RestoreController extends Controller
             if ($request->wantsJson()) {
                 return $this->success([
                     'backup' => $backup,
-                    'redirect' => route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]),
+                    'redirect' => route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id]),
                 ]);
             }
 
             return redirect()
-                ->route('backup.restore.analyze', ['org' => $org, 'backup' => $backup->id])
+                ->route('orgs.backup.restore.analyze', ['org' => $org, 'backup' => $backup->id])
                 ->with('success', __('backup.upload_success'));
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
@@ -160,7 +160,7 @@ class RestoreController extends Controller
 
         if ($existingRestore) {
             // Redirect to existing restore
-            return redirect()->route('backup.restore.select', [
+            return redirect()->route('orgs.backup.restore.select', [
                 'org' => $org,
                 'restore' => $existingRestore->id
             ]);
@@ -187,7 +187,7 @@ class RestoreController extends Controller
                 ]);
             }
 
-            return view('apps.backup.restore.analyze', [
+            return view('apps.orgs.backup.restore.analyze', [
                 'backup' => $backup,
                 'restore' => $restore->fresh(),
                 'analysis' => $analysis,
@@ -201,7 +201,7 @@ class RestoreController extends Controller
             }
 
             return redirect()
-                ->route('backup.restore.index', ['org' => $org])
+                ->route('orgs.backup.restore.index', ['org' => $org])
                 ->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -216,7 +216,7 @@ class RestoreController extends Controller
             ->findOrFail($restore);
 
         if (!in_array($restore->status, ['awaiting_confirmation', 'pending'])) {
-            return redirect()->route('backup.restore.progress', [
+            return redirect()->route('orgs.backup.restore.progress', [
                 'org' => $org,
                 'restore' => $restore->id
             ]);
@@ -233,7 +233,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return view('apps.backup.restore.select', [
+        return view('apps.orgs.backup.restore.select', [
             'restore' => $restore,
             'backup' => $restore->backup,
             'reconciliation' => $reconciliation,
@@ -266,14 +266,14 @@ class RestoreController extends Controller
 
         if (!empty($conflictPreview['total']) && $conflictPreview['total'] > 0) {
             // Redirect to conflict resolution
-            return redirect()->route('backup.restore.conflicts', [
+            return redirect()->route('orgs.backup.restore.conflicts', [
                 'org' => $org,
                 'restore' => $restore->id
             ]);
         }
 
         // No conflicts, go directly to confirmation
-        return redirect()->route('backup.restore.confirm', [
+        return redirect()->route('orgs.backup.restore.confirm', [
             'org' => $org,
             'restore' => $restore->id
         ]);
@@ -297,7 +297,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return view('apps.backup.restore.conflicts', [
+        return view('apps.orgs.backup.restore.conflicts', [
             'restore' => $restore,
             'backup' => $restore->backup,
             'conflicts' => $conflictPreview,
@@ -326,7 +326,7 @@ class RestoreController extends Controller
             'conflict_resolution' => $conflictResolution,
         ]);
 
-        return redirect()->route('backup.restore.confirm', [
+        return redirect()->route('orgs.backup.restore.confirm', [
             'org' => $org,
             'restore' => $restore->id
         ]);
@@ -351,7 +351,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return view('apps.backup.restore.confirm', [
+        return view('apps.orgs.backup.restore.confirm', [
             'restore' => $restore,
             'backup' => $restore->backup,
             'organization' => $organization,
@@ -427,7 +427,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return redirect()->route('backup.restore.progress', [
+        return redirect()->route('orgs.backup.restore.progress', [
             'org' => $org,
             'restore' => $restore->id
         ]);
@@ -446,7 +446,7 @@ class RestoreController extends Controller
             return $this->success($this->getOrchestrator()->getProgress($restore));
         }
 
-        return view('apps.backup.restore.progress', [
+        return view('apps.orgs.backup.restore.progress', [
             'restore' => $restore,
             'backup' => $restore->backup,
             'org' => $org,
@@ -491,7 +491,7 @@ class RestoreController extends Controller
             }
 
             return redirect()
-                ->route('backup.restore.progress', [
+                ->route('orgs.backup.restore.progress', [
                     'org' => $org,
                     'restore' => $result['rollback_restore']->id
                 ])
@@ -521,7 +521,7 @@ class RestoreController extends Controller
             ]);
         }
 
-        return view('apps.backup.restore.complete', [
+        return view('apps.orgs.backup.restore.complete', [
             'restore' => $restore,
             'backup' => $restore->backup,
             'org' => $org,
