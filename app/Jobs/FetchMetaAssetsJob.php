@@ -139,10 +139,37 @@ class FetchMetaAssetsJob implements ShouldQueue
             return;
         }
 
-        $assetTypes = [
-            'pages' => 'getPages',
-            'instagram' => 'getInstagramAccounts',
-            'threads' => 'getThreadsAccounts',
+        // OPTIMIZED: Fetch in order that allows passing data to avoid redundant API calls
+        // Instagram is fetched embedded in Pages, then passed to Threads
+        $results = [];
+        $instagramAccounts = [];
+
+        // 1. Fetch Pages (Instagram is embedded via field expansion)
+        try {
+            $pages = $service->getPages($connectionId, $accessToken, false);
+            $results['pages'] = count($pages);
+        } catch (\Exception $e) {
+            $results['pages'] = 'error: ' . $e->getMessage();
+        }
+
+        // 2. Fetch Instagram accounts (uses cache from Pages fetch)
+        try {
+            $instagramAccounts = $service->getInstagramAccounts($connectionId, $accessToken, false);
+            $results['instagram'] = count($instagramAccounts);
+        } catch (\Exception $e) {
+            $results['instagram'] = 'error: ' . $e->getMessage();
+        }
+
+        // 3. Fetch Threads using already-fetched Instagram (avoids redundant lookup)
+        try {
+            $threads = $service->getThreadsAccounts($connectionId, $accessToken, false, $instagramAccounts);
+            $results['threads'] = count($threads);
+        } catch (\Exception $e) {
+            $results['threads'] = 'error: ' . $e->getMessage();
+        }
+
+        // 4. Fetch remaining asset types
+        $remainingTypes = [
             'ad_accounts' => 'getAdAccounts',
             'pixels' => 'getPixels',
             'catalogs' => 'getCatalogs',
@@ -151,12 +178,8 @@ class FetchMetaAssetsJob implements ShouldQueue
             'offline_event_sets' => 'getOfflineEventSets',
         ];
 
-        $results = [];
-
-        foreach ($assetTypes as $type => $method) {
+        foreach ($remainingTypes as $type => $method) {
             try {
-                // Don't force refresh - use cached data if available to prevent API rate limiting
-                // Cache will naturally expire after 1 hour (CACHE_TTL)
                 $assets = $service->$method($connectionId, $accessToken, false);
                 $results[$type] = count($assets);
             } catch (\Exception $e) {

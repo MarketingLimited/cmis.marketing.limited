@@ -1514,24 +1514,37 @@ class MetaAssetsService
      *
      * OPTIMIZED with TWO-PHASE INCREMENTAL SYNC:
      * 1. DATABASE-FIRST: Check for fresh Threads data in DB
-     * 2. PHASE 1: Get Instagram IDs (already have from getInstagramAccounts)
+     * 2. PHASE 1: Use provided Instagram IDs (or fetch if not provided)
      * 3. PHASE 2: Check DB for existing Threads data
      * 4. PHASE 3: Batch fetch only NEW Threads accounts (50 per batch)
+     *
+     * @param string $connectionId Connection ID
+     * @param string $accessToken Access token with threads_* scopes
+     * @param bool $forceRefresh Force refresh from API
+     * @param array $instagramAccounts Optional pre-fetched Instagram accounts (avoids redundant fetch)
+     * @return array Array of Threads account data
      */
-    public function getThreadsAccounts(string $connectionId, string $accessToken, bool $forceRefresh = false): array
-    {
+    public function getThreadsAccounts(
+        string $connectionId,
+        string $accessToken,
+        bool $forceRefresh = false,
+        array $instagramAccounts = []
+    ): array {
         $cacheKey = $this->getCacheKey($connectionId, 'threads');
 
         if ($forceRefresh) {
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($connectionId, $accessToken, $instagramAccounts) {
             // DATABASE-FIRST: Check for fresh Threads data
             $freshThreads = $this->getExistingFreshAssets('threads');
 
-            // Get Instagram accounts (already optimized with two-phase sync)
-            $instagramAccounts = $this->getInstagramAccounts($connectionId, $accessToken, false);
+            // Use provided Instagram accounts or fetch them (with caching)
+            // This avoids redundant API calls when Instagram was already fetched from Pages
+            if (empty($instagramAccounts)) {
+                $instagramAccounts = $this->getInstagramAccounts($connectionId, $accessToken, false);
+            }
 
             if (empty($instagramAccounts)) {
                 Log::debug('No Instagram accounts found, skipping Threads');
