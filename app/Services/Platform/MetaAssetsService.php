@@ -618,64 +618,29 @@ class MetaAssetsService
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
             $allInstagram = [];
             $existingIds = [];
-            $existingPageIds = [];
 
-            // Get business assets (includes instagram_accounts edge and pages with source)
+            // Get business assets - Instagram is NOW EMBEDDED in pages via field expansion
+            // This means 0 EXTRA API calls for Instagram (previously made 100+ batch calls)
             $businessAssets = $this->getAllBusinessAssets($accessToken, $connectionId);
-            $businessPages = $businessAssets['pages'] ?? [];
-            $directBusinessInstagram = $businessAssets['instagram'] ?? [];
+            $businessInstagram = $businessAssets['instagram'] ?? [];
 
-            // Separate owned and client pages for proper priority ordering
-            $ownedPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'owned');
-            $clientPages = array_filter($businessPages, fn($p) => ($p['source'] ?? '') === 'client');
-
-            // STEP 1: Query Instagram from business OWNED pages (HIGHEST PRIORITY)
-            $ownedInstagramCount = 0;
-            if (!empty($ownedPages)) {
-                $ownedInstagram = $this->batchQueryPagesInstagram(array_values($ownedPages), $accessToken);
-                foreach ($ownedInstagram as $ig) {
-                    if (!in_array($ig['id'], $existingIds)) {
-                        $ig['source'] = 'owned';
-                        $allInstagram[] = $ig;
-                        $existingIds[] = $ig['id'];
-                        if (!empty($ig['connected_page_id'])) {
-                            $existingPageIds[] = $ig['connected_page_id'];
-                        }
-                        $ownedInstagramCount++;
-                    }
-                }
-            }
-
-            // STEP 2: Query Instagram from business CLIENT pages (SECOND PRIORITY)
-            $clientInstagramCount = 0;
-            if (!empty($clientPages)) {
-                $clientInstagram = $this->batchQueryPagesInstagram(array_values($clientPages), $accessToken);
-                foreach ($clientInstagram as $ig) {
-                    if (!in_array($ig['id'], $existingIds)) {
-                        $ig['source'] = 'client';
-                        $allInstagram[] = $ig;
-                        $existingIds[] = $ig['id'];
-                        if (!empty($ig['connected_page_id'])) {
-                            $existingPageIds[] = $ig['connected_page_id'];
-                        }
-                        $clientInstagramCount++;
-                    }
-                }
-            }
-
-            // STEP 3: Add direct business Instagram from instagram_accounts edge (THIRD PRIORITY)
-            $directCount = 0;
-            foreach ($directBusinessInstagram as $ig) {
+            // STEP 1: Use Instagram data already extracted from pages (via field expansion)
+            // Instagram is organized by source (owned/client) during getAllBusinessAssets extraction
+            $businessInstagramCount = 0;
+            foreach ($businessInstagram as $ig) {
                 if (!in_array($ig['id'], $existingIds)) {
-                    // Use source from the business info if available, otherwise 'owned'
-                    $ig['source'] = $ig['source'] ?? 'owned';
+                    // Source is already set during extraction in getAllBusinessAssets
                     $allInstagram[] = $ig;
                     $existingIds[] = $ig['id'];
-                    $directCount++;
+                    $businessInstagramCount++;
                 }
             }
 
-            // STEP 4: Get Instagram from /me/accounts (via connected pages) - LOWEST PRIORITY (personal)
+            Log::info('Instagram from business pages (via field expansion - 0 extra API calls)', [
+                'count' => $businessInstagramCount,
+            ]);
+
+            // STEP 2: Get Instagram from /me/accounts (via connected pages) - LOWEST PRIORITY (personal)
             $userAssets = $this->getAllUserAssets($accessToken, $connectionId);
             $userInstagram = $userAssets['instagram'] ?? [];
 
@@ -689,12 +654,11 @@ class MetaAssetsService
                 }
             }
 
-            Log::debug('Instagram merged with ownership priority (owned > client > personal)', [
-                'owned_instagram' => $ownedInstagramCount,
-                'client_instagram' => $clientInstagramCount,
-                'direct_business_instagram' => $directCount,
+            Log::debug('Instagram merged with ownership priority (business > personal)', [
+                'business_instagram' => $businessInstagramCount,
                 'personal_instagram' => $personalCount,
                 'total_unique' => count($allInstagram),
+                'optimization' => '0 extra API calls (Instagram embedded in page field expansion)',
             ]);
 
             // Persist to database for three-tier caching
@@ -1288,7 +1252,8 @@ class MetaAssetsService
 
             try {
                 // Base fields that work for both User tokens and System User tokens
-                // NOTE: Pages use lighter fields, instagram_accounts causes "too much data" so batch API handles it
+                // OPTIMIZED: Include Instagram in page field expansion to avoid separate batch calls
+                // This gets Instagram data in the SAME API call (0 extra rate limit hits)
                 $baseFields = [
                     'id',
                     'name',
@@ -1296,9 +1261,9 @@ class MetaAssetsService
                     'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
                     'client_product_catalogs.limit(100){id,name,product_count,vertical}',
                     'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
-                    // Pages with lighter fields (no nested instagram_business_account to avoid payload limits)
-                    'owned_pages.limit(100){id,name,category}',
-                    'client_pages.limit(100){id,name,category}',
+                    // Pages WITH embedded Instagram (eliminates separate batch calls = 0 extra API calls)
+                    'owned_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}',
+                    'client_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}',
                 ];
 
                 // Extended fields (only work with System User tokens)
