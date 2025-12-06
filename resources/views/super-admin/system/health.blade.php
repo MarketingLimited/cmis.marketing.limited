@@ -352,8 +352,8 @@ function systemHealth() {
                 if (checks.cache) {
                     this.services.cache = {
                         status: checks.cache.status === 'unhealthy' ? 'down' : checks.cache.status,
-                        hit_rate: '-', // Not provided by API
-                        memory_used: checks.cache.driver || '-'
+                        hit_rate: checks.cache.hit_rate || '-',
+                        memory_used: checks.cache.memory_used || '-'
                     };
                 }
 
@@ -370,15 +370,33 @@ function systemHealth() {
                 if (checks.storage) {
                     this.services.storage = {
                         status: checks.storage.status === 'unhealthy' ? 'down' : checks.storage.status,
-                        used: '-',
-                        available: '-',
-                        percentage: 0
+                        used: checks.storage.used || '-',
+                        available: checks.storage.available || '-',
+                        percentage: checks.storage.percentage || 0
                     };
                 }
 
-                // Mail and scheduler are not provided by API, set defaults
-                this.services.mail = { status: 'healthy', sent_today: 0, last_sent: '-' };
-                this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-' };
+                // Map mail service
+                if (checks.mail) {
+                    this.services.mail = {
+                        status: checks.mail.status === 'unhealthy' ? 'down' : checks.mail.status,
+                        sent_today: checks.mail.sent_today || 0,
+                        last_sent: checks.mail.last_sent || '-'
+                    };
+                } else {
+                    this.services.mail = { status: 'healthy', sent_today: 0, last_sent: '-' };
+                }
+
+                // Map scheduler service
+                if (checks.scheduler) {
+                    this.services.scheduler = {
+                        status: checks.scheduler.status === 'unhealthy' ? 'down' : checks.scheduler.status,
+                        last_run: checks.scheduler.last_run || '-',
+                        next_run: checks.scheduler.next_run || '-'
+                    };
+                } else {
+                    this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-' };
+                }
 
                 // Recent errors from API
                 this.recentErrors = data.recent_errors || [];

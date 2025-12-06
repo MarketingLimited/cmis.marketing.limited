@@ -32,6 +32,8 @@ class SuperAdminSystemController extends Controller
             'cache' => $this->checkCache(),
             'queue' => $this->checkQueue(),
             'storage' => $this->checkStorage(),
+            'scheduler' => $this->checkScheduler(),
+            'mail' => $this->checkMail(),
             'services' => $this->checkExternalServices(),
         ];
 
@@ -265,9 +267,44 @@ class SuperAdminSystemController extends Controller
             $value = Cache::get($key);
             Cache::forget($key);
 
+            $driver = config('cache.default');
+            $hitRate = '-';
+            $memoryUsed = '-';
+            $keys = 0;
+
+            // Get Redis stats if using Redis
+            if ($driver === 'redis') {
+                try {
+                    $info = Redis::info();
+
+                    // Calculate hit rate
+                    $hits = $info['keyspace_hits'] ?? 0;
+                    $misses = $info['keyspace_misses'] ?? 0;
+                    $total = $hits + $misses;
+                    if ($total > 0) {
+                        $hitRate = round(($hits / $total) * 100, 1);
+                    }
+
+                    // Memory used
+                    $usedMemory = $info['used_memory_human'] ?? null;
+                    if ($usedMemory) {
+                        $memoryUsed = $usedMemory;
+                    }
+
+                    // Key count
+                    $keys = $info['db0']['keys'] ?? Redis::dbSize() ?? 0;
+                } catch (\Exception $e) {
+                    // Redis stats not available
+                    Log::debug('Could not get Redis stats: ' . $e->getMessage());
+                }
+            }
+
             return [
                 'status' => $value === 'test' ? 'healthy' : 'degraded',
-                'driver' => config('cache.default'),
+                'driver' => $driver,
+                'hit_rate' => $hitRate,
+                'memory_used' => $memoryUsed,
+                'keys' => $keys,
             ];
         } catch (\Exception $e) {
             return [
@@ -315,9 +352,34 @@ class SuperAdminSystemController extends Controller
             $content = $disk->get($testFile);
             $disk->delete($testFile);
 
+            // Get disk space information
+            $path = storage_path();
+            $totalBytes = @disk_total_space($path);
+            $freeBytes = @disk_free_space($path);
+            $usedBytes = $totalBytes - $freeBytes;
+
+            $used = '-';
+            $available = '-';
+            $percentage = 0;
+
+            if ($totalBytes > 0) {
+                $percentage = round(($usedBytes / $totalBytes) * 100, 1);
+                $used = $this->formatBytes($usedBytes);
+                $available = $this->formatBytes($freeBytes);
+            }
+
+            $status = $content === 'test' ? 'healthy' : 'degraded';
+            // Mark as degraded if disk is over 90% full
+            if ($percentage >= 90) {
+                $status = 'degraded';
+            }
+
             return [
-                'status' => $content === 'test' ? 'healthy' : 'degraded',
+                'status' => $status,
                 'driver' => config('filesystems.default'),
+                'used' => $used,
+                'available' => $available,
+                'percentage' => $percentage,
             ];
         } catch (\Exception $e) {
             return [
@@ -327,6 +389,22 @@ class SuperAdminSystemController extends Controller
         }
     }
 
+    /**
+     * Format bytes to human-readable string.
+     */
+    protected function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+
     protected function checkExternalServices(): array
     {
         // Add checks for external services like APIs, etc.
@@ -334,6 +412,125 @@ class SuperAdminSystemController extends Controller
             'status' => 'healthy',
             'services' => [],
         ];
+    }
+
+    protected function checkScheduler(): array
+    {
+        try {
+            // Check if scheduler has run recently by looking for the schedule:run command in logs
+            // or checking the cache key set by Laravel's scheduler
+            $lastRun = Cache::get('schedule:last_run');
+            $lastRunFormatted = '-';
+            $status = 'healthy';
+
+            if ($lastRun) {
+                $lastRunTime = \Carbon\Carbon::parse($lastRun);
+                $lastRunFormatted = $lastRunTime->diffForHumans();
+
+                // If scheduler hasn't run in more than 5 minutes, it's degraded
+                if ($lastRunTime->lt(now()->subMinutes(5))) {
+                    $status = 'degraded';
+                }
+            } else {
+                // No record of last run - check alternative methods
+                // Try to get from schedule-monitor if available
+                try {
+                    $monitoredTask = DB::table('monitored_scheduled_task_log_items')
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+                    if ($monitoredTask) {
+                        $lastRunFormatted = \Carbon\Carbon::parse($monitoredTask->created_at)->diffForHumans();
+                    }
+                } catch (\Exception $e) {
+                    // Table doesn't exist, which is fine
+                }
+            }
+
+            // Get next scheduled task run time
+            $nextRun = '-';
+            try {
+                $kernel = app(\Illuminate\Console\Scheduling\Schedule::class);
+                $events = $kernel->events();
+
+                if (!empty($events)) {
+                    $nextRunTime = null;
+                    foreach ($events as $event) {
+                        $eventNextRun = $event->nextRunDate();
+                        if (!$nextRunTime || $eventNextRun < $nextRunTime) {
+                            $nextRunTime = $eventNextRun;
+                        }
+                    }
+                    if ($nextRunTime) {
+                        $nextRun = $nextRunTime->diffForHumans();
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ignore errors getting scheduled tasks
+            }
+
+            return [
+                'status' => $status,
+                'last_run' => $lastRunFormatted,
+                'next_run' => $nextRun,
+                'tasks_count' => count($kernel->events() ?? []),
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'unhealthy',
+                'error' => $e->getMessage(),
+                'last_run' => '-',
+                'next_run' => '-',
+            ];
+        }
+    }
+
+    protected function checkMail(): array
+    {
+        try {
+            $driver = config('mail.default');
+            $status = 'healthy';
+            $sentToday = 0;
+            $lastSent = '-';
+
+            // Check if mail table exists for logging
+            try {
+                $sentToday = DB::table('cmis.email_logs')
+                    ->whereDate('created_at', today())
+                    ->count();
+
+                $lastEmail = DB::table('cmis.email_logs')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($lastEmail) {
+                    $lastSent = \Carbon\Carbon::parse($lastEmail->created_at)->diffForHumans();
+                }
+            } catch (\Exception $e) {
+                // Email logs table doesn't exist - that's ok
+                // Try to check if SMTP is configured
+                if ($driver === 'smtp') {
+                    $host = config('mail.mailers.smtp.host');
+                    $port = config('mail.mailers.smtp.port');
+                    if (empty($host)) {
+                        $status = 'degraded';
+                    }
+                }
+            }
+
+            return [
+                'status' => $status,
+                'driver' => $driver,
+                'sent_today' => $sentToday,
+                'last_sent' => $lastSent,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'unhealthy',
+                'error' => $e->getMessage(),
+                'sent_today' => 0,
+                'last_sent' => '-',
+            ];
+        }
     }
 
     protected function calculateOverallStatus(array $health): string
