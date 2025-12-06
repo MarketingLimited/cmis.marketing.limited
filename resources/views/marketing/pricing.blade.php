@@ -9,19 +9,27 @@
 @endphp
 
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">{{ __('marketing.pricing.headline') }}</h1>
+<section class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-24 overflow-hidden">
+    <!-- Background Decoration -->
+    <div class="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10"></div>
+    <div class="absolute top-20 {{ $isRtl ? 'right-20' : 'left-20' }} w-72 h-72 bg-green-600/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 {{ $isRtl ? 'left-20' : 'right-20' }} w-96 h-96 bg-red-600/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium mb-6">
+            <i class="fas fa-tags me-1"></i> {{ __('marketing.pricing.badge') ?? __('marketing.pricing.headline') }}
+        </span>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">{{ __('marketing.pricing.headline') }}</h1>
         <p class="text-xl text-slate-300 max-w-3xl mx-auto mb-8">{{ __('marketing.pricing.subheadline') }}</p>
 
-        <!-- Billing Toggle -->
-        <div x-data="{ annual: true }" class="inline-flex items-center gap-4 bg-white/10 rounded-full p-1">
-            <button @click="annual = false" :class="!annual ? 'bg-white text-slate-900' : 'text-white'" class="px-6 py-2 rounded-full font-medium transition">
+        <!-- Billing Toggle with Animation -->
+        <div x-data="{ annual: true }" class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full p-1.5 border border-white/20">
+            <button @click="annual = false" :class="!annual ? 'bg-white text-slate-900 shadow-lg' : 'text-white hover:bg-white/10'" class="px-6 py-2.5 rounded-full font-medium transition-all duration-300">
                 {{ __('marketing.pricing.monthly') }}
             </button>
-            <button @click="annual = true" :class="annual ? 'bg-white text-slate-900' : 'text-white'" class="px-6 py-2 rounded-full font-medium transition">
+            <button @click="annual = true" :class="annual ? 'bg-white text-slate-900 shadow-lg' : 'text-white hover:bg-white/10'" class="px-6 py-2.5 rounded-full font-medium transition-all duration-300 flex items-center gap-2">
                 {{ __('marketing.pricing.annual') }}
-                <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full ms-1">{{ __('marketing.pricing.save_20') }}</span>
+                <span class="text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2.5 py-1 rounded-full font-bold animate-pulse">{{ __('marketing.pricing.save_20') }}</span>
             </button>
         </div>
     </div>

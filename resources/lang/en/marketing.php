@@ -97,6 +97,7 @@ return [
     'features' => [
         'title' => 'Features - CMIS',
         'meta_description' => 'Explore the powerful features of CMIS including AI analytics, campaign automation, and cross-platform management.',
+        'badge' => 'Platform Features',
         'headline' => 'Powerful Features for Modern Marketers',
         'subheadline' => 'Everything you need to run successful marketing campaigns across all platforms.',
 
@@ -151,6 +152,7 @@ return [
     'pricing' => [
         'title' => 'Pricing - CMIS',
         'meta_description' => 'Simple, transparent pricing for teams of all sizes. Start free and scale as you grow.',
+        'badge' => 'Pricing Plans',
         'headline' => 'Simple, Transparent Pricing',
         'subheadline' => 'Choose the plan that fits your needs. All plans include a 14-day free trial.',
         'monthly' => 'Monthly',
@@ -210,6 +212,7 @@ return [
     'about' => [
         'title' => 'About Us - CMIS',
         'meta_description' => 'Learn about CMIS, our mission to transform digital marketing, and the team behind the platform.',
+        'badge' => 'Our Story',
         'headline' => 'About CMIS',
         'subheadline' => 'We are on a mission to transform how businesses approach digital marketing.',
 
@@ -258,6 +261,7 @@ return [
     'contact' => [
         'title' => 'Contact Us - CMIS',
         'meta_description' => 'Get in touch with the CMIS team. We are here to help with any questions.',
+        'badge' => 'Get in Touch',
         'headline' => 'Contact Us',
         'subheadline' => 'Have a question or want to learn more? We would love to hear from you.',
         'get_in_touch' => 'Get in Touch',
@@ -289,6 +293,7 @@ return [
     'faq' => [
         'title' => 'FAQ - CMIS',
         'meta_description' => 'Find answers to frequently asked questions about CMIS features, pricing, and support.',
+        'badge' => 'Help Center',
         'headline' => 'Frequently Asked Questions',
         'subheadline' => 'Find answers to common questions about CMIS.',
 
@@ -331,6 +336,7 @@ return [
     'demo' => [
         'title' => 'Request a Demo - CMIS',
         'meta_description' => 'Schedule a personalized demo of CMIS and see how our platform can transform your marketing.',
+        'badge' => 'Live Demo',
         'headline' => 'See CMIS in Action',
         'subheadline' => 'Schedule a personalized demo with our team and discover how CMIS can transform your marketing.',
         'what_you_get' => 'What You Will Get',
@@ -366,6 +372,7 @@ return [
     'blog' => [
         'title' => 'Blog - CMIS',
         'meta_description' => 'Insights, tips, and best practices for digital marketing from the CMIS team.',
+        'badge' => 'Latest Articles',
         'headline' => 'Marketing Insights & Tips',
         'subheadline' => 'Expert advice and industry insights to help you grow your business.',
         'all_posts' => 'All Posts',
@@ -390,6 +397,7 @@ return [
     'case_studies' => [
         'title' => 'Case Studies - CMIS',
         'meta_description' => 'See how businesses like yours have achieved success with CMIS.',
+        'badge' => 'Success Stories',
         'headline' => 'Customer Success Stories',
         'subheadline' => 'See how leading brands are achieving remarkable results with CMIS.',
         'read_more' => 'Read Case Study',

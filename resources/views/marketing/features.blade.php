@@ -9,10 +9,26 @@
 @endphp
 
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">{{ __('marketing.features.headline') }}</h1>
-        <p class="text-xl text-slate-300 max-w-3xl mx-auto">{{ __('marketing.features.subheadline') }}</p>
+<section class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-24 overflow-hidden">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10"></div>
+    <div class="absolute top-20 {{ $isRtl ? 'right-20' : 'left-20' }} w-72 h-72 bg-red-600/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 {{ $isRtl ? 'left-20' : 'right-20' }} w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1 bg-red-600/20 text-red-400 rounded-full text-sm font-medium mb-6">
+            <i class="fas fa-sparkles me-1"></i> {{ __('marketing.features.badge') ?? __('marketing.features.headline') }}
+        </span>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">{{ __('marketing.features.headline') }}</h1>
+        <p class="text-xl text-slate-300 max-w-3xl mx-auto mb-8">{{ __('marketing.features.subheadline') }}</p>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="{{ route('marketing.demo') }}" class="px-8 py-4 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-all transform hover:scale-105 shadow-lg shadow-red-600/30">
+                {{ __('marketing.nav.demo') }}
+            </a>
+            <a href="{{ route('marketing.pricing') }}" class="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition backdrop-blur-sm">
+                {{ __('marketing.nav.pricing') }}
+            </a>
+        </div>
     </div>
 </section>
 
@@ -114,27 +130,47 @@
 </section>
 
 <!-- Platform Integrations -->
-<section class="py-20 bg-slate-100 dark:bg-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section class="py-20 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+    <!-- Background Decoration -->
+    <div class="absolute inset-0 opacity-5">
+        <div class="absolute top-0 {{ $isRtl ? 'left-0' : 'right-0' }} w-96 h-96 bg-red-600 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 {{ $isRtl ? 'right-0' : 'left-0' }} w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
+            <span class="text-red-600 font-semibold text-sm uppercase tracking-wider mb-2 block">{{ __('marketing.features.integrations_badge') ?? 'Integrations' }}</span>
             <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{{ __('marketing.features.integrations_title') }}</h2>
-            <p class="text-xl text-slate-600 dark:text-slate-400">{{ __('marketing.features.integrations_subtitle') }}</p>
+            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">{{ __('marketing.features.integrations_subtitle') }}</p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             @foreach([
-                ['name' => 'Meta', 'icon' => 'fab fa-facebook', 'color' => 'text-blue-600'],
-                ['name' => 'Instagram', 'icon' => 'fab fa-instagram', 'color' => 'text-pink-600'],
-                ['name' => 'Google', 'icon' => 'fab fa-google', 'color' => 'text-red-500'],
-                ['name' => 'TikTok', 'icon' => 'fab fa-tiktok', 'color' => 'text-slate-900 dark:text-white'],
-                ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin', 'color' => 'text-blue-700'],
-                ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'color' => 'text-sky-500'],
+                ['name' => 'Meta', 'icon' => 'fab fa-facebook', 'color' => 'from-blue-500 to-blue-600', 'bg' => 'bg-blue-50 dark:bg-blue-900/20'],
+                ['name' => 'Instagram', 'icon' => 'fab fa-instagram', 'color' => 'from-pink-500 to-purple-600', 'bg' => 'bg-pink-50 dark:bg-pink-900/20'],
+                ['name' => 'Google', 'icon' => 'fab fa-google', 'color' => 'from-red-500 to-yellow-500', 'bg' => 'bg-red-50 dark:bg-red-900/20'],
+                ['name' => 'TikTok', 'icon' => 'fab fa-tiktok', 'color' => 'from-slate-700 to-slate-900', 'bg' => 'bg-slate-100 dark:bg-slate-700/50'],
+                ['name' => 'LinkedIn', 'icon' => 'fab fa-linkedin', 'color' => 'from-blue-600 to-blue-700', 'bg' => 'bg-blue-50 dark:bg-blue-900/20'],
+                ['name' => 'Twitter', 'icon' => 'fab fa-twitter', 'color' => 'from-slate-700 to-slate-900', 'bg' => 'bg-slate-100 dark:bg-slate-700/50'],
             ] as $platform)
-                <div class="bg-white dark:bg-slate-700 rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition">
-                    <i class="{{ $platform['icon'] }} text-4xl {{ $platform['color'] }} mb-3"></i>
-                    <p class="font-semibold text-slate-900 dark:text-white">{{ $platform['name'] }}</p>
+                <div class="group">
+                    <div class="bg-white dark:bg-slate-700 rounded-2xl p-6 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100 dark:border-slate-600">
+                        <div class="w-16 h-16 mx-auto {{ $platform['bg'] }} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <i class="{{ $platform['icon'] }} text-3xl text-transparent bg-clip-text bg-gradient-to-br {{ $platform['color'] }}"></i>
+                        </div>
+                        <p class="font-bold text-slate-900 dark:text-white">{{ $platform['name'] }}</p>
+                        <p class="text-xs text-slate-500 mt-1">{{ __('marketing.features.connected') ?? 'Connected' }}</p>
+                    </div>
                 </div>
             @endforeach
+        </div>
+
+        <!-- Additional platforms text -->
+        <div class="text-center mt-12">
+            <p class="text-slate-600 dark:text-slate-400">
+                <i class="fas fa-plus-circle me-2 text-red-600"></i>
+                {{ __('marketing.features.more_integrations') ?? 'And many more integrations coming soon...' }}
+            </p>
         </div>
     </div>
 </section>

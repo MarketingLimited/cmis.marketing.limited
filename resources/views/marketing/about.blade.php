@@ -9,9 +9,17 @@
 @endphp
 
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">{{ __('marketing.about.headline') }}</h1>
+<section class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-28 overflow-hidden">
+    <!-- Background Decoration -->
+    <div class="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10"></div>
+    <div class="absolute top-20 {{ $isRtl ? 'right-20' : 'left-20' }} w-72 h-72 bg-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 {{ $isRtl ? 'left-20' : 'right-20' }} w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm font-medium mb-6">
+            <i class="fas fa-users me-1"></i> {{ __('marketing.about.badge') ?? __('marketing.about.headline') }}
+        </span>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">{{ __('marketing.about.headline') }}</h1>
         <p class="text-xl text-slate-300 max-w-3xl mx-auto">{{ __('marketing.about.subheadline') }}</p>
     </div>
 </section>
