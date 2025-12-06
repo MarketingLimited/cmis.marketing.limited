@@ -477,14 +477,51 @@ class SuperAdminSystemController extends Controller
     protected function checkScheduler(): array
     {
         try {
-            // Check if scheduler has run recently by looking for the schedule:run command in logs
-            // or checking the cache key set by Laravel's scheduler
-            $lastRun = Cache::get('schedule:last_run');
             $lastRunFormatted = '-';
             $status = 'healthy';
+            $lastRunTime = null;
 
+            // Method 1: Check cache for scheduler last run
+            $lastRun = Cache::get('schedule:last_run');
             if ($lastRun) {
                 $lastRunTime = \Carbon\Carbon::parse($lastRun);
+            }
+
+            // Method 2: Check Laravel log file for evidence of scheduler runs
+            if (!$lastRunTime) {
+                $logFile = storage_path('logs/laravel.log');
+                if (file_exists($logFile)) {
+                    // Read last 200 lines to find scheduler activity
+                    $logContent = $this->tailFile($logFile, 200);
+                    $lines = explode("\n", $logContent);
+                    $schedulerPatterns = [
+                        '/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\].*Scheduled posts processed/',
+                        '/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\].*Processing scheduled/',
+                        '/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\].*schedule:run/',
+                        '/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\].*Running scheduled command/',
+                    ];
+
+                    foreach (array_reverse($lines) as $line) {
+                        foreach ($schedulerPatterns as $pattern) {
+                            if (preg_match($pattern, $line, $matches)) {
+                                $lastRunTime = \Carbon\Carbon::parse($matches[1]);
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Method 3: Check file modification time of scheduler output
+            if (!$lastRunTime) {
+                $schedulerOutputFile = storage_path('logs/scheduler.log');
+                if (file_exists($schedulerOutputFile)) {
+                    $lastRunTime = \Carbon\Carbon::createFromTimestamp(filemtime($schedulerOutputFile));
+                }
+            }
+
+            // Format the last run time
+            if ($lastRunTime) {
                 $lastRunFormatted = $lastRunTime->diffForHumans();
 
                 // If scheduler hasn't run in more than 5 minutes, it's degraded
@@ -492,47 +529,50 @@ class SuperAdminSystemController extends Controller
                     $status = 'degraded';
                 }
             } else {
-                // No record of last run - check alternative methods
-                // Try to get from schedule-monitor if available
-                try {
-                    $monitoredTask = DB::table('monitored_scheduled_task_log_items')
-                        ->orderBy('created_at', 'desc')
-                        ->first();
-                    if ($monitoredTask) {
-                        $lastRunFormatted = \Carbon\Carbon::parse($monitoredTask->created_at)->diffForHumans();
-                    }
-                } catch (\Exception $e) {
-                    // Table doesn't exist, which is fine
-                }
+                // No evidence of scheduler running - check if cron is configured
+                $status = 'degraded';
             }
 
-            // Get next scheduled task run time
+            // Get scheduled tasks using Artisan schedule:list command
+            // This is the most reliable way to get tasks in HTTP context
+            $tasksCount = 0;
             $nextRun = '-';
-            try {
-                $kernel = app(\Illuminate\Console\Scheduling\Schedule::class);
-                $events = $kernel->events();
 
-                if (!empty($events)) {
-                    $nextRunTime = null;
-                    foreach ($events as $event) {
-                        $eventNextRun = $event->nextRunDate();
-                        if (!$nextRunTime || $eventNextRun < $nextRunTime) {
-                            $nextRunTime = $eventNextRun;
+            try {
+                \Artisan::call('schedule:list', ['--next' => true]);
+                $output = \Artisan::output();
+
+                // Count tasks by counting lines that have a cron expression pattern
+                // Lines typically start with cron expression like "0 * * * *" or "*/5 * * * *"
+                $lines = explode("\n", trim($output));
+                foreach ($lines as $line) {
+                    // Skip empty lines and header lines
+                    $line = trim($line);
+                    if (empty($line)) continue;
+
+                    // Cron expressions start with a number or asterisk followed by whitespace and more cron parts
+                    if (preg_match('/^[\*\d\/,\-]+\s+[\*\d\/,\-]+/', $line)) {
+                        $tasksCount++;
+
+                        // Extract "Next Due:" time from the line
+                        if (preg_match('/Next Due:\s*(.+)$/i', $line, $matches)) {
+                            $nextDueText = trim($matches[1]);
+                            // Keep the earliest next run time
+                            if ($nextRun === '-') {
+                                $nextRun = $nextDueText;
+                            }
                         }
-                    }
-                    if ($nextRunTime) {
-                        $nextRun = $nextRunTime->diffForHumans();
                     }
                 }
             } catch (\Exception $e) {
-                // Ignore errors getting scheduled tasks
+                Log::warning('Failed to get schedule list', ['error' => $e->getMessage()]);
             }
 
             return [
                 'status' => $status,
                 'last_run' => $lastRunFormatted,
                 'next_run' => $nextRun,
-                'tasks_count' => count($kernel->events() ?? []),
+                'tasks_count' => $tasksCount,
             ];
         } catch (\Exception $e) {
             return [
@@ -540,6 +580,7 @@ class SuperAdminSystemController extends Controller
                 'error' => $e->getMessage(),
                 'last_run' => '-',
                 'next_run' => '-',
+                'tasks_count' => 0,
             ];
         }
     }

@@ -315,6 +315,7 @@ return [
         'emails_sent_today' => 'رسائل اليوم',
         'last_sent' => 'آخر إرسال',
         'scheduler' => 'المجدول',
+        'scheduled_tasks' => 'المهام المجدولة',
         'last_run' => 'آخر تشغيل',
         'next_run' => 'التشغيل القادم',
         'recent_errors' => 'الأخطاء الأخيرة',

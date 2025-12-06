@@ -315,6 +315,7 @@ return [
         'emails_sent_today' => 'Emails Sent Today',
         'last_sent' => 'Last Sent',
         'scheduler' => 'Scheduler',
+        'scheduled_tasks' => 'Scheduled Tasks',
         'last_run' => 'Last Run',
         'next_run' => 'Next Run',
         'recent_errors' => 'Recent Errors',

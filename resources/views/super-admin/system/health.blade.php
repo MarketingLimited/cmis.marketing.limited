@@ -253,7 +253,7 @@
                     </div>
                     <div>
                         <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('super_admin.system.scheduler') }}</h3>
-                        <p class="text-sm text-gray-500">Cron Jobs</p>
+                        <p class="text-sm text-gray-500" x-text="(services.scheduler?.tasks_count || 0) + ' {{ __('super_admin.system.scheduled_tasks') }}'"></p>
                     </div>
                 </div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -412,10 +412,11 @@ function systemHealth() {
                     this.services.scheduler = {
                         status: checks.scheduler.status === 'unhealthy' ? 'down' : checks.scheduler.status,
                         last_run: checks.scheduler.last_run || '-',
-                        next_run: checks.scheduler.next_run || '-'
+                        next_run: checks.scheduler.next_run || '-',
+                        tasks_count: checks.scheduler.tasks_count || 0
                     };
                 } else {
-                    this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-' };
+                    this.services.scheduler = { status: 'healthy', last_run: '-', next_run: '-', tasks_count: 0 };
                 }
 
                 // Recent errors from API
