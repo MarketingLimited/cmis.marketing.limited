@@ -74,20 +74,21 @@ class SuperAdminController extends Controller
 
     /**
      * Get recent activity for the dashboard.
+     * Only shows REAL admin actions from super_admin_actions table - no mock/synthetic data.
      */
     protected function getRecentActivity(): array
     {
-        $activities = collect();
-
-        // 1. Get admin actions from super_admin_actions table
+        // Get REAL admin actions from super_admin_actions table only
         $adminActions = DB::table('cmis.super_admin_actions')
-            ->join('cmis.users', 'super_admin_actions.admin_user_id', '=', 'users.user_id')
+            ->leftJoin('cmis.users', 'super_admin_actions.admin_user_id', '=', 'users.user_id')
             ->select([
                 'super_admin_actions.action_id',
                 'super_admin_actions.action_type',
                 'super_admin_actions.target_type',
                 'super_admin_actions.target_id',
                 'super_admin_actions.target_name',
+                'super_admin_actions.details',
+                'super_admin_actions.ip_address',
                 'super_admin_actions.created_at',
                 'users.name as admin_name',
             ])
@@ -95,125 +96,33 @@ class SuperAdminController extends Controller
             ->limit(10)
             ->get();
 
-        foreach ($adminActions as $action) {
-            $activities->push([
+        // Format the activities
+        $activities = $adminActions->map(function ($action) {
+            $createdAt = $action->created_at;
+            try {
+                $createdAt = \Carbon\Carbon::parse($action->created_at)->diffForHumans();
+            } catch (\Exception $e) {
+                // Keep original if parsing fails
+            }
+
+            return [
                 'action_id' => $action->action_id,
                 'action_type' => $action->action_type,
-                'admin_name' => $action->admin_name,
+                'admin_name' => $action->admin_name ?: 'System',
                 'target_name' => $action->target_name,
                 'target_type' => $action->target_type,
-                'created_at' => $action->created_at,
-                'sort_date' => $action->created_at,
-            ]);
-        }
+                'ip_address' => $action->ip_address,
+                'created_at' => $createdAt,
+            ];
+        })->toArray();
 
-        // 2. Generate activity items from org creations (last 30 days)
-        $recentOrgs = Org::where('created_at', '>=', now()->subDays(30))
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
+        // Get recent organizations for the "Recent Organizations" section
+        $recentOrgs = Org::orderBy('created_at', 'desc')
+            ->limit(5)
             ->get(['org_id', 'name', 'status', 'created_at']);
 
-        foreach ($recentOrgs as $org) {
-            $activities->push([
-                'action_id' => 'org_' . $org->org_id,
-                'action_type' => 'create_organization',
-                'admin_name' => 'System',
-                'target_name' => $org->name,
-                'target_type' => 'organization',
-                'created_at' => $org->created_at->toIso8601String(),
-                'sort_date' => $org->created_at,
-            ]);
-        }
-
-        // 3. Generate activity items from user registrations (last 30 days)
-        $recentUsers = User::where('created_at', '>=', now()->subDays(30))
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get(['user_id', 'name', 'email', 'created_at']);
-
-        foreach ($recentUsers as $user) {
-            $activities->push([
-                'action_id' => 'user_' . $user->user_id,
-                'action_type' => 'create_user',
-                'admin_name' => 'System',
-                'target_name' => $user->name ?: $user->email,
-                'target_type' => 'user',
-                'created_at' => $user->created_at->toIso8601String(),
-                'sort_date' => $user->created_at,
-            ]);
-        }
-
-        // 4. Generate activity items from org suspensions/blocks
-        $suspendedOrgs = Org::whereNotNull('suspended_at')
-            ->orWhereNotNull('blocked_at')
-            ->orderByRaw('GREATEST(COALESCE(suspended_at, \'1970-01-01\'), COALESCE(blocked_at, \'1970-01-01\')) DESC')
-            ->limit(10)
-            ->get(['org_id', 'name', 'status', 'suspended_at', 'blocked_at', 'suspended_by', 'blocked_by']);
-
-        foreach ($suspendedOrgs as $org) {
-            $actionType = $org->blocked_at ? 'block_organization' : 'suspend_organization';
-            $actionDate = $org->blocked_at ?: $org->suspended_at;
-
-            if ($actionDate) {
-                $activities->push([
-                    'action_id' => 'suspension_' . $org->org_id,
-                    'action_type' => $actionType,
-                    'admin_name' => 'Admin',
-                    'target_name' => $org->name,
-                    'target_type' => 'organization',
-                    'created_at' => $actionDate instanceof \Carbon\Carbon ? $actionDate->toIso8601String() : $actionDate,
-                    'sort_date' => $actionDate,
-                ]);
-            }
-        }
-
-        // 5. Generate activity items from user suspensions/blocks
-        $suspendedUsers = User::where(function ($q) {
-                $q->where('is_suspended', true)->orWhere('is_blocked', true);
-            })
-            ->whereNotNull('suspended_at')
-            ->orWhereNotNull('blocked_at')
-            ->orderByRaw('GREATEST(COALESCE(suspended_at, \'1970-01-01\'), COALESCE(blocked_at, \'1970-01-01\')) DESC')
-            ->limit(10)
-            ->get(['user_id', 'name', 'email', 'is_suspended', 'is_blocked', 'suspended_at', 'blocked_at']);
-
-        foreach ($suspendedUsers as $user) {
-            $actionType = $user->is_blocked ? 'block_user' : 'suspend_user';
-            $actionDate = $user->blocked_at ?: $user->suspended_at;
-
-            if ($actionDate) {
-                $activities->push([
-                    'action_id' => 'user_suspension_' . $user->user_id,
-                    'action_type' => $actionType,
-                    'admin_name' => 'Admin',
-                    'target_name' => $user->name ?: $user->email,
-                    'target_type' => 'user',
-                    'created_at' => $actionDate instanceof \Carbon\Carbon ? $actionDate->toIso8601String() : $actionDate,
-                    'sort_date' => $actionDate,
-                ]);
-            }
-        }
-
-        // Sort by date descending and take top 10
-        $sortedActivities = $activities->sortByDesc('sort_date')->take(10)->values();
-
-        // Format dates for display
-        $formattedActivities = $sortedActivities->map(function ($activity) {
-            $date = $activity['created_at'];
-            if (is_string($date)) {
-                try {
-                    $date = \Carbon\Carbon::parse($date);
-                } catch (\Exception $e) {
-                    $date = now();
-                }
-            }
-            $activity['created_at'] = $date->diffForHumans();
-            unset($activity['sort_date']);
-            return $activity;
-        });
-
         return [
-            'activities' => $formattedActivities->toArray(),
+            'activities' => $activities,
             'recent_organizations' => $recentOrgs,
         ];
     }

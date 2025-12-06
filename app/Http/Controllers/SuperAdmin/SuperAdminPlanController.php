@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ApiResponse;
+use App\Http\Controllers\Concerns\LogsSuperAdminActions;
 use App\Models\Subscription\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Log;
  */
 class SuperAdminPlanController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, LogsSuperAdminActions;
 
     /**
      * Display a listing of all plans.
@@ -242,26 +243,4 @@ class SuperAdminPlanController extends Controller
         return $this->success($plan->fresh(), __('super_admin.plan_set_default'));
     }
 
-    /**
-     * Log super admin action.
-     */
-    protected function logAction(string $actionType, string $targetType, ?string $targetId, ?string $targetName, array $details = []): void
-    {
-        try {
-            DB::table('cmis.super_admin_actions')->insert([
-                'action_id' => \Illuminate\Support\Str::uuid(),
-                'admin_user_id' => Auth::id(),
-                'action_type' => $actionType,
-                'target_type' => $targetType,
-                'target_id' => $targetId,
-                'target_name' => $targetName,
-                'details' => json_encode($details),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'created_at' => now(),
-            ]);
-        } catch (\Exception $e) {
-            Log::warning('Failed to log super admin action', ['error' => $e->getMessage()]);
-        }
-    }
 }
