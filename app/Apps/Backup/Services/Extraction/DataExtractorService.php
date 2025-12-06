@@ -32,6 +32,12 @@ class DataExtractorService
      */
     protected int $memoryLimit;
 
+    /**
+     * Current organization ID for explicit filtering
+     * (Required because DB user may bypass RLS as superuser)
+     */
+    protected ?string $currentOrgId = null;
+
     public function __construct(
         SchemaDiscoveryService $schemaDiscovery,
         DependencyResolver $dependencyResolver,
@@ -46,11 +52,14 @@ class DataExtractorService
 
     /**
      * Initialize RLS context for an organization
+     * Also stores orgId for explicit filtering (RLS may be bypassed by superuser)
      *
      * @param string $orgId Organization ID
      */
     public function setOrgContext(string $orgId): void
     {
+        $this->currentOrgId = $orgId;
+
         DB::statement("SELECT cmis.init_transaction_context(?, ?)", [
             config('cmis.system_user_id'),
             $orgId
@@ -128,8 +137,11 @@ class DataExtractorService
         $this->setOrgContext($orgId);
 
         try {
+            // CRITICAL: Explicit org_id filtering (RLS may be bypassed by superuser)
+            $query = DB::table($tableName)->where('org_id', $orgId);
+
             // Get row count first
-            $count = DB::table($tableName)->count();
+            $count = (clone $query)->count();
 
             if ($count === 0) {
                 return [];
@@ -141,9 +153,17 @@ class DataExtractorService
             }
 
             // Small table - fetch all at once
-            return DB::table($tableName)
-                ->whereNull('deleted_at')
-                ->orderBy('created_at')
+            $hasSoftDeletes = $this->schemaDiscovery->hasSoftDeletes($tableName);
+
+            if ($hasSoftDeletes) {
+                $query->whereNull('deleted_at');
+            }
+
+            if ($this->schemaDiscovery->hasTimestamps($tableName)) {
+                $query->orderBy('created_at');
+            }
+
+            return $query
                 ->get()
                 ->map(fn($row) => $this->processRow($tableName, $row))
                 ->toArray();
@@ -166,7 +186,8 @@ class DataExtractorService
         $data = [];
         $hasSoftDeletes = $this->schemaDiscovery->hasSoftDeletes($tableName);
 
-        $query = DB::table($tableName);
+        // CRITICAL: Explicit org_id filtering (RLS may be bypassed by superuser)
+        $query = DB::table($tableName)->where('org_id', $this->currentOrgId);
 
         if ($hasSoftDeletes) {
             $query->whereNull('deleted_at');
@@ -201,7 +222,8 @@ class DataExtractorService
 
         $hasSoftDeletes = $this->schemaDiscovery->hasSoftDeletes($tableName);
 
-        $query = DB::table($tableName);
+        // CRITICAL: Explicit org_id filtering (RLS may be bypassed by superuser)
+        $query = DB::table($tableName)->where('org_id', $orgId);
 
         if ($hasSoftDeletes) {
             $query->whereNull('deleted_at');

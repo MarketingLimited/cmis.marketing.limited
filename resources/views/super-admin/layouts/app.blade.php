@@ -225,6 +225,12 @@
                     <span>{{ __('super_admin.nav.subscriptions') }}</span>
                 </a>
 
+                <a href="{{ route('super-admin.billing.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all {{ request()->routeIs('super-admin.billing.*') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
+                    <span>{{ __('super_admin.nav.billing') }}</span>
+                </a>
+
                 <!-- Platform Section -->
                 <div class="mt-6 mb-2">
                     <h3 class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ __('super_admin.nav.platform') ?? 'Platform' }}</h3>

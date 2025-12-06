@@ -647,6 +647,150 @@ return [
         'block' => 'حظر',
     ],
 
+    // Billing & Invoices
+    'billing' => [
+        'title' => 'الفوترة والفواتير',
+        'description' => 'إدارة الفواتير والمدفوعات وتحليلات الإيرادات',
+        'invoices' => 'الفواتير',
+        'invoices_description' => 'إدارة جميع فواتير المنصة',
+        'payments' => 'المدفوعات',
+        'payments_description' => 'تتبع جميع معاملات الدفع',
+        'revenue' => 'الإيرادات',
+        'revenue_analytics' => 'تحليلات الإيرادات',
+        'revenue_analytics_desc' => 'تقارير ورؤى مفصلة عن الإيرادات',
+
+        // Stats
+        'total_revenue' => 'إجمالي الإيرادات',
+        'this_month' => 'هذا الشهر',
+        'vs_last_month' => 'مقارنة بالشهر الماضي',
+        'pending_invoices' => 'الفواتير المعلقة',
+        'overdue_invoices' => 'الفواتير المتأخرة',
+        'total_payments' => 'إجمالي المدفوعات',
+        'invoices_paid' => 'الفواتير المدفوعة',
+        'average_invoice' => 'متوسط الفاتورة',
+        'outstanding' => 'المبلغ المستحق',
+        'total_amount' => 'المبلغ الإجمالي',
+
+        // Invoice Status
+        'draft' => 'مسودة',
+        'pending' => 'معلق',
+        'sent' => 'مرسل',
+        'paid' => 'مدفوع',
+        'overdue' => 'متأخر',
+        'cancelled' => 'ملغى',
+        'refunded' => 'مسترد',
+
+        // Invoice Fields
+        'invoice' => 'فاتورة',
+        'invoice_number' => 'رقم الفاتورة',
+        'invoice_date' => 'تاريخ الفاتورة',
+        'organization' => 'المنظمة',
+        'amount' => 'المبلغ',
+        'status' => 'الحالة',
+        'due_date' => 'تاريخ الاستحقاق',
+        'due' => 'مستحق',
+        'created' => 'تاريخ الإنشاء',
+        'subtotal' => 'المجموع الفرعي',
+        'tax' => 'الضريبة',
+        'discount' => 'الخصم',
+        'total' => 'الإجمالي',
+        'currency' => 'العملة',
+        'description' => 'الوصف',
+        'billing_period' => 'فترة الفوترة',
+        'billing_period_start' => 'بداية فترة الفوترة',
+        'billing_period_end' => 'نهاية فترة الفوترة',
+        'paid_at' => 'تاريخ الدفع',
+
+        // Actions
+        'create_invoice' => 'إنشاء فاتورة',
+        'create_invoice_desc' => 'إنشاء فاتورة جديدة لمنظمة',
+        'mark_as_paid' => 'تحديد كمدفوع',
+        'send_reminder' => 'إرسال تذكير',
+        'view_invoice' => 'عرض الفاتورة',
+        'all_invoices' => 'جميع الفواتير',
+        'invoice_details' => 'تفاصيل الفاتورة',
+
+        // Payment
+        'payment_method' => 'طريقة الدفع',
+        'payment_reference' => 'مرجع الدفع',
+        'payment_history' => 'سجل المدفوعات',
+        'payment_history_desc' => 'عرض جميع معاملات الدفع',
+        'confirm_payment' => 'تأكيد الدفع',
+        'bank_transfer' => 'تحويل بنكي',
+        'credit_card' => 'بطاقة ائتمان',
+        'cash' => 'نقدي',
+        'manual' => 'يدوي',
+        'other' => 'أخرى',
+        'method' => 'الطريقة',
+        'date' => 'التاريخ',
+        'transaction_id' => 'رقم المعاملة',
+        'completed' => 'مكتمل',
+        'failed' => 'فشل',
+
+        // Refund
+        'refund' => 'استرداد',
+        'process_refund' => 'معالجة الاسترداد',
+        'refund_amount' => 'مبلغ الاسترداد',
+        'refund_reason' => 'سبب الاسترداد',
+        'max' => 'الحد الأقصى',
+
+        // Form
+        'select_organization' => 'اختر المنظمة...',
+        'subscription' => 'الاشتراك',
+        'no_subscription' => 'بدون اشتراك',
+        'description_placeholder' => 'أدخل وصف الفاتورة...',
+        'search_placeholder' => 'البحث في الفواتير...',
+        'search_payments' => 'البحث في المدفوعات...',
+        'all_statuses' => 'جميع الحالات',
+        'all_methods' => 'جميع الطرق',
+
+        // Invoice Details
+        'bill_to' => 'فاتورة إلى',
+        'quick_info' => 'معلومات سريعة',
+        'subscription_info' => 'معلومات الاشتراك',
+        'organization_info' => 'معلومات المنظمة',
+        'view_subscription' => 'عرض الاشتراك',
+        'view_organization' => 'عرض المنظمة',
+
+        // Charts
+        'revenue_trend' => 'اتجاه الإيرادات',
+        'revenue_by_plan' => 'الإيرادات حسب الخطة',
+        'revenue_over_time' => 'الإيرادات عبر الوقت',
+        'payment_methods' => 'طرق الدفع',
+        'top_organizations' => 'أفضل المنظمات',
+        'revenue_by_currency' => 'الإيرادات حسب العملة',
+        'this_quarter' => 'هذا الربع',
+        'this_year' => 'هذا العام',
+
+        // Quick Actions
+        'subscriptions_desc' => 'إدارة خطط الاشتراك',
+
+        // Lists
+        'recent_invoices' => 'الفواتير الأخيرة',
+        'overdue_list' => 'الفواتير المتأخرة',
+
+        // Messages
+        'no_invoices' => 'لا توجد فواتير',
+        'no_payments' => 'لا توجد مدفوعات',
+        'no_overdue' => 'لا توجد فواتير متأخرة',
+        'no_data' => 'لا تتوفر بيانات',
+        'invoice_created' => 'تم إنشاء الفاتورة بنجاح',
+        'invoice_marked_paid' => 'تم تحديد الفاتورة كمدفوعة',
+        'invoice_cancelled' => 'تم إلغاء الفاتورة',
+        'invoice_already_paid' => 'الفاتورة مدفوعة بالفعل',
+        'cannot_cancel_paid_invoice' => 'لا يمكن إلغاء فاتورة مدفوعة',
+        'reminder_sent' => 'تم إرسال تذكير الدفع',
+        'refund_processed' => 'تمت معالجة الاسترداد بنجاح',
+        'cannot_refund_incomplete_payment' => 'لا يمكن استرداد دفعة غير مكتملة',
+        'payment_already_refunded' => 'تم استرداد الدفعة بالفعل',
+        'refund_exceeds_payment' => 'مبلغ الاسترداد يتجاوز مبلغ الدفع',
+
+        // Confirmations
+        'confirm_send_reminder' => 'إرسال تذكير الدفع لهذه المنظمة؟',
+        'confirm_cancel' => 'هل أنت متأكد من إلغاء هذه الفاتورة؟',
+        'confirm_refund' => 'هل أنت متأكد من معالجة هذا الاسترداد؟',
+    ],
+
     // Actions
     'actions' => [
         'view' => 'عرض',

@@ -12,6 +12,7 @@ use App\Http\Controllers\SuperAdmin\SuperAdminAppController;
 use App\Http\Controllers\SuperAdmin\SuperAdminIntegrationController;
 use App\Http\Controllers\SuperAdmin\SuperAdminAnnouncementController;
 use App\Http\Controllers\SuperAdmin\SuperAdminSecurityController;
+use App\Http\Controllers\SuperAdmin\SuperAdminBillingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +115,23 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         Route::post('/{subscription}/cancel', [SuperAdminSubscriptionController::class, 'cancel'])->name('cancel');
         Route::post('/{subscription}/reactivate', [SuperAdminSubscriptionController::class, 'reactivate'])->name('reactivate');
         Route::post('/{subscription}/extend-trial', [SuperAdminSubscriptionController::class, 'extendTrial'])->name('extend-trial');
+    });
+
+    // =====================================================
+    // Billing & Invoices
+    // =====================================================
+    Route::prefix('billing')->name('billing.')->group(function () {
+        Route::get('/', [SuperAdminBillingController::class, 'index'])->name('index');
+        Route::get('/invoices', [SuperAdminBillingController::class, 'invoices'])->name('invoices');
+        Route::get('/invoices/create', [SuperAdminBillingController::class, 'createInvoiceForm'])->name('create');
+        Route::post('/invoices', [SuperAdminBillingController::class, 'createInvoice'])->name('store');
+        Route::get('/invoices/{invoice}', [SuperAdminBillingController::class, 'showInvoice'])->name('show');
+        Route::post('/invoices/{invoice}/mark-paid', [SuperAdminBillingController::class, 'markAsPaid'])->name('mark-paid');
+        Route::post('/invoices/{invoice}/reminder', [SuperAdminBillingController::class, 'sendReminder'])->name('reminder');
+        Route::post('/invoices/{invoice}/cancel', [SuperAdminBillingController::class, 'cancelInvoice'])->name('cancel');
+        Route::get('/payments', [SuperAdminBillingController::class, 'payments'])->name('payments');
+        Route::post('/payments/{payment}/refund', [SuperAdminBillingController::class, 'refund'])->name('refund');
+        Route::get('/revenue', [SuperAdminBillingController::class, 'revenue'])->name('revenue');
     });
 
     // =====================================================

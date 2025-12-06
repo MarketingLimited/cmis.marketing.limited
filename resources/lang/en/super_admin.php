@@ -647,6 +647,150 @@ return [
         'block' => 'Block',
     ],
 
+    // Billing & Invoices
+    'billing' => [
+        'title' => 'Billing & Invoices',
+        'description' => 'Manage invoices, payments, and revenue analytics',
+        'invoices' => 'Invoices',
+        'invoices_description' => 'Manage all platform invoices',
+        'payments' => 'Payments',
+        'payments_description' => 'Track all payment transactions',
+        'revenue' => 'Revenue',
+        'revenue_analytics' => 'Revenue Analytics',
+        'revenue_analytics_desc' => 'Detailed revenue reports and insights',
+
+        // Stats
+        'total_revenue' => 'Total Revenue',
+        'this_month' => 'This Month',
+        'vs_last_month' => 'vs last month',
+        'pending_invoices' => 'Pending Invoices',
+        'overdue_invoices' => 'Overdue Invoices',
+        'total_payments' => 'Total Payments',
+        'invoices_paid' => 'Invoices Paid',
+        'average_invoice' => 'Average Invoice',
+        'outstanding' => 'Outstanding',
+        'total_amount' => 'Total Amount',
+
+        // Invoice Status
+        'draft' => 'Draft',
+        'pending' => 'Pending',
+        'sent' => 'Sent',
+        'paid' => 'Paid',
+        'overdue' => 'Overdue',
+        'cancelled' => 'Cancelled',
+        'refunded' => 'Refunded',
+
+        // Invoice Fields
+        'invoice' => 'Invoice',
+        'invoice_number' => 'Invoice Number',
+        'invoice_date' => 'Invoice Date',
+        'organization' => 'Organization',
+        'amount' => 'Amount',
+        'status' => 'Status',
+        'due_date' => 'Due Date',
+        'due' => 'Due',
+        'created' => 'Created',
+        'subtotal' => 'Subtotal',
+        'tax' => 'Tax',
+        'discount' => 'Discount',
+        'total' => 'Total',
+        'currency' => 'Currency',
+        'description' => 'Description',
+        'billing_period' => 'Billing Period',
+        'billing_period_start' => 'Billing Period Start',
+        'billing_period_end' => 'Billing Period End',
+        'paid_at' => 'Paid At',
+
+        // Actions
+        'create_invoice' => 'Create Invoice',
+        'create_invoice_desc' => 'Create a new invoice for an organization',
+        'mark_as_paid' => 'Mark as Paid',
+        'send_reminder' => 'Send Reminder',
+        'view_invoice' => 'View Invoice',
+        'all_invoices' => 'All Invoices',
+        'invoice_details' => 'Invoice Details',
+
+        // Payment
+        'payment_method' => 'Payment Method',
+        'payment_reference' => 'Payment Reference',
+        'payment_history' => 'Payment History',
+        'payment_history_desc' => 'View all payment transactions',
+        'confirm_payment' => 'Confirm Payment',
+        'bank_transfer' => 'Bank Transfer',
+        'credit_card' => 'Credit Card',
+        'cash' => 'Cash',
+        'manual' => 'Manual',
+        'other' => 'Other',
+        'method' => 'Method',
+        'date' => 'Date',
+        'transaction_id' => 'Transaction ID',
+        'completed' => 'Completed',
+        'failed' => 'Failed',
+
+        // Refund
+        'refund' => 'Refund',
+        'process_refund' => 'Process Refund',
+        'refund_amount' => 'Refund Amount',
+        'refund_reason' => 'Refund Reason',
+        'max' => 'Max',
+
+        // Form
+        'select_organization' => 'Select organization...',
+        'subscription' => 'Subscription',
+        'no_subscription' => 'No subscription',
+        'description_placeholder' => 'Enter invoice description...',
+        'search_placeholder' => 'Search invoices...',
+        'search_payments' => 'Search payments...',
+        'all_statuses' => 'All Statuses',
+        'all_methods' => 'All Methods',
+
+        // Invoice Details
+        'bill_to' => 'Bill To',
+        'quick_info' => 'Quick Info',
+        'subscription_info' => 'Subscription Info',
+        'organization_info' => 'Organization Info',
+        'view_subscription' => 'View Subscription',
+        'view_organization' => 'View Organization',
+
+        // Charts
+        'revenue_trend' => 'Revenue Trend',
+        'revenue_by_plan' => 'Revenue by Plan',
+        'revenue_over_time' => 'Revenue Over Time',
+        'payment_methods' => 'Payment Methods',
+        'top_organizations' => 'Top Organizations',
+        'revenue_by_currency' => 'Revenue by Currency',
+        'this_quarter' => 'This Quarter',
+        'this_year' => 'This Year',
+
+        // Quick Actions
+        'subscriptions_desc' => 'Manage subscription plans',
+
+        // Lists
+        'recent_invoices' => 'Recent Invoices',
+        'overdue_list' => 'Overdue Invoices',
+
+        // Messages
+        'no_invoices' => 'No invoices found',
+        'no_payments' => 'No payments found',
+        'no_overdue' => 'No overdue invoices',
+        'no_data' => 'No data available',
+        'invoice_created' => 'Invoice created successfully',
+        'invoice_marked_paid' => 'Invoice marked as paid',
+        'invoice_cancelled' => 'Invoice cancelled',
+        'invoice_already_paid' => 'Invoice is already paid',
+        'cannot_cancel_paid_invoice' => 'Cannot cancel a paid invoice',
+        'reminder_sent' => 'Payment reminder sent',
+        'refund_processed' => 'Refund processed successfully',
+        'cannot_refund_incomplete_payment' => 'Cannot refund incomplete payment',
+        'payment_already_refunded' => 'Payment already refunded',
+        'refund_exceeds_payment' => 'Refund amount exceeds payment amount',
+
+        // Confirmations
+        'confirm_send_reminder' => 'Send payment reminder to this organization?',
+        'confirm_cancel' => 'Are you sure you want to cancel this invoice?',
+        'confirm_refund' => 'Are you sure you want to process this refund?',
+    ],
+
     // Actions
     'actions' => [
         'view' => 'View',
