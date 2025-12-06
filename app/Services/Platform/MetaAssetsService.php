@@ -837,6 +837,251 @@ class MetaAssetsService
     }
 
     /**
+     * Batch fetch business details with ALL embedded assets.
+     * Optimized for both System User tokens and Normal User tokens.
+     * Fetches: catalogs, whatsapp, pages, instagram, offline_event_sets
+     *
+     * @param array $businessIds List of business IDs to fetch
+     * @param string $accessToken Access token
+     * @param bool $isSystemUser Whether this is a System User token (can access more fields)
+     * @return array Structured data with all asset types
+     */
+    protected function batchFetchBusinessDetailsWithAssets(
+        array $businessIds,
+        string $accessToken,
+        bool $isSystemUser = false
+    ): array {
+        if (empty($businessIds)) {
+            return [
+                'businesses' => [],
+                'catalogs' => [],
+                'whatsapp' => [],
+                'offline_event_sets' => [],
+                'pages' => [],
+                'instagram' => [],
+            ];
+        }
+
+        $businesses = [];
+        $catalogs = [];
+        $whatsappAccounts = [];
+        $offlineEventSets = [];
+        $businessPages = [];
+        $businessInstagram = [];
+
+        // Base fields for all token types
+        $baseFields = 'id,name,verification_status,' .
+            'owned_product_catalogs.limit(100){id,name,product_count,vertical},' .
+            'client_product_catalogs.limit(100){id,name,product_count,vertical},' .
+            'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}},' .
+            'owned_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}},' .
+            'client_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}';
+
+        // Extended fields for System User tokens
+        $fields = $isSystemUser
+            ? $baseFields . ',offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}'
+            : $baseFields;
+
+        $chunks = array_chunk($businessIds, self::BATCH_SIZE);
+        $batchNumber = 0;
+
+        foreach ($chunks as $chunk) {
+            if ($batchNumber > 0) {
+                usleep(self::DELAY_BETWEEN_BATCHES_MS * 1000);
+            }
+
+            $batchRequests = [];
+            foreach ($chunk as $businessId) {
+                $batchRequests[] = [
+                    'method' => 'GET',
+                    'relative_url' => $businessId . '?' . http_build_query(['fields' => $fields]),
+                ];
+            }
+
+            try {
+                $response = Http::connectTimeout(10)
+                    ->timeout(self::REQUEST_TIMEOUT * 2)
+                    ->asForm()
+                    ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                        'access_token' => $accessToken,
+                        'include_headers' => 'false',
+                        'batch' => json_encode($batchRequests),
+                    ]);
+
+                if ($response->successful()) {
+                    foreach ($response->json() ?? [] as $batchResponse) {
+                        if (($batchResponse['code'] ?? 0) === 200) {
+                            $business = json_decode($batchResponse['body'] ?? '{}', true);
+                            if (empty($business['id'])) continue;
+
+                            $businessId = $business['id'];
+                            $businessName = $business['name'] ?? 'Unknown Business';
+
+                            // Store business info
+                            $businesses[] = [
+                                'id' => $businessId,
+                                'name' => $businessName,
+                                'verification_status' => $business['verification_status'] ?? null,
+                            ];
+
+                            // Extract owned catalogs
+                            foreach ($business['owned_product_catalogs']['data'] ?? [] as $catalog) {
+                                $catalogs[] = [
+                                    'id' => $catalog['id'],
+                                    'name' => $catalog['name'] ?? 'Unnamed Catalog',
+                                    'product_count' => $catalog['product_count'] ?? 0,
+                                    'vertical' => $catalog['vertical'] ?? 'commerce',
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                    'source' => 'owned',
+                                ];
+                            }
+
+                            // Extract client catalogs
+                            foreach ($business['client_product_catalogs']['data'] ?? [] as $catalog) {
+                                $catalogs[] = [
+                                    'id' => $catalog['id'],
+                                    'name' => $catalog['name'] ?? 'Unnamed Catalog',
+                                    'product_count' => $catalog['product_count'] ?? 0,
+                                    'vertical' => $catalog['vertical'] ?? 'commerce',
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                    'source' => 'client',
+                                ];
+                            }
+
+                            // Extract WhatsApp accounts
+                            foreach ($business['owned_whatsapp_business_accounts']['data'] ?? [] as $waba) {
+                                $wabaId = $waba['id'] ?? null;
+                                $wabaName = $waba['name'] ?? 'Unnamed WABA';
+                                foreach ($waba['phone_numbers']['data'] ?? [] as $phone) {
+                                    $whatsappAccounts[] = [
+                                        'id' => $phone['id'],
+                                        'display_phone_number' => $phone['display_phone_number'] ?? '',
+                                        'verified_name' => $phone['verified_name'] ?? '',
+                                        'quality_rating' => $phone['quality_rating'] ?? null,
+                                        'code_verification_status' => $phone['code_verification_status'] ?? null,
+                                        'waba_id' => $wabaId,
+                                        'waba_name' => $wabaName,
+                                        'business_id' => $businessId,
+                                        'business_name' => $businessName,
+                                    ];
+                                }
+                            }
+
+                            // Extract Offline Event Sets (System User only)
+                            foreach ($business['offline_conversion_data_sets']['data'] ?? [] as $eventSet) {
+                                $offlineEventSets[] = [
+                                    'id' => $eventSet['id'],
+                                    'name' => $eventSet['name'] ?? 'Unnamed Event Set',
+                                    'description' => $eventSet['description'] ?? null,
+                                    'upload_rate' => $eventSet['upload_rate'] ?? null,
+                                    'duplicate_entries' => $eventSet['duplicate_entries'] ?? 0,
+                                    'match_rate_approx' => $eventSet['match_rate_approx'] ?? null,
+                                    'event_stats' => $eventSet['event_stats'] ?? null,
+                                    'data_origin' => $eventSet['data_origin'] ?? null,
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                ];
+                            }
+
+                            // Extract owned pages with Instagram
+                            foreach ($business['owned_pages']['data'] ?? [] as $page) {
+                                $businessPages[] = [
+                                    'id' => $page['id'],
+                                    'name' => $page['name'] ?? 'Unknown Page',
+                                    'category' => $page['category'] ?? null,
+                                    'has_instagram' => isset($page['instagram_business_account']),
+                                    'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                    'source' => 'owned',
+                                ];
+
+                                if (isset($page['instagram_business_account'])) {
+                                    $ig = $page['instagram_business_account'];
+                                    $businessInstagram[] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => $page['id'],
+                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                                        'business_id' => $businessId,
+                                        'business_name' => $businessName,
+                                        'source' => 'owned',
+                                    ];
+                                }
+                            }
+
+                            // Extract client pages with Instagram
+                            foreach ($business['client_pages']['data'] ?? [] as $page) {
+                                $businessPages[] = [
+                                    'id' => $page['id'],
+                                    'name' => $page['name'] ?? 'Unknown Page',
+                                    'category' => $page['category'] ?? null,
+                                    'has_instagram' => isset($page['instagram_business_account']),
+                                    'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+                                    'business_id' => $businessId,
+                                    'business_name' => $businessName,
+                                    'source' => 'client',
+                                ];
+
+                                if (isset($page['instagram_business_account'])) {
+                                    $ig = $page['instagram_business_account'];
+                                    $businessInstagram[] = [
+                                        'id' => $ig['id'],
+                                        'username' => $ig['username'] ?? null,
+                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
+                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
+                                        'followers_count' => $ig['followers_count'] ?? 0,
+                                        'media_count' => $ig['media_count'] ?? 0,
+                                        'connected_page_id' => $page['id'],
+                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
+                                        'business_id' => $businessId,
+                                        'business_name' => $businessName,
+                                        'source' => 'client',
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Batch business details fetch failed', [
+                    'batch' => $batchNumber + 1,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $batchNumber++;
+        }
+
+        Log::info('Batch fetched business details with all assets', [
+            'requested_businesses' => count($businessIds),
+            'fetched_businesses' => count($businesses),
+            'catalogs' => count($catalogs),
+            'whatsapp' => count($whatsappAccounts),
+            'offline_event_sets' => count($offlineEventSets),
+            'pages' => count($businessPages),
+            'instagram' => count($businessInstagram),
+            'batches_used' => $batchNumber,
+            'is_system_user' => $isSystemUser,
+        ]);
+
+        return [
+            'businesses' => $businesses,
+            'catalogs' => $catalogs,
+            'whatsapp' => $whatsappAccounts,
+            'offline_event_sets' => $offlineEventSets,
+            'pages' => $businessPages,
+            'instagram' => $businessInstagram,
+        ];
+    }
+
+    /**
      * Extract asset ID from asset data
      */
     protected function extractAssetId(array $data, string $assetType): string
@@ -1807,8 +2052,11 @@ class MetaAssetsService
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($accessToken, $connectionId) {
             // DATABASE-FIRST: Check if we have fresh business data
             $freshBusinesses = $this->getExistingFreshAssets('business');
-            $freshPages = $this->getExistingFreshAssets('page');
             $freshCatalogs = $this->getExistingFreshAssets('catalog');
+            $freshWhatsapp = $this->getExistingFreshAssets('whatsapp');
+            $freshOfflineEventSets = $this->getExistingFreshAssets('offline_event_set');
+            $freshPages = $this->getExistingFreshAssets('page');
+            $freshInstagram = $this->getExistingFreshAssets('instagram');
 
             // If we have fresh data for all key asset types, return from DB without API calls
             if (!empty($freshBusinesses) && !empty($freshPages)) {
@@ -1821,274 +2069,165 @@ class MetaAssetsService
                 return [
                     'businesses' => array_values($freshBusinesses),
                     'catalogs' => array_values($freshCatalogs),
-                    'whatsapp' => array_values($this->getExistingFreshAssets('whatsapp')),
-                    'offline_event_sets' => array_values($this->getExistingFreshAssets('offline_event_set')),
+                    'whatsapp' => array_values($freshWhatsapp),
+                    'offline_event_sets' => array_values($freshOfflineEventSets),
                     'pages' => array_values($freshPages),
-                    'instagram' => array_values($this->getExistingFreshAssets('instagram')),
+                    'instagram' => array_values($freshInstagram),
                 ];
             }
 
-            Log::info('Fetching business assets using TWO-PHASE INCREMENTAL SYNC (optimized for 30+ businesses)');
+            Log::info('Fetching business assets using TWO-PHASE INCREMENTAL SYNC');
 
-            $usedFallback = false;
+            $isSystemUser = false;
+            $allBusinessIds = [];
 
             try {
-                // Base fields that work for both User tokens and System User tokens
-                // OPTIMIZED: Include Instagram in page field expansion to avoid separate batch calls
-                // This gets Instagram data in the SAME API call (0 extra rate limit hits)
-                $baseFields = [
-                    'id',
-                    'name',
-                    'verification_status',
-                    'owned_product_catalogs.limit(100){id,name,product_count,vertical}',
-                    'client_product_catalogs.limit(100){id,name,product_count,vertical}',
-                    'owned_whatsapp_business_accounts.limit(100){id,name,phone_numbers{id,display_phone_number,verified_name,quality_rating,code_verification_status}}',
-                    // Pages WITH embedded Instagram (eliminates separate batch calls = 0 extra API calls)
-                    'owned_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}',
-                    'client_pages.limit(100){id,name,category,instagram_business_account{id,username,name,profile_picture_url,followers_count,media_count}}',
-                ];
-
-                // Extended fields (only work with System User tokens)
-                $extendedFields = array_merge($baseFields, [
-                    'offline_conversion_data_sets.limit(100){id,name,description,upload_rate,duplicate_entries,match_rate_approx,event_stats,data_origin}',
-                ]);
-
-                // First try with all fields (System User tokens)
-                $rawBusinesses = $this->fetchAllPages(
+                // ========== PHASE 1: Fetch business IDs only (lightweight) ==========
+                // Try Normal User endpoint first
+                $allBusinessIds = $this->fetchAssetIdsOnly(
                     self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
-                    $accessToken,
-                    ['fields' => implode(',', $extendedFields)]
+                    $accessToken
                 );
 
-                // If empty (possibly due to field error), retry with base fields only (User tokens)
-                if (empty($rawBusinesses)) {
-                    Log::info('Retrying /me/businesses with base fields only (User token compatibility)');
-                    $rawBusinesses = $this->fetchAllPages(
-                        self::BASE_URL . '/' . self::API_VERSION . '/me/businesses',
+                // If empty, try System User fallback - extract business IDs from ad accounts
+                if (empty($allBusinessIds)) {
+                    Log::info('No businesses from /me/businesses, trying System User fallback via ad accounts');
+                    $isSystemUser = true;
+
+                    // Get ad account IDs to extract business IDs
+                    $adAccountIds = $this->fetchAssetIdsOnly(
+                        self::BASE_URL . '/' . self::API_VERSION . '/me/adaccounts',
+                        $accessToken
+                    );
+
+                    if (!empty($adAccountIds)) {
+                        // Batch fetch ad accounts to get their business IDs
+                        $businessIdSet = [];
+                        $chunks = array_chunk($adAccountIds, self::BATCH_SIZE);
+
+                        foreach ($chunks as $chunk) {
+                            $batchRequests = [];
+                            foreach ($chunk as $adAccountId) {
+                                $batchRequests[] = [
+                                    'method' => 'GET',
+                                    'relative_url' => $adAccountId . '?' . http_build_query(['fields' => 'business']),
+                                ];
+                            }
+
+                            $response = Http::connectTimeout(10)
+                                ->timeout(self::REQUEST_TIMEOUT)
+                                ->asForm()
+                                ->post(self::BASE_URL . '/' . self::API_VERSION . '/', [
+                                    'access_token' => $accessToken,
+                                    'include_headers' => 'false',
+                                    'batch' => json_encode($batchRequests),
+                                ]);
+
+                            if ($response->successful()) {
+                                foreach ($response->json() ?? [] as $batchResponse) {
+                                    if (($batchResponse['code'] ?? 0) === 200) {
+                                        $body = json_decode($batchResponse['body'] ?? '{}', true);
+                                        if (!empty($body['business']['id'])) {
+                                            $businessIdSet[$body['business']['id']] = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        $allBusinessIds = array_keys($businessIdSet);
+                        Log::info('Extracted business IDs from ad accounts (System User)', [
+                            'business_count' => count($allBusinessIds),
+                        ]);
+                    }
+                }
+
+                Log::info('PHASE 1 complete: fetched business IDs', [
+                    'total_business_ids' => count($allBusinessIds),
+                    'is_system_user' => $isSystemUser,
+                ]);
+
+                // ========== PHASE 2: Check DB for fresh data ==========
+                $freshBusinessIds = array_keys($freshBusinesses);
+                $newBusinessIds = array_diff($allBusinessIds, $freshBusinessIds);
+
+                Log::info('PHASE 2 complete: identified businesses needing fetch', [
+                    'total_ids' => count($allBusinessIds),
+                    'fresh_in_db' => count($freshBusinessIds),
+                    'new_to_fetch' => count($newBusinessIds),
+                ]);
+
+                // ========== PHASE 3: Batch fetch only NEW businesses ==========
+                $newData = [
+                    'businesses' => [],
+                    'catalogs' => [],
+                    'whatsapp' => [],
+                    'offline_event_sets' => [],
+                    'pages' => [],
+                    'instagram' => [],
+                ];
+
+                if (!empty($newBusinessIds)) {
+                    Log::info('PHASE 3: Batch fetching NEW businesses', [
+                        'count' => count($newBusinessIds),
+                        'batches_needed' => ceil(count($newBusinessIds) / self::BATCH_SIZE),
+                        'is_system_user' => $isSystemUser,
+                    ]);
+
+                    $newData = $this->batchFetchBusinessDetailsWithAssets(
+                        array_values($newBusinessIds),
                         $accessToken,
-                        ['fields' => implode(',', $baseFields)]
+                        $isSystemUser
                     );
                 }
 
-                // Fallback for System User tokens: when /me/businesses returns empty,
-                // extract business IDs from ad accounts and query each business directly
-                if (empty($rawBusinesses)) {
-                    Log::info('No businesses from /me/businesses, using System User fallback via ad accounts');
-                    $rawBusinesses = $this->getBusinessesFromAdAccounts($accessToken, $connectionId);
-                    $usedFallback = true;
-                }
+                // ========== MERGE: Combine fresh DB data + new API data ==========
+                $businesses = array_merge(array_values($freshBusinesses), $newData['businesses']);
+                $catalogs = array_merge(array_values($freshCatalogs), $newData['catalogs']);
+                $whatsappAccounts = array_merge(array_values($freshWhatsapp), $newData['whatsapp']);
+                $offlineEventSets = array_merge(array_values($freshOfflineEventSets), $newData['offline_event_sets']);
+                $businessPages = array_merge(array_values($freshPages), $newData['pages']);
+                $businessInstagram = array_merge(array_values($freshInstagram), $newData['instagram']);
 
-                // Parse and organize all data
-                $businesses = [];
-                $catalogs = [];
-                $whatsappAccounts = [];
-                $offlineEventSets = [];
-                $businessPages = [];
-                $businessInstagram = [];
+                // Deduplicate by ID
+                $businesses = $this->deduplicateById($businesses);
+                $catalogs = $this->deduplicateById($catalogs);
+                $whatsappAccounts = $this->deduplicateById($whatsappAccounts);
+                $offlineEventSets = $this->deduplicateById($offlineEventSets);
+                $businessPages = $this->deduplicateById($businessPages);
+                $businessInstagram = $this->deduplicateById($businessInstagram);
 
-                foreach ($rawBusinesses as $business) {
-                    $businessId = $business['id'] ?? null;
-                    $businessName = $business['name'] ?? 'Unknown Business';
-
-                    // Store business info
-                    $businesses[] = [
-                        'id' => $businessId,
-                        'name' => $businessName,
-                        'verification_status' => $business['verification_status'] ?? null,
-                    ];
-
-                    // Extract owned catalogs
-                    foreach ($business['owned_product_catalogs']['data'] ?? [] as $catalog) {
-                        $existingIds = array_column($catalogs, 'id');
-                        if (!in_array($catalog['id'], $existingIds)) {
-                            $catalogs[] = [
-                                'id' => $catalog['id'],
-                                'name' => $catalog['name'] ?? 'Unnamed Catalog',
-                                'product_count' => $catalog['product_count'] ?? 0,
-                                'vertical' => $catalog['vertical'] ?? 'commerce',
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                            ];
-                        }
-                    }
-
-                    // Extract client catalogs
-                    foreach ($business['client_product_catalogs']['data'] ?? [] as $catalog) {
-                        $existingIds = array_column($catalogs, 'id');
-                        if (!in_array($catalog['id'], $existingIds)) {
-                            $catalogs[] = [
-                                'id' => $catalog['id'],
-                                'name' => $catalog['name'] ?? 'Unnamed Catalog',
-                                'product_count' => $catalog['product_count'] ?? 0,
-                                'vertical' => $catalog['vertical'] ?? 'commerce',
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                                'is_client_catalog' => true,
-                            ];
-                        }
-                    }
-
-                    // Extract WhatsApp accounts
-                    foreach ($business['owned_whatsapp_business_accounts']['data'] ?? [] as $waba) {
-                        $wabaId = $waba['id'] ?? null;
-                        $wabaName = $waba['name'] ?? 'Unnamed WABA';
-
-                        foreach ($waba['phone_numbers']['data'] ?? [] as $phone) {
-                            $existingIds = array_column($whatsappAccounts, 'id');
-                            if (!in_array($phone['id'], $existingIds)) {
-                                $whatsappAccounts[] = [
-                                    'id' => $phone['id'],
-                                    'display_phone_number' => $phone['display_phone_number'] ?? '',
-                                    'verified_name' => $phone['verified_name'] ?? '',
-                                    'quality_rating' => $phone['quality_rating'] ?? null,
-                                    'code_verification_status' => $phone['code_verification_status'] ?? null,
-                                    'waba_id' => $wabaId,
-                                    'waba_name' => $wabaName,
-                                    'business_id' => $businessId,
-                                    'business_name' => $businessName,
-                                ];
-                            }
-                        }
-                    }
-
-                    // Extract Offline Event Sets
-                    foreach ($business['offline_conversion_data_sets']['data'] ?? [] as $eventSet) {
-                        $existingIds = array_column($offlineEventSets, 'id');
-                        if (!in_array($eventSet['id'], $existingIds)) {
-                            $offlineEventSets[] = [
-                                'id' => $eventSet['id'],
-                                'name' => $eventSet['name'] ?? 'Unnamed Event Set',
-                                'description' => $eventSet['description'] ?? null,
-                                'upload_rate' => $eventSet['upload_rate'] ?? null,
-                                'duplicate_entries' => $eventSet['duplicate_entries'] ?? 0,
-                                'match_rate_approx' => $eventSet['match_rate_approx'] ?? null,
-                                'event_stats' => $eventSet['event_stats'] ?? null,
-                                'data_origin' => $eventSet['data_origin'] ?? null,
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                            ];
-                        }
-                    }
-
-                    // Extract owned pages from business
-                    foreach ($business['owned_pages']['data'] ?? [] as $page) {
-                        $existingIds = array_column($businessPages, 'id');
-                        if (!in_array($page['id'], $existingIds)) {
-                            $businessPages[] = [
-                                'id' => $page['id'],
-                                'name' => $page['name'] ?? 'Unknown Page',
-                                'category' => $page['category'] ?? null,
-                                'picture' => $page['picture']['data']['url'] ?? null,
-                                'has_instagram' => isset($page['instagram_business_account']),
-                                'instagram_id' => $page['instagram_business_account']['id'] ?? null,
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                                'source' => 'owned',
-                            ];
-
-                            // Extract Instagram from page if present
-                            if (isset($page['instagram_business_account'])) {
-                                $ig = $page['instagram_business_account'];
-                                $existingIgIds = array_column($businessInstagram, 'id');
-                                if (!in_array($ig['id'], $existingIgIds)) {
-                                    $businessInstagram[] = [
-                                        'id' => $ig['id'],
-                                        'username' => $ig['username'] ?? null,
-                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
-                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
-                                        'followers_count' => $ig['followers_count'] ?? 0,
-                                        'media_count' => $ig['media_count'] ?? 0,
-                                        'connected_page_id' => $page['id'],
-                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
-                                        'business_id' => $businessId,
-                                        'business_name' => $businessName,
-                                    ];
-                                }
-                            }
-                        }
-                    }
-
-                    // Extract client pages from business
-                    foreach ($business['client_pages']['data'] ?? [] as $page) {
-                        $existingIds = array_column($businessPages, 'id');
-                        if (!in_array($page['id'], $existingIds)) {
-                            $businessPages[] = [
-                                'id' => $page['id'],
-                                'name' => $page['name'] ?? 'Unknown Page',
-                                'category' => $page['category'] ?? null,
-                                'picture' => $page['picture']['data']['url'] ?? null,
-                                'has_instagram' => isset($page['instagram_business_account']),
-                                'instagram_id' => $page['instagram_business_account']['id'] ?? null,
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                                'source' => 'client',
-                            ];
-
-                            // Extract Instagram from page if present
-                            if (isset($page['instagram_business_account'])) {
-                                $ig = $page['instagram_business_account'];
-                                $existingIgIds = array_column($businessInstagram, 'id');
-                                if (!in_array($ig['id'], $existingIgIds)) {
-                                    $businessInstagram[] = [
-                                        'id' => $ig['id'],
-                                        'username' => $ig['username'] ?? null,
-                                        'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
-                                        'profile_picture' => $ig['profile_picture_url'] ?? null,
-                                        'followers_count' => $ig['followers_count'] ?? 0,
-                                        'media_count' => $ig['media_count'] ?? 0,
-                                        'connected_page_id' => $page['id'],
-                                        'connected_page_name' => $page['name'] ?? 'Unknown Page',
-                                        'business_id' => $businessId,
-                                        'business_name' => $businessName,
-                                    ];
-                                }
-                            }
-                        }
-                    }
-
-                    // Extract Instagram accounts directly owned by business (if present - only from batch API fallback)
-                    foreach ($business['instagram_accounts']['data'] ?? [] as $ig) {
-                        $existingIgIds = array_column($businessInstagram, 'id');
-                        if (!in_array($ig['id'], $existingIgIds)) {
-                            $businessInstagram[] = [
-                                'id' => $ig['id'],
-                                'username' => $ig['username'] ?? null,
-                                'name' => $ig['name'] ?? $ig['username'] ?? 'Unknown',
-                                'profile_picture' => $ig['profile_picture_url'] ?? null,
-                                'followers_count' => $ig['followers_count'] ?? 0,
-                                'media_count' => $ig['media_count'] ?? 0,
-                                'connected_page_id' => null,
-                                'connected_page_name' => null,
-                                'business_id' => $businessId,
-                                'business_name' => $businessName,
-                                'source' => 'business_direct',
-                            ];
-                        }
-                    }
-                }
-
-                // If no business Instagram yet and we have businesses (didn't come from batch API),
-                // fetch instagram_accounts using batch API
-                if (empty($businessInstagram) && !empty($businesses) && !$usedFallback) {
-                    Log::info('Fetching Instagram from businesses using batch API');
-                    $businessInstagram = $this->batchQueryBusinessInstagram($businesses, $accessToken);
-                }
-
-                Log::info('ALL business assets fetched' . ($usedFallback ? ' (via System User fallback)' : ' with pagination'), [
+                Log::info('ALL business assets fetched via TWO-PHASE INCREMENTAL SYNC', [
                     'businesses' => count($businesses),
                     'catalogs' => count($catalogs),
                     'whatsapp_accounts' => count($whatsappAccounts),
                     'offline_event_sets' => count($offlineEventSets),
                     'business_pages' => count($businessPages),
                     'business_instagram' => count($businessInstagram),
-                    'used_fallback' => $usedFallback,
+                    'new_businesses_fetched' => count($newData['businesses']),
+                    'from_db_cache' => count($freshBusinesses),
+                    'is_system_user' => $isSystemUser,
                 ]);
 
-                // Persist to database for three-tier caching
-                $this->persistAssets($connectionId, 'business', $businesses);
-                $this->persistAssets($connectionId, 'catalog', $catalogs);
-                $this->persistAssets($connectionId, 'whatsapp', $whatsappAccounts);
-                $this->persistAssets($connectionId, 'offline_event_set', $offlineEventSets);
+                // Persist NEW data to database for future caching
+                if (!empty($newData['businesses'])) {
+                    $this->persistAssets($connectionId, 'business', $newData['businesses']);
+                }
+                if (!empty($newData['catalogs'])) {
+                    $this->persistAssets($connectionId, 'catalog', $newData['catalogs']);
+                }
+                if (!empty($newData['whatsapp'])) {
+                    $this->persistAssets($connectionId, 'whatsapp', $newData['whatsapp']);
+                }
+                if (!empty($newData['offline_event_sets'])) {
+                    $this->persistAssets($connectionId, 'offline_event_set', $newData['offline_event_sets']);
+                }
+                if (!empty($newData['pages'])) {
+                    $this->persistAssets($connectionId, 'page', $newData['pages']);
+                }
+                if (!empty($newData['instagram'])) {
+                    $this->persistAssets($connectionId, 'instagram', $newData['instagram']);
+                }
 
                 return [
                     'businesses' => $businesses,
@@ -2103,6 +2242,23 @@ class MetaAssetsService
                 return ['businesses' => [], 'catalogs' => [], 'whatsapp' => [], 'offline_event_sets' => [], 'pages' => [], 'instagram' => []];
             }
         });
+    }
+
+    /**
+     * Deduplicate array of assets by 'id' field
+     */
+    private function deduplicateById(array $items): array
+    {
+        $seen = [];
+        $result = [];
+        foreach ($items as $item) {
+            $id = $item['id'] ?? null;
+            if ($id && !isset($seen[$id])) {
+                $seen[$id] = true;
+                $result[] = $item;
+            }
+        }
+        return $result;
     }
 
     /**
